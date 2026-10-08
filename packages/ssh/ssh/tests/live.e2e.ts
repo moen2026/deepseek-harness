@@ -74,7 +74,7 @@ describe.skipIf(!enabled)('POSIX SSH runtime acceptance', () => {
       const attack = "let connected=false,secure=false;const s=require('node:tls').connect({path:process.argv[1],ciphers:'PSK-AES256-GCM-SHA384',minVersion:'TLSv1.2',maxVersion:'TLSv1.2',pskCallback:()=>({identity:'dsh-stream',psk:Buffer.alloc(32)}),checkServerIdentity:()=>undefined});s.on('connect',()=>{connected=true});s.on('secureConnect',()=>{secure=true});s.on('error',()=>{});s.on('close',()=>process.stdout.write(JSON.stringify({connected,secure})));"
       const attacker = test.ctx.subprocess.spawn({
         argv: (await test.ctx.sandbox.confine([test.hello.node, '-e', attack, endpoint.path], {
-          mode: 'read-only', workspaceRoot: test.root,
+          mode: 'read-only', network: 'allowed', workspaceRoot: test.root,
         })).argv,
         cwd: test.root, stdio: { stdin: 'ignore', stdout: { maxBytes: 4096 }, stderr: { maxBytes: 4096 } }, graceMs: 500,
       })
@@ -113,7 +113,7 @@ describe.skipIf(!enabled)('POSIX SSH runtime acceptance', () => {
       const chunks = []
       for await (const chunk of await ctx.fs.streamText(target)) chunks.push(chunk)
       expect(chunks.join('')).toBe('beta\n')
-      const policy: SandboxPolicy = { mode: 'workspace-write', workspaceRoot: root }
+      const policy: SandboxPolicy = { mode: 'workspace-write', network: 'allowed', workspaceRoot: root }
       const argv = (await ctx.sandbox.confine(['/bin/bash', '-c', 'cat text.txt; printf "shell\n" > text.txt'], policy)).argv
       const result = await processResult(ctx.subprocess.spawn({
         argv, cwd: root, stdio: { stdin: 'ignore', stdout: { maxBytes: 4096 }, stderr: { maxBytes: 4096 } }, graceMs: 500,
@@ -139,7 +139,7 @@ describe.skipIf(!enabled)('POSIX SSH runtime acceptance', () => {
     const test = await setup()
     try {
       const code = 'const fs=require(\'node:fs\');const s=new(require(\'node:net\').Socket)({fd:7,readable:true,writable:true,allowHalfOpen:true});let a=[];s.on(\'data\',b=>a.push(b));s.on(\'end\',()=>{let denied;try{fs.writeFileSync(\'forbidden\',\'bad\')}catch(e){denied=e.code}process.stdout.write(JSON.stringify({pid:process.pid,denied,cgroup:process.platform===\'linux\'?fs.readFileSync(\'/proc/self/cgroup\',\'utf8\'):\'\'}));process.stderr.write(\'stderr\');s.end(Buffer.concat(a))});'
-      const argv = (await test.ctx.sandbox.confine([test.hello.node, '-e', code], { mode: 'read-only', workspaceRoot: test.root })).argv
+      const argv = (await test.ctx.sandbox.confine([test.hello.node, '-e', code], { mode: 'read-only', network: 'allowed', workspaceRoot: test.root })).argv
       const handle = test.ctx.subprocess.spawn({
         argv, cwd: test.root,
         stdio: { stdin: 'ignore', stdout: { maxBytes: 4096 }, stderr: { maxBytes: 4096 }, control: 'pipe' }, graceMs: 1000,
@@ -167,7 +167,7 @@ describe.skipIf(!enabled)('POSIX SSH runtime acceptance', () => {
     try {
       const code = 'const s=new(require(\'node:net\').Socket)({fd:7,readable:true,writable:true});const b=Buffer.alloc(65536,120);let n=0;function pump(){while(n<10000){n++;if(!process.stdout.write(b))return}}process.stdout.on(\'drain\',pump);s.on(\'data\',v=>s.write(v));pump();setInterval(()=>{},1000);'
       handle = test.ctx.subprocess.spawn({
-        argv: (await test.ctx.sandbox.confine([test.hello.node, '-e', code], { mode: 'workspace-write', workspaceRoot: test.root })).argv,
+        argv: (await test.ctx.sandbox.confine([test.hello.node, '-e', code], { mode: 'workspace-write', network: 'allowed', workspaceRoot: test.root })).argv,
         cwd: test.root, stdio: { stdin: 'ignore', stdout: 'pipe', stderr: { maxBytes: 1024 }, control: 'pipe' }, graceMs: 500,
       })
       const reply = once(handle.control!, 'data')
@@ -254,7 +254,7 @@ describe.skipIf(!enabled)('POSIX SSH runtime acceptance', () => {
       await fiber
       const runtime = test.ctx.ptcRuntime
       const bindings = [{ global: 'tools', functions: { echo: async (input: unknown) => String(input) } }]
-      const policy: SandboxPolicy = { mode: 'workspace-write', workspaceRoot: test.root }
+      const policy: SandboxPolicy = { mode: 'workspace-write', network: 'allowed', workspaceRoot: test.root }
       const result = await runtime.run(runtime.resolve({
         program: 'const fs=await import(\'node:fs/promises\');await fs.writeFile(\'ptc.txt\',\'node\');return {where:process.cwd(),env:Object.keys(process.env),echo:await tools.echo(\'host binding\')}',
         bindings, cwd: test.root, sandboxPolicy: policy,

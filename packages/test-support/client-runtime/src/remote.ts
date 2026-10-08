@@ -1,5 +1,8 @@
 /** Test-owned Remote face: `$on` subscriptions with an explicit test event driver. */
 import type { Context } from '@deepseek-ai/cordis'
+import type { ConnectionGeneration } from '@deepseek-ai/dsh-client-connection/client'
+import { RemoteStream, type RemoteStreamOptions } from '@deepseek-ai/dsh-api-gateway/client'
+import { createSnapshotStore } from '@deepseek-ai/dsh-client-store'
 
 // Value re-export for spec-side failure construction: the api-remotes facade
 // cannot carry it — its src top-level imports owner /remote lib artifacts, so a
@@ -14,6 +17,11 @@ export { RemoteError } from '@deepseek-ai/dsh-typert-protocol'
  * concrete test object. A spec that also calls one namespace scripts it through
  * the constructor rather than reaching the real Client Remote service.
  *
+ * `$stream` supervises a domain opening with the production supervisor over a
+ * never-connected generation: the opener reaches the scripted namespace faces,
+ * and a carrier failure parks the retry until disposal — the page's behavior
+ * while the transport is down.
+ *
  * `$mount` rejects: a spec that needs a real generated contribution installed —
  * codecs, descriptors, and the wire — has outgrown this double and needs the
  * real Client Remote service.
@@ -25,6 +33,9 @@ export { RemoteError } from '@deepseek-ai/dsh-typert-protocol'
  */
 export class TestRemote {
   private readonly subscriptions = new Map<string, Set<(...args: never[]) => void>>()
+
+  /** A generation that never connects, so carrier retries park instead of spinning. */
+  private readonly generation = createSnapshotStore<ConnectionGeneration | undefined>(undefined)
 
   /**
    * Fixed Host facts mirrored from the production `ctx.remote.$host`. Plain
@@ -91,6 +102,16 @@ export class TestRemote {
     this.subscriptions.set(event, listeners)
     listeners.add(listener)
     return () => { listeners.delete(listener) }
+  }
+
+  /**
+   * Supervise one domain stream with the production supervisor.
+   * @param options - domain stream opener over the scripted namespaces, end
+   *   classification, and diagnostics.
+   * @returns the supervised stream, never connected to a physical carrier.
+   */
+  $stream<Item>(options: RemoteStreamOptions<Item>): RemoteStream<Item> {
+    return new RemoteStream({ generation: this.generation }, options)
   }
 
   /**

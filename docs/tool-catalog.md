@@ -33,7 +33,17 @@ This table connects model-visible tool names to the plugin package and service s
 | `@deepseek-ai/dsh-tool-terminal` | `terminal_close`, `terminal_list`, `terminal_open`, `terminal_read`, `terminal_send`, `terminal_signal` | `ctx.tools`, `ctx.terminals`, `ctx.systemPrompt`, `ctx.jobs at call time for run_in_background` | `tool/call`, `tool/result` | - | The six terminal tools are opt-in and complement one-shot shell/filesystem tools. `terminal_send(run_in_background: true)` registers with `ctx.jobs`; TUI, named key sequences, BEL, resize, auto-start, and cross-agent sharing are absent from the schema. |
 | `@deepseek-ai/dsh-tool-goal` | `create_goal`, `get_goal`, `update_goal` | `ctx.tools`, `ctx.agents`, `ctx.goals`, `ctx.systemPrompt`, `a calling Agent in an authorized open turn` | `tool/call`, `goal/change for mutations`, `tool/result` | - | create, edit, pause, and resume require direct-human root authority; complete and blocked also accept the exact current goal round. The default blocked lower bound is three admitted rounds. |
 | `@deepseek-ai/dsh-schedule` | `schedule_create`, `schedule_delete`, `schedule_list`, `schedule_update` | `ctx.tools`, `ctx.schedule`, `a live root Agent` | `tool/call`, `Schedule storage domain create, update, or delete`, `tool/result` | - | Registered in live root Agent scopes while the Schedule service is loaded. Accepts after_seconds, explicit absolute at, bounded fixed-rate every_seconds, daily and weekly local times in an explicit IANA zone, and cron as a five-field expression. Management uses the Host storage domain; due messages resume the original Session. |
+| `@deepseek-ai/dsh-heartbeat` | `heartbeat_disable`, `heartbeat_enable` | `ctx.tools`, `ctx.schedule`, `a calling Agent session` | `tool/call`, `Schedule storage domain create or delete`, `tool/result` | - | Registered in live root Agent scopes while the heartbeat plugin is loaded. heartbeat_enable creates one recurring Schedule reminder per Session whose prompt carries the whole patrol semantic (read the workspace heartbeat file, act on its pending items, or answer HEARTBEAT_OK); heartbeat_disable deletes the Session's heartbeat tasks. |
+| `@deepseek-ai/dsh-session-rewind` | `workspace_rewind` | `ctx.tools`, `a calling Agent session with captured turns` | `tool/call`, `tool/result`, `workspace file writes through the sessionRewind restore` | - | Registered once in the root context; the tool answers unavailable outside an Agent scope. Captures start per top-level turn on turn/start, exclude subagent sessions, and cover the write, edit, and str_replace_editor file tools only — shell-command edits are never captured. |
+| `@deepseek-ai/dsh-tool-github` | `github_comment` | `ctx.tools`, `ctx.credentials` | `tool/call`, `tool/result` | - | Opt-in outbound capability: deployments mount it next to webhook rules (see the github-review example overlay) and configure a credential-ref token; without one a call returns an actionable unavailable answer rather than failing the session. |
 | `@deepseek-ai/dsh-tool-lsp` | `lsp` | `ctx.tools`, `ctx.lsp`, `ctx.systemPrompt` | `tool/call`, `tool/result` | - | The lsp tool keeps provider selection and language-server subprocesses behind ctx.lsp, so its model-visible schema stays stable across providers. Requires a registered provider (e.g. `@deepseek-ai/dsh-lsp-stdio`) at runtime; without one, a query returns the structured `LSP_UNAVAILABLE` error rather than changing the schema. |
+| `@deepseek-ai/dsh-tool-code-index` | `search_codebase` | `ctx.tools`, `ctx.codeIndex`, `ctx.systemPrompt` | `tool/call`, `tool/result` | - | The search_codebase tool keeps corpus construction and ranking behind ctx.codeIndex, so its model-visible schema stays stable across providers. Requires a registered provider (e.g. `@deepseek-ai/dsh-code-index-sqlite`) at runtime; without one, a search returns an actionable unavailable answer rather than failing the session. |
+| `@deepseek-ai/dsh-tool-memory` | `memory_forget`, `memory_search`, `memory_write` | `ctx.tools`, `ctx.memory`, `ctx.systemPrompt` | `tool/call`, `tool/result` | - | The memory_write/memory_search/memory_forget tools keep storage, ranking, and any embedding behind ctx.memory, so their model-visible schemas stay stable across providers. Requires a registered provider (e.g. `@deepseek-ai/dsh-memory-sqlite`) at runtime; without one, an operation returns an actionable unavailable answer rather than failing the session. Recall is lexical unless the deployment configures its own embedding endpoint. |
+| `@deepseek-ai/dsh-tool-knowledge` | `knowledge_ingest`, `knowledge_list`, `knowledge_remove`, `knowledge_search` | `ctx.tools`, `ctx.knowledge`, `ctx.systemPrompt` | `tool/call`, `tool/result` | - | The knowledge_ingest/knowledge_search/knowledge_remove/knowledge_list tools keep storage, chunking, and ranking behind ctx.knowledge, so their model-visible schemas stay stable across providers. Requires a registered provider (e.g. `@deepseek-ai/dsh-knowledge-sqlite`) at runtime; without one, an operation returns an actionable unavailable answer rather than failing the session. |
+| `@deepseek-ai/dsh-tool-audio` | `transcribe_audio` | `ctx.tools`, `ctx.audio`, `ctx.fs`, `ctx.systemPrompt` | `tool/call`, `tool/result` | - | The transcribe_audio tool keeps the transcription endpoint and its credentials behind ctx.audio, so its model-visible schema stays stable across providers. Requires a registered provider (e.g. `@deepseek-ai/dsh-audio-http`) at runtime; without one, a call returns an actionable unavailable answer rather than failing the session. |
+| `@deepseek-ai/dsh-tool-image` | `generate_image` | `ctx.tools`, `ctx.image`, `ctx.attachments`, `ctx.systemPrompt` | `tool/call`, `tool/result` | - | The generate_image tool keeps the generation endpoint and its credentials behind ctx.image, so its model-visible schema stays stable across providers. Requires a registered provider (e.g. `@deepseek-ai/dsh-image-http`) and a mounted attachment store at runtime; without one, a call returns an actionable unavailable answer rather than failing the session. |
+| `@deepseek-ai/dsh-tool-document` | `create_document` | `ctx.tools`, `ctx.documents`, `ctx.fs`, `ctx.systemPrompt`, `ctx.sessionProjections` | `tool/call`, `tool/result`, `fs/observed`, `deliverables/presented after a successful final result` | - | The create_document tool keeps the document engine behind ctx.documents, so its model-visible schema stays stable across providers. Requires a registered provider (e.g. `@deepseek-ai/dsh-office-create`) at runtime; without one, a call returns an actionable unavailable answer rather than failing the session. |
+| `@deepseek-ai/dsh-tool-repo-wiki` | `read_wiki` | `ctx.tools`, `ctx.repoWiki`, `ctx.systemPrompt` | `tool/call`, `tool/result` | - | The read_wiki tool keeps wiki storage and generation behind ctx.repoWiki, so its model-visible schema stays stable across providers. Requires a registered provider (e.g. `@deepseek-ai/dsh-repo-wiki-generator`) at runtime; without one, a call returns an actionable unavailable answer rather than failing the session. |
 | `@deepseek-ai/dsh-tool-ralph` | `ralph` | `ctx.tools`, `ctx.workflowEngine`, `ctx.subagents`, `ctx.systemPrompt`, `a calling Agent (exec.agent parents every fresh round)` | `tool/call`, `tool/result`, `workflow and child session events during execution` | - | A fixed foreground workflow starts one fresh structured child per round; the model selects only the immutable objective and an optional round cap. |
 | `@deepseek-ai/dsh-tool-skill` | `skill` | `ctx.tools`, `ctx.agents`, `ctx.skills` | `tool/call`, `tool/result`, `user/message replacement catalogs via agent.inject()` | - | - |
 | `@deepseek-ai/dsh-tool-session-query` | `session_event_read`, `session_event_search`, `session_event_trace`, `session_search`, `session_trace` | `ctx.tools`, `ctx.systemPrompt`, `ctx.sessionQuery`, `a calling Agent for workspace authority` | `tool/call`, `tool/result` | - | The five read-only tools hide provider cursors and authorize every result from the immutable calling agent session. The package is opt-in; compositions that need enforced deadlines or bounded inline output also mount the generic timeout or spill policies. |
@@ -42,6 +52,7 @@ This table connects model-visible tool names to the plugin package and service s
 | `@deepseek-ai/dsh-tool-jobs` | `job_kill`, `job_list`, `job_output` | `ctx.tools`, `ctx.jobs`, `ctx.systemPrompt` | `tool/call`, `tool/result`, `user/message via agent.inject() for background completion notices` | - | The kind-agnostic background-job controller: background bash commands, PTY sends, and subagents are read, listed, and killed through the same three tools. Loading the plugin attaches the controller that arms producers' `ctx.jobs.start()`. |
 | `@deepseek-ai/dsh-experimental-tool-agent-team` | `interrupt_agent`, `list_agents`, `send_message`, `spawn_teammate`, `team_task_create`, `team_task_get`, `team_task_list`, `team_task_update`, `wait_agent` | `ctx.tools`, `ctx.systemPrompt`, `ctx.agentTeams`, `an exact live Team member Agent` | `tool/call`, `team/member`, `team/message/queued`, `team/message/delivered`, `team/task`, `tool/result` | - | All nine tools are scoped to implicit Team Leads and durable teammates. The shipped dsh-base bundle keeps the package disabled; the documented Agent Teams profile patch enables it while disabling the legacy continuable-child control names. |
 | `@deepseek-ai/dsh-tool-todo` | `todo_write` | `ctx.tools`, `owning Agent session` | `tool/call`, `todo/write`, `tool/result` | - | todo_write is session-owned state; UIs render the latest todo/write event as a checklist. `allowParallelInProgress` is required with no default, so the catalog states its choice: `true`, whose description invites several `in_progress` items. A deployment choosing `false` receives the same tool with a description asking for exactly one active task. |
+| `@deepseek-ai/dsh-tool-git-track` | `pull_request_track`, `worktree_track` | `ctx.tools`, `ctx.storageDomain`, `owning Agent session` | `tool/call`, `Git-track storage domain create or update`, `tool/result` | - | worktree_track and pull_request_track upsert one record per call into the session_git_track storage domain, keyed by the owning session and the path or URL, and return the current list of the calling session; recording is bookkeeping only and never runs git or contacts a forge. |
 | `@deepseek-ai/dsh-tool-workflow` | `workflow` | `ctx.tools`, `ctx.workflowEngine`, `ctx.systemPrompt`, `a calling Agent (exec.agent parents the script children)` | `tool/call`, `tool/result` | - | - |
 | `@deepseek-ai/dsh-tool-workspace-dependencies` | `load_workspace_dependencies` | `ctx.tools` | `tool/call`, `tool/result` | - | - |
 | `@deepseek-ai/dsh-tool-web` | `web_fetch`, `web_search` | `ctx.tools`, `ctx.web`, `ctx.systemPrompt` | `tool/call`, `tool/result` | - | web_search and web_fetch keep provider selection behind ctx.web so model-visible schemas stay stable across backend swaps. |
@@ -1670,13 +1681,114 @@ Source: [`packages/schedule/schedule/src/tools.ts`](../packages/schedule/schedul
 
 Registered in live root Agent scopes while the Schedule service is loaded. Accepts after_seconds, explicit absolute at, bounded fixed-rate every_seconds, daily and weekly local times in an explicit IANA zone, and cron as a five-field expression. Management uses the Host storage domain; due messages resume the original Session.
 
+<a id="deepseek-aidsh-heartbeat"></a>
+
+## `@deepseek-ai/dsh-heartbeat`
+
+### `heartbeat_disable`
+
+Stop the heartbeat patrol in this session by deleting its recurring reminder. A heartbeat reminder that is already delivered is not retracted.
+
+```json
+{
+  "type": "object",
+  "properties": {}
+}
+```
+
+Source: [`packages/schedule/heartbeat/src/index.ts`](../packages/schedule/heartbeat/src/index.ts)
+
+### `heartbeat_enable`
+
+Start the heartbeat patrol in this session: a recurring reminder is created so this session periodically receives a heartbeat that reads the heartbeat file (HEARTBEAT.md by default) and acts on its pending items. One patrol per session; call heartbeat_disable first to change the interval.
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "interval_seconds": {
+      "type": "number",
+      "description": "Heartbeat interval in whole seconds, at least 60. Omission uses the deployment default."
+    }
+  }
+}
+```
+
+Source: [`packages/schedule/heartbeat/src/index.ts`](../packages/schedule/heartbeat/src/index.ts)
+
+Registered in live root Agent scopes while the heartbeat plugin is loaded. heartbeat_enable creates one recurring Schedule reminder per Session whose prompt carries the whole patrol semantic (read the workspace heartbeat file, act on its pending items, or answer HEARTBEAT_OK); heartbeat_disable deletes the Session's heartbeat tasks.
+
+<a id="deepseek-aidsh-session-rewind"></a>
+
+## `@deepseek-ai/dsh-session-rewind`
+
+### `workspace_rewind`
+
+Restore the workspace files this session's file tools changed during one turn to their content before that turn: edited files are written back, files created during the turn are deleted, and files a rewind record could not cover (larger than the capture cap) are skipped and reported. turn is the turn number whose pre-turn state to reproduce. A covered path is overwritten even if later turns edited it again, so confirm with the user before rewinding a past turn. Edits made through shell commands are never captured and never restored. Returns an unknown_turn answer when no record exists for that turn; rewind records live only as long as their session in this Host process.
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "turn": {
+      "type": "number",
+      "description": "The turn whose pre-turn state to reproduce."
+    }
+  },
+  "required": [
+    "turn"
+  ]
+}
+```
+
+Source: [`packages/session/session-rewind/src/index.ts`](../packages/session/session-rewind/src/index.ts)
+
+Registered once in the root context; the tool answers unavailable outside an Agent scope. Captures start per top-level turn on turn/start, exclude subagent sessions, and cover the write, edit, and str_replace_editor file tools only — shell-command edits are never captured.
+
+<a id="deepseek-aidsh-tool-github"></a>
+
+## `@deepseek-ai/dsh-tool-github`
+
+### `github_comment`
+
+Post one Markdown comment on a GitHub issue or pull request through the GitHub REST API. repository is "owner/repo", number is the issue or pull request number, and body is the comment text (GitHub Flavored Markdown is supported). The deployment mounts this tool and its token credential explicitly; without a configured token the call returns an unavailable answer rather than an error. Posting is an external, visible side effect — confirm the comment content with the user when the governing workflow does not already mandate it.
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "repository": {
+      "type": "string",
+      "description": "Repository as \"owner/repo\"."
+    },
+    "number": {
+      "type": "number",
+      "description": "The issue or pull request number to comment on."
+    },
+    "body": {
+      "type": "string",
+      "description": "Markdown comment body (GitHub Flavored Markdown is supported)."
+    }
+  },
+  "required": [
+    "repository",
+    "number",
+    "body"
+  ]
+}
+```
+
+Source: [`packages/webhook/tool-github/src/index.ts`](../packages/webhook/tool-github/src/index.ts)
+
+Opt-in outbound capability: deployments mount it next to webhook rules (see the github-review example overlay) and configure a credential-ref token; without one a call returns an actionable unavailable answer rather than failing the session.
+
 <a id="deepseek-aidsh-tool-lsp"></a>
 
 ## `@deepseek-ai/dsh-tool-lsp`
 
 ### `lsp`
 
-Query a language server for precise code navigation. operation is one of goToDefinition, findReferences, goToImplementation, hover. line and character are one-based UTF-16 cursor coordinates. findReferences includes the declaration.
+Query a language server for precise code intelligence. operation is one of goToDefinition, findReferences, goToImplementation, hover, or diagnostics. line and character are one-based UTF-16 cursor coordinates and are required except for diagnostics, which is file-level (it reports the file's current problems and needs no cursor). findReferences includes the declaration.
 
 ```json
 {
@@ -1684,12 +1796,13 @@ Query a language server for precise code navigation. operation is one of goToDef
   "properties": {
     "operation": {
       "type": "string",
-      "description": "goToDefinition, findReferences, goToImplementation, or hover.",
+      "description": "goToDefinition, findReferences, goToImplementation, hover, or diagnostics.",
       "enum": [
         "goToDefinition",
         "findReferences",
         "goToImplementation",
-        "hover"
+        "hover",
+        "diagnostics"
       ]
     },
     "file_path": {
@@ -1698,18 +1811,16 @@ Query a language server for precise code navigation. operation is one of goToDef
     },
     "line": {
       "type": "number",
-      "description": "One-based line of the cursor."
+      "description": "One-based line of the cursor. Required except for diagnostics."
     },
     "character": {
       "type": "number",
-      "description": "One-based UTF-16 column of the cursor."
+      "description": "One-based UTF-16 column of the cursor. Required except for diagnostics."
     }
   },
   "required": [
     "operation",
-    "file_path",
-    "line",
-    "character"
+    "file_path"
   ]
 }
 ```
@@ -1717,6 +1828,480 @@ Query a language server for precise code navigation. operation is one of goToDef
 Source: [`packages/lsp/tool-lsp/src/index.ts`](../packages/lsp/tool-lsp/src/index.ts)
 
 The lsp tool keeps provider selection and language-server subprocesses behind ctx.lsp, so its model-visible schema stays stable across providers. Requires a registered provider (e.g. `@deepseek-ai/dsh-lsp-stdio`) at runtime; without one, a query returns the structured `LSP_UNAVAILABLE` error rather than changing the schema.
+
+<a id="deepseek-aidsh-tool-code-index"></a>
+
+## `@deepseek-ai/dsh-tool-code-index`
+
+### `search_codebase`
+
+Lexical full-text search over the workspace's indexed source, returning ranked line ranges with snippets. query is required text to match. Optionally narrow with glob (e.g. packages/**/*.ts) and language (e.g. typescript); limit caps the number of hits. Returns an actionable unavailable message when no code-index provider is configured.
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "query": {
+      "type": "string",
+      "description": "Text or tokens to match against indexed source chunks."
+    },
+    "glob": {
+      "type": "string",
+      "description": "Optional glob limiting which file paths are searched (e.g. packages/**/*.ts)."
+    },
+    "language": {
+      "type": "string",
+      "description": "Optional syntax id restricting results (e.g. typescript, python, go)."
+    },
+    "limit": {
+      "type": "number",
+      "description": "Optional maximum number of ranked hits to return."
+    }
+  },
+  "required": [
+    "query"
+  ]
+}
+```
+
+Source: [`packages/code-index/tool-code-index/src/index.ts`](../packages/code-index/tool-code-index/src/index.ts)
+
+The search_codebase tool keeps corpus construction and ranking behind ctx.codeIndex, so its model-visible schema stays stable across providers. Requires a registered provider (e.g. `@deepseek-ai/dsh-code-index-sqlite`) at runtime; without one, a search returns an actionable unavailable answer rather than failing the session.
+
+<a id="deepseek-aidsh-tool-memory"></a>
+
+## `@deepseek-ai/dsh-tool-memory`
+
+### `memory_forget`
+
+Delete one stored memory by its id. Use when the user asks you to forget something you previously remembered. id is the record identity returned by an earlier memory_write or memory_search. Reports whether a memory was removed, and returns an actionable unavailable message when no memory provider is configured.
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "The identity of the memory to forget."
+    }
+  },
+  "required": [
+    "id"
+  ]
+}
+```
+
+Source: [`packages/memory/tool-memory/src/index.ts`](../packages/memory/tool-memory/src/index.ts)
+
+### `memory_search`
+
+Recall stored memories matching a query, returned ranked best-first with id, text, tags, scope, namespace, confidence, and score. Use when past context may be relevant. query is required text to match. Optionally filter by tags, scope, namespace, and min_confidence, and cap results with limit. Expired memories are never returned. Returns an actionable unavailable message when no memory provider is configured.
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "query": {
+      "type": "string",
+      "description": "Text or tokens to match against stored memories."
+    },
+    "tags": {
+      "type": "array",
+      "description": "Optional tags restricting recall to memories carrying them.",
+      "items": {
+        "type": "string"
+      }
+    },
+    "scope": {
+      "type": "string",
+      "description": "Optional scope restricting recall to one partition of the store."
+    },
+    "namespace": {
+      "type": "string",
+      "description": "Optional namespace restricting recall to memories classified with it.",
+      "enum": [
+        "preference",
+        "fact",
+        "style"
+      ]
+    },
+    "min_confidence": {
+      "type": "number",
+      "description": "Optional lowest recorded confidence eligible; memories without one are excluded."
+    },
+    "limit": {
+      "type": "number",
+      "description": "Optional maximum number of ranked hits to return."
+    }
+  },
+  "required": [
+    "query"
+  ]
+}
+```
+
+Source: [`packages/memory/tool-memory/src/index.ts`](../packages/memory/tool-memory/src/index.ts)
+
+### `memory_write`
+
+Persist one durable fact or preference to long-term memory and return its id. Use when the user asks you to remember something. text is required free-form content. Optionally attach tags (classification labels), a scope (a partition such as a project), a namespace (preference, fact, or style), a confidence between 0 and 1, and ttl_ms (positive milliseconds after which the memory stops being recalled). Returns an actionable unavailable message when no memory provider is configured.
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "text": {
+      "type": "string",
+      "description": "The fact or preference to remember, as free text."
+    },
+    "tags": {
+      "type": "array",
+      "description": "Optional classification tags stored with the memory and filterable on recall.",
+      "items": {
+        "type": "string"
+      }
+    },
+    "scope": {
+      "type": "string",
+      "description": "Optional scope (for example a project or workspace) partitioning the store."
+    },
+    "namespace": {
+      "type": "string",
+      "description": "Optional namespace classifying the memory: preference (how the user wants work done), fact (durable project facts), or style (collaboration-style guidance).",
+      "enum": [
+        "preference",
+        "fact",
+        "style"
+      ]
+    },
+    "confidence": {
+      "type": "number",
+      "description": "Optional confidence in this memory, from 0 through 1."
+    },
+    "ttl_ms": {
+      "type": "number",
+      "description": "Optional time-to-live in milliseconds; after it elapses the memory is no longer recalled."
+    }
+  },
+  "required": [
+    "text"
+  ]
+}
+```
+
+Source: [`packages/memory/tool-memory/src/index.ts`](../packages/memory/tool-memory/src/index.ts)
+
+The memory_write/memory_search/memory_forget tools keep storage, ranking, and any embedding behind ctx.memory, so their model-visible schemas stay stable across providers. Requires a registered provider (e.g. `@deepseek-ai/dsh-memory-sqlite`) at runtime; without one, an operation returns an actionable unavailable answer rather than failing the session. Recall is lexical unless the deployment configures its own embedding endpoint.
+
+<a id="deepseek-aidsh-tool-knowledge"></a>
+
+## `@deepseek-ai/dsh-tool-knowledge`
+
+### `knowledge_ingest`
+
+Persist one titled document to the shared knowledge base and return its id. Use when work produces reusable findings — a research summary, a decided approach, or a durable environment fact. title is a short human title; text is the document body. Optionally attach tags (classification labels) and a source (provenance such as a URL or path). Returns an actionable unavailable message when no knowledge provider is configured.
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "A short human title for the document."
+    },
+    "text": {
+      "type": "string",
+      "description": "The document body to persist, as free text."
+    },
+    "tags": {
+      "type": "array",
+      "description": "Optional classification tags stored with the document and filterable on search and listing.",
+      "items": {
+        "type": "string"
+      }
+    },
+    "source": {
+      "type": "string",
+      "description": "Optional provenance (a URL, path, or other citation) stored verbatim."
+    }
+  },
+  "required": [
+    "title",
+    "text"
+  ]
+}
+```
+
+Source: [`packages/knowledge/tool-knowledge/src/index.ts`](../packages/knowledge/tool-knowledge/src/index.ts)
+
+### `knowledge_list`
+
+List stored knowledge documents, most recent first, with id, title, tags, and source. Use to browse the knowledge base when a query is not yet formed. Optionally filter by tags and cap results with limit. Returns an actionable unavailable message when no knowledge provider is configured.
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "tags": {
+      "type": "array",
+      "description": "Optional tags restricting the listing to documents carrying them.",
+      "items": {
+        "type": "string"
+      }
+    },
+    "limit": {
+      "type": "number",
+      "description": "Optional maximum number of documents to return."
+    }
+  }
+}
+```
+
+Source: [`packages/knowledge/tool-knowledge/src/index.ts`](../packages/knowledge/tool-knowledge/src/index.ts)
+
+### `knowledge_remove`
+
+Delete one stored knowledge document by its id. Use when a stored document is obsolete or wrong. id is the document identity returned by an earlier knowledge_ingest or knowledge_search. Reports whether a document was removed, and returns an actionable unavailable message when no knowledge provider is configured.
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "The identity of the document to remove."
+    }
+  },
+  "required": [
+    "id"
+  ]
+}
+```
+
+Source: [`packages/knowledge/tool-knowledge/src/index.ts`](../packages/knowledge/tool-knowledge/src/index.ts)
+
+### `knowledge_search`
+
+Search the shared knowledge base for documents matching a query, returned ranked best-first with id, title, excerpt, tags, source, and score. Use when earlier stored knowledge may be relevant to the current task. query is required text to match. Optionally filter by tags and cap results with limit. Returns an actionable unavailable message when no knowledge provider is configured.
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "query": {
+      "type": "string",
+      "description": "Text or tokens to match against document titles and bodies."
+    },
+    "tags": {
+      "type": "array",
+      "description": "Optional tags restricting search to documents carrying them.",
+      "items": {
+        "type": "string"
+      }
+    },
+    "limit": {
+      "type": "number",
+      "description": "Optional maximum number of ranked hits to return."
+    }
+  },
+  "required": [
+    "query"
+  ]
+}
+```
+
+Source: [`packages/knowledge/tool-knowledge/src/index.ts`](../packages/knowledge/tool-knowledge/src/index.ts)
+
+The knowledge_ingest/knowledge_search/knowledge_remove/knowledge_list tools keep storage, chunking, and ranking behind ctx.knowledge, so their model-visible schemas stay stable across providers. Requires a registered provider (e.g. `@deepseek-ai/dsh-knowledge-sqlite`) at runtime; without one, an operation returns an actionable unavailable answer rather than failing the session.
+
+<a id="deepseek-aidsh-tool-audio"></a>
+
+## `@deepseek-ai/dsh-tool-audio`
+
+### `transcribe_audio`
+
+Transcribe an audio file in the workspace (MP3, WAV, M4A, AAC, OGG, Opus, FLAC, or WebM) and return the recognized text. file_path is required; language and prompt are optional refinements. Returns an actionable unavailable message when no transcription provider is configured.
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "file_path": {
+      "type": "string",
+      "description": "Path to the audio file, resolved by the filesystem backend."
+    },
+    "language": {
+      "type": "string",
+      "description": "Optional ISO 639-1 language hint for the transcription."
+    },
+    "prompt": {
+      "type": "string",
+      "description": "Optional free-text hint (for example known terms) steering the transcription."
+    }
+  },
+  "required": [
+    "file_path"
+  ]
+}
+```
+
+Source: [`packages/audio/tool-audio/src/index.ts`](../packages/audio/tool-audio/src/index.ts)
+
+The transcribe_audio tool keeps the transcription endpoint and its credentials behind ctx.audio, so its model-visible schema stays stable across providers. Requires a registered provider (e.g. `@deepseek-ai/dsh-audio-http`) at runtime; without one, a call returns an actionable unavailable answer rather than failing the session.
+
+<a id="deepseek-aidsh-tool-image"></a>
+
+## `@deepseek-ai/dsh-tool-image`
+
+### `generate_image`
+
+Generate an image from a text prompt and return the image itself. prompt is required; size is an optional refinement such as "1024x1024". Returns an actionable unavailable message when no image provider is configured.
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "prompt": {
+      "type": "string",
+      "description": "The text prompt describing the image to generate."
+    },
+    "size": {
+      "type": "string",
+      "description": "Optional requested image size (for example \"1024x1024\"); the provider interprets the hint."
+    }
+  },
+  "required": [
+    "prompt"
+  ]
+}
+```
+
+Source: [`packages/image/tool-image/src/index.ts`](../packages/image/tool-image/src/index.ts)
+
+The generate_image tool keeps the generation endpoint and its credentials behind ctx.image, so its model-visible schema stays stable across providers. Requires a registered provider (e.g. `@deepseek-ai/dsh-image-http`) and a mounted attachment store at runtime; without one, a call returns an actionable unavailable answer rather than failing the session.
+
+<a id="deepseek-aidsh-tool-document"></a>
+
+## `@deepseek-ai/dsh-tool-document`
+
+### `create_document`
+
+Create an Office document (DOCX, XLSX, or PPTX) from a title and content blocks, write it into the workspace, and present it to the user as a deliverable. Returns an actionable unavailable message when no documents provider is configured.
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "format": {
+      "type": "string",
+      "description": "The Office format to create.",
+      "enum": [
+        "docx",
+        "xlsx",
+        "pptx"
+      ]
+    },
+    "title": {
+      "type": "string",
+      "description": "The document title."
+    },
+    "file_path": {
+      "type": "string",
+      "description": "Workspace path for the new document; an existing file at that path is never overwritten."
+    },
+    "blocks": {
+      "type": "array",
+      "description": "Content blocks in document order: heading, text, bullets, table, or chartPlaceholder objects.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "heading",
+              "text",
+              "bullets",
+              "table",
+              "chartPlaceholder"
+            ]
+          },
+          "text": {
+            "type": "string",
+            "description": "heading/text: the block text."
+          },
+          "level": {
+            "type": "integer",
+            "description": "heading only: 1-based outline level (default 1)."
+          },
+          "items": {
+            "type": "array",
+            "description": "bullets only: the bullet items.",
+            "items": {
+              "type": "string"
+            }
+          },
+          "rows": {
+            "type": "array",
+            "description": "table only: rectangular rows; the first row is the header.",
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "label": {
+            "type": "string",
+            "description": "chartPlaceholder only: what the reserved chart will show."
+          }
+        },
+        "required": [
+          "kind"
+        ]
+      }
+    }
+  },
+  "required": [
+    "format",
+    "title",
+    "file_path",
+    "blocks"
+  ]
+}
+```
+
+Source: [`packages/document/tool-document/src/index.ts`](../packages/document/tool-document/src/index.ts)
+
+The create_document tool keeps the document engine behind ctx.documents, so its model-visible schema stays stable across providers. Requires a registered provider (e.g. `@deepseek-ai/dsh-office-create`) at runtime; without one, a call returns an actionable unavailable answer rather than failing the session.
+
+<a id="deepseek-aidsh-tool-repo-wiki"></a>
+
+## `@deepseek-ai/dsh-tool-repo-wiki`
+
+### `read_wiki`
+
+Read the repository wiki generated by the harness. Without arguments, lists every page (path, title, staleness). With path, returns one page's full Markdown content — or, with outline=true, its heading structure. Stale pages were generated from sources that have since changed. Returns an actionable unavailable message when no repo-wiki provider is configured.
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "path": {
+      "type": "string",
+      "description": "Wiki page path to read (as listed without arguments); omit to list every page."
+    },
+    "outline": {
+      "type": "boolean",
+      "description": "With path, return the page's heading outline instead of its full content."
+    }
+  }
+}
+```
+
+Source: [`packages/wiki/tool-repo-wiki/src/index.ts`](../packages/wiki/tool-repo-wiki/src/index.ts)
+
+The read_wiki tool keeps wiki storage and generation behind ctx.repoWiki, so its model-visible schema stays stable across providers. Requires a registered provider (e.g. `@deepseek-ai/dsh-repo-wiki-generator`) at runtime; without one, a call returns an actionable unavailable answer rather than failing the session.
 
 <a id="deepseek-aidsh-tool-ralph"></a>
 
@@ -2554,6 +3139,74 @@ Record and update a task list to plan multi-step work and show progress; skip it
 Source: [`packages/todo/tool-todo/src/index.ts`](../packages/todo/tool-todo/src/index.ts)
 
 todo_write is session-owned state; UIs render the latest todo/write event as a checklist. `allowParallelInProgress` is required with no default, so the catalog states its choice: `true`, whose description invites several `in_progress` items. A deployment choosing `false` receives the same tool with a description asking for exactly one active task.
+
+<a id="deepseek-aidsh-tool-git-track"></a>
+
+## `@deepseek-ai/dsh-tool-git-track`
+
+### `pull_request_track`
+
+Record a pull request this session opened, so the association survives later turns and context compaction; call it once the pull request URL is known, and again with the same URL if its title or head branch changes. Recording is bookkeeping only: it never creates, changes, or removes anything.
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "url": {
+      "type": "string",
+      "description": "Canonical pull-request URL."
+    },
+    "number": {
+      "type": "number",
+      "description": "Hosting-platform pull-request number."
+    },
+    "title": {
+      "type": "string",
+      "description": "Pull-request title."
+    },
+    "branch": {
+      "type": "string",
+      "description": "Head branch of the pull request."
+    }
+  },
+  "required": [
+    "url"
+  ]
+}
+```
+
+Source: [`packages/git/tool-git-track/src/index.ts`](../packages/git/tool-git-track/src/index.ts)
+
+### `worktree_track`
+
+Record a git worktree this session created or uses, so the association survives later turns and context compaction; call it right after `git worktree add` succeeds, and again with the same path if its branch changes. Recording is bookkeeping only: it never creates, changes, or removes anything.
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "path": {
+      "type": "string",
+      "description": "Absolute path of the worktree directory."
+    },
+    "branch": {
+      "type": "string",
+      "description": "Branch checked out in the worktree."
+    },
+    "base": {
+      "type": "string",
+      "description": "Ref the worktree branched from."
+    }
+  },
+  "required": [
+    "path"
+  ]
+}
+```
+
+Source: [`packages/git/tool-git-track/src/index.ts`](../packages/git/tool-git-track/src/index.ts)
+
+worktree_track and pull_request_track upsert one record per call into the session_git_track storage domain, keyed by the owning session and the path or URL, and return the current list of the calling session; recording is bookkeeping only and never runs git or contacts a forge.
 
 <a id="deepseek-aidsh-tool-workflow"></a>
 

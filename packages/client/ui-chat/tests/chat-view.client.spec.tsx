@@ -304,6 +304,7 @@ function makeHarness(
     read: () => savedScroll,
   }
   const forkAt = vi.fn()
+  const retryTurn = vi.fn()
   // Rows and the harness must observe the same chat-store instance.
   const chat = createChatStore().create()
   const transcriptView = createSnapshotStore<TranscriptViewMode>('compact')
@@ -453,6 +454,7 @@ function makeHarness(
     loadImage: vi.fn(() => Promise.reject(new Error('not used'))),
     chatScroll,
     forkAt,
+    retryTurn,
     // Absent-service default; mention tests override with a real resolver.
     fileMentions: () => undefined,
     t,
@@ -479,7 +481,7 @@ function makeHarness(
     set, setSession: session.set, setChat: chatSource.set, ChatView, props,
     openFile, openSkill, loadOlder, loadThrough, openView,
     setOutline: (value: unknown) => { outlineValue = value },
-    chatScroll, forkAt, toolOwners,
+    chatScroll, forkAt, retryTurn, toolOwners,
     setPerformanceUsage: (mode: 'compact' | 'detailed') => { performanceUsage.set(mode) },
     setGrouped: (value: ConversationGroupedView<ProcessGroupData> | undefined) => {
       grouped = value
@@ -3071,6 +3073,40 @@ describe('ChatView', () => {
     expect(buttons[0]!.getAttribute('aria-disabled')).toBeNull()
     fireEvent.click(buttons[0]!)
     expect(h.forkAt.mock.calls).toEqual([[3]])
+  })
+
+  it('retries the latest completed turn from the tail actions row', () => {
+    const h = makeHarness({
+      nodes: [user(1, 'question'), assistant(2, 'answer')],
+      turnEnds: new Map([[1, 3]]),
+    })
+    const view = render(<h.ChatView {...h.props} />)
+    const buttons = view.getAllByRole('button', { name: '重新生成本轮回复' })
+    expect(buttons).toHaveLength(1)
+    expect(buttons[0]!.getAttribute('aria-disabled')).toBeNull()
+    fireEvent.click(buttons[0]!)
+    expect(h.retryTurn.mock.calls).toEqual([[1]])
+  })
+
+  it('disables retry when the indexed Turn has a later steering Node', () => {
+    const base = chatSnapshotFixture({
+      nodes: [user(1, 'question'), assistant(2, 'answer')],
+      turnEnds: new Map([[1, 4]]),
+    })
+    const later: ChatNode<'steering'> = {
+      key: 'fixture:steering:3', id: '3', target: 'chat', kind: 'steering',
+      anchorSeq: 3, visibility: 'visible',
+      location: { kind: 'turn', turn: base.timeline.turns.get(1)! },
+      data: steering(3, 'change direction', 1),
+    }
+    const builder = new ChatSnapshotBuilder()
+    const chat = builder.replace({ nodes: [...base.nodes.values(), later], timeline: base.timeline })
+    const h = makeHarness({}, {}, chat)
+    const view = render(<h.ChatView {...h.props} />)
+    const retry = view.getByRole('button', { name: '重新生成本轮回复' })
+    expect(retry.getAttribute('aria-disabled')).toBe('true')
+    fireEvent.click(retry)
+    expect(h.retryTurn).not.toHaveBeenCalled()
   })
 
   it('disables fork when the indexed Turn has a later steering Node', () => {

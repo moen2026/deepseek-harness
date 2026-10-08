@@ -25,7 +25,7 @@ kind: "package-reference"
 <a id="use-this-package"></a>
 ## 使用本包
 
-随附 profile 已经统一挂载本包一次。你只需为所需服务器配置 [MCP 客户端](../mcp-client/README.zh.md)条目。
+随附 profile 已经统一挂载本包一次。你只需为所需服务器配置 [MCP 客户端](../mcp-client/README.zh.md)条目。`./browser` 导出是同一运行时之上的只读 Remote 面：它列出全局注册的服务器及其面向模型的工具与第一页资源，供 Web MCP 面板消费，自身不持有连接路径。
 
 ### 服务器配置
 

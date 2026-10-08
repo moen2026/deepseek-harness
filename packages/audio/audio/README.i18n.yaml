@@ -1,0 +1,58 @@
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write packages/audio/audio/README.md
+/:
+  en: dbd36c523d74d6a0
+  zh: d6acc6d1c4d3bda4
+/deepseek-ai-dsh-audio:
+  en: 11b30b611e70f66e
+  zh: 85467c13803ad1a9
+/deepseek-ai-dsh-audio/summary:
+  en: 778c3e7a233a6dbf
+  zh: a2b2d1bb03df58ac
+/deepseek-ai-dsh-audio/table-of-contents:
+  en: d152484eb41ac6b4
+  zh: 38a9cf56ae32940b
+/deepseek-ai-dsh-audio/use-this-package:
+  en: b33a287d31356d4a
+  zh: 6f83ba5c449be00d
+/deepseek-ai-dsh-audio/use-this-package/when-to-choose-it:
+  en: 00e77f9ab4f880ac
+  zh: 480aafe6690f0f02
+/deepseek-ai-dsh-audio/use-this-package/composing-an-audio-stack:
+  en: 74922d7c7e0a4960
+  zh: 091168d9d6e383d4
+/deepseek-ai-dsh-audio/use-this-package/the-operation:
+  en: 3888e109bda800bd
+  zh: 6706bfc5c4bfa6b5
+/deepseek-ai-dsh-audio/use-this-package/failures-and-recovery:
+  en: cf853ad0b7238050
+  zh: 036dae3b9eab42d9
+/deepseek-ai-dsh-audio/understand-the-implementation:
+  en: 1e0acac55fc6c314
+  zh: 58f68ea4d03ade17
+/deepseek-ai-dsh-audio/understand-the-implementation/design-philosophy:
+  en: 4c6a35349730154a
+  zh: 94331dab98dab7d5
+/deepseek-ai-dsh-audio/understand-the-implementation/source-map:
+  en: 62f4bfd2416817f9
+  zh: a7d9de13e1ce4de7
+/deepseek-ai-dsh-audio/understand-the-implementation/registration-and-disposal-lifecycle:
+  en: 51216570f4570c7f
+  zh: 7363b793f18b5031
+/deepseek-ai-dsh-audio/further-exploration:
+  en: 8526c21e0aaa2405
+  zh: 095cf73dddccc05c
+/deepseek-ai-dsh-audio/model-experience:
+  en: 86f3e0f20862b90f
+  zh: 5515074a7a87e81a
+/deepseek-ai-dsh-audio/model-experience/kv-cache-effect:
+  en: 280df4340561eb3b
+  zh: 30827b98c95580a8
+/deepseek-ai-dsh-audio/known-limitations-and-deferred-work:
+  en: b4c572aba920e6e7
+  zh: c905db54487990e4
+/deepseek-ai-dsh-audio/known-limitations-and-deferred-work/dev-note:
+  en: e67f633dc6fe7773
+  zh: e88aeb617ffb74ea

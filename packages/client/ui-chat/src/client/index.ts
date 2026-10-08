@@ -1,5 +1,40 @@
 /** Browser Chat target plugin. */
 export { apply, inject } from './apply.ts'
+export type { ReadAloudEngine } from './chat/read-aloud.ts'
+export type { TtsReadiness } from './chat/tts-readiness.ts'
+import type { SnapshotStore } from '@deepseek-ai/dsh-client-store'
+import type { ReadAloudEngine } from './chat/read-aloud.ts'
+import type { TtsReadiness } from './chat/tts-readiness.ts'
+
+/** The read-aloud runtime one Chat plugin owns, shared with settings pages. */
+export interface ReadAloudService {
+  /** Live synthesis readiness mirror; a dead stream keeps the last catalog. */
+  readonly readiness: SnapshotStore<TtsReadiness>
+  /** Accepted playback engine; `browser` routes every new reading to the browser engine. */
+  readonly engine: SnapshotStore<ReadAloudEngine>
+  /**
+   * Synthesize one text with the current Host selection and play the WAV.
+   * @param text - plain text to read.
+   * @param onEnd - called once playback completes or is cancelled.
+   * @returns cancel callback which stops playback and settles the reading.
+   * @throws when no remote runtime is bound or synthesis fails.
+   */
+  speak(text: string, onEnd: () => void): Promise<() => void>
+  /**
+   * Speak one text through the browser engine instead of Host synthesis.
+   * @param text - plain text to read.
+   * @param onEnd - called once the reading completes, fails, or is cancelled.
+   * @returns stop callback which cancels the reading and settles it.
+   */
+  speakBrowser(text: string, onEnd: () => void): () => void
+}
+
+declare module '@deepseek-ai/cordis' {
+  interface Context {
+    /** Read-aloud runtime provided by the Chat plugin. */
+    readAloud: ReadAloudService
+  }
+}
 export type {} from './conversation-nodes/assistant.ts'
 export type {} from './conversation-nodes/command.ts'
 export type {} from './conversation-nodes/compaction.ts'

@@ -1,0 +1,67 @@
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write packages/guard/context-checkpoint/README.md
+/:
+  en: 1daa4c2c1b6f43af
+  zh: 64cfaafd1d4d889a
+/deepseek-ai-dsh-context-checkpoint:
+  en: c50a282884bb4fc8
+  zh: 97bec9912d4ecbb9
+/deepseek-ai-dsh-context-checkpoint/summary:
+  en: f1905727988ca07b
+  zh: 81a17e2e8cb6c45a
+/deepseek-ai-dsh-context-checkpoint/table-of-contents:
+  en: d152484eb41ac6b4
+  zh: d152484eb41ac6b4
+/deepseek-ai-dsh-context-checkpoint/use-this-package:
+  en: bbff250eba0f1b89
+  zh: bbff250eba0f1b89
+/deepseek-ai-dsh-context-checkpoint/use-this-package/when-to-choose-it:
+  en: 65793086e84f8422
+  zh: 7293e7e9f76997f3
+/deepseek-ai-dsh-context-checkpoint/use-this-package/configuring-the-pins:
+  en: 849f55c75e27d4d8
+  zh: d122b60ae8a80264
+/deepseek-ai-dsh-context-checkpoint/use-this-package/what-you-get:
+  en: 635eb3bc01efe1f5
+  zh: b66ec1c25aceca93
+/deepseek-ai-dsh-context-checkpoint/understand-the-implementation:
+  en: a6acda7883c62e8f
+  zh: 695a0d31a92b6a6d
+/deepseek-ai-dsh-context-checkpoint/understand-the-implementation/design-commitments:
+  en: eae09bd2eac242b7
+  zh: f18ad3cd075780a0
+/deepseek-ai-dsh-context-checkpoint/understand-the-implementation/detection-and-delivery:
+  en: 4d34a921ac98872b
+  zh: c342421342f7e2cf
+/deepseek-ai-dsh-context-checkpoint/understand-the-implementation/source-map:
+  en: 51e0e76f56aec812
+  zh: 9c6864e97e1e6ba9
+/deepseek-ai-dsh-context-checkpoint/further-exploration:
+  en: 06a2c77d28a63722
+  zh: 4baec7e2c1d27f69
+/deepseek-ai-dsh-context-checkpoint/model-experience:
+  en: 215e7ba838619b7b
+  zh: 215e7ba838619b7b
+/deepseek-ai-dsh-context-checkpoint/model-experience/checkpoint-reminder:
+  en: 63e1164caa85490e
+  zh: 63e1164caa85490e
+/deepseek-ai-dsh-context-checkpoint/model-experience/checkpoint-reminder/what-the-model-sees:
+  en: 48c5b65e4350d37a
+  zh: 7358e3299148bff4
+/deepseek-ai-dsh-context-checkpoint/model-experience/checkpoint-reminder/what-the-model-sees/checkpoint-reminder:
+  en: 697158cddfcc61d4
+  zh: 697158cddfcc61d4
+/deepseek-ai-dsh-context-checkpoint/model-experience/checkpoint-reminder/token-effect:
+  en: 6a1ad11323914b58
+  zh: 8c1d22c0efe94087
+/deepseek-ai-dsh-context-checkpoint/model-experience/checkpoint-reminder/kv-cache-effect:
+  en: f5d5f97a153f7c70
+  zh: 0081f5d3da3d4198
+/deepseek-ai-dsh-context-checkpoint/known-limitations-and-deferred-work:
+  en: 7f9937bd0360ae4c
+  zh: f13d0daac9b9fddd
+/deepseek-ai-dsh-context-checkpoint/known-limitations-and-deferred-work/dev-note:
+  en: e67f633dc6fe7773
+  zh: eb667b121dc33c50

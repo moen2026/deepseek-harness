@@ -25,7 +25,7 @@ English | [中文](README.zh.md)
 <a id="use-this-package"></a>
 ## Use this package
 
-Shipped profiles already mount this package once. Configure only the [MCP client](../mcp-client/README.md) entries for the servers you need.
+Shipped profiles already mount this package once. Configure only the [MCP client](../mcp-client/README.md) entries for the servers you need. The `./browser` export is a read-only Remote face over the same runtime: it lists the globally registered servers with their model-facing tools and first resource page for the Web MCP panel, and it owns no connection path.
 
 ### Server configuration
 

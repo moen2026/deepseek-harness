@@ -1,0 +1,61 @@
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write packages/notification/notification-triggers/README.md
+/:
+  en: a93dc8407cb657ff
+  zh: 4cd741ba216ac187
+/deepseek-ai-dsh-notification-triggers:
+  en: 95f3f3b97ae894a3
+  zh: b5f754fd9d7c06f3
+/deepseek-ai-dsh-notification-triggers/summary:
+  en: 8bfff6376a934fa2
+  zh: d4ddd9bc4a3a3950
+/deepseek-ai-dsh-notification-triggers/table-of-contents:
+  en: d152484eb41ac6b4
+  zh: 071ea728d1fb7ad6
+/deepseek-ai-dsh-notification-triggers/use-this-package:
+  en: 07ead501c163206b
+  zh: e93f323278f0084d
+/deepseek-ai-dsh-notification-triggers/use-this-package/when-to-choose-it:
+  en: ac4695f2ca7f87da
+  zh: c0115be80ef704c4
+/deepseek-ai-dsh-notification-triggers/use-this-package/composing-a-notification-stack:
+  en: 30b1678d31221783
+  zh: 9b9e16c10224ee70
+/deepseek-ai-dsh-notification-triggers/use-this-package/configuration:
+  en: aac16e7e9a3cb790
+  zh: 8da8150d7667f3e6
+/deepseek-ai-dsh-notification-triggers/use-this-package/what-each-rule-raises:
+  en: 9ed8c0adfea4d744
+  zh: 4c48abbf5eea0c36
+/deepseek-ai-dsh-notification-triggers/use-this-package/failures-and-recovery:
+  en: 96b1fc7cc98c634f
+  zh: 36cf8e8c64d338bc
+/deepseek-ai-dsh-notification-triggers/understand-the-implementation:
+  en: e78e150c00180979
+  zh: 32cdf776379c28e8
+/deepseek-ai-dsh-notification-triggers/understand-the-implementation/design-philosophy:
+  en: a885f72564d9d7a1
+  zh: 906fe35a43f7780b
+/deepseek-ai-dsh-notification-triggers/understand-the-implementation/source-map:
+  en: d5d1b5ca5152a8d0
+  zh: f69305a97555ac4d
+/deepseek-ai-dsh-notification-triggers/understand-the-implementation/events-and-rules:
+  en: f6f4ca15970f8a59
+  zh: a369fd6726506b2b
+/deepseek-ai-dsh-notification-triggers/further-exploration:
+  en: 8ad7e3db01f6c96d
+  zh: ba8768f52f7b1ed5
+/deepseek-ai-dsh-notification-triggers/model-experience:
+  en: 2e6b120d6adb6ef9
+  zh: ff515443966e46cd
+/deepseek-ai-dsh-notification-triggers/model-experience/kv-cache-effect:
+  en: 7bd1abb4bce9fbb2
+  zh: 8d4ece577c9d9dfd
+/deepseek-ai-dsh-notification-triggers/known-limitations-and-deferred-work:
+  en: 29a7952c02eefed2
+  zh: aeabf934cc26b7fa
+/deepseek-ai-dsh-notification-triggers/known-limitations-and-deferred-work/dev-note:
+  en: e67f633dc6fe7773
+  zh: 9c6918ce849f6c93

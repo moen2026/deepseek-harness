@@ -119,6 +119,31 @@ interface McpResourceProvider {
 
 Generated from source by `scripts/gen-cordis-catalog.ts` (verified fresh by `pnpm run verify-cordis-catalog` in doc-sync; regenerate with `pnpm run gen-cordis-catalog`) — the language sides differ only in locale-specific paired document paths. Signature blocks use a `ts cordis-catalog` fence and keep the original source JSDoc; dispatch modes are defined in the [primer](../cordis-primer.zh.md#dispatch-modes), and the framework-inherited `ctx` API lives in [cordis-api/inherited.md](../cordis-api/inherited.md).
 
+<a id="ctxmcpbrowser--mcpbrowserservice"></a>
+
+### `ctx.mcpBrowser` — `McpBrowserService`
+
+`ctx.mcpBrowser`. A read-only face: connecting, disconnecting, and resource reads stay with the connection plugins and the model-side resource tools.
+
+```ts cordis-catalog
+/**
+ * Probe whether any MCP server is registered.
+ * @returns the availability answer; never rejects for a serverless deployment.
+ */
+@Remote('status') status(): Promise<McpBrowserStatus>
+
+/**
+ * Summarize the globally registered servers: each server's model-facing
+ * tools from the registry view and the first page of its reported
+ * resources. A server whose resource read fails keeps its tool list with a
+ * `failed` note instead of failing the whole read.
+ * @returns one summary per registered server, in sorted name order.
+ */
+@Remote('servers') async servers(): Promise<{ servers: McpServerSummary[] }>
+```
+
+Source: [`packages/mcp/mcp-resources/src/browser.ts`](../../packages/mcp/mcp-resources/src/browser.ts)
+
 <a id="ctxmcpresources--mcpresourceruntime"></a>
 
 ### `ctx.mcpResources` — `McpResourceRuntime`
@@ -133,6 +158,24 @@ Scoped resource access plus three tools shared by configured MCP servers.
  * @returns the effect disposer for this exact registration.
  */
 register(server: string, provider: McpResourceProvider): () => void
+
+/**
+ * Names of the servers registered in the global layer, sorted. Agent-scoped
+ * registrations belong to their agent's tool view, not this global listing.
+ * @returns the sorted server names.
+ */
+serverNames(): string[]
+
+/**
+ * Read one globally registered server's first resource page as the browser
+ * face sees it. The synthetic execution carries only the cancellation the
+ * provider reads; no registry pipeline stage observes it.
+ * @param server - the configured server namespace.
+ * @param signal - cancellation forwarded to the connection.
+ * @returns the server's lossless `resources/list` result.
+ * @throws when the server is not registered in the global layer.
+ */
+listResources(server: string, signal: AbortSignal): Promise<JsonValue>
 ```
 
 Source: [`packages/mcp/mcp-resources/src/index.ts`](../../packages/mcp/mcp-resources/src/index.ts)

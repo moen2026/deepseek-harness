@@ -1,0 +1,19 @@
+# Bilingual-pair consistency record for 2026-09-28-im-connector-seam.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-09-28-im-connector-seam.md
+/agent-note-im-connector-seam:
+  en: d4fe4cfef53aa51f
+  zh: d0a3555e4bdc5ccf
+/agent-note-im-connector-seam/problem:
+  en: 87c3fe9b18253960
+  zh: 5cb70b2290e4b725
+/agent-note-im-connector-seam/decision:
+  en: 2f44fd39d4d2d21f
+  zh: 421f42b4898c8c28
+/agent-note-im-connector-seam/alternatives-considered:
+  en: 0d320f8454f8d5c2
+  zh: ba98a44e081cd98a
+/agent-note-im-connector-seam/consequences:
+  en: 60f22978176398fa
+  zh: 64cfd5a3ced9de5d

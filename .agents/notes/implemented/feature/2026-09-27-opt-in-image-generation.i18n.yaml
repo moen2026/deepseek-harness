@@ -1,0 +1,19 @@
+# Bilingual-pair consistency record for 2026-09-27-opt-in-image-generation.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-09-27-opt-in-image-generation.md
+/agent-note-opt-in-image-generation-seam:
+  en: 30a0bf73a679afd2
+  zh: d3201385e692100b
+/agent-note-opt-in-image-generation-seam/problem:
+  en: dd002d4181a12f6d
+  zh: 4c6b99638c3a6100
+/agent-note-opt-in-image-generation-seam/decision:
+  en: 4d28736557bb4254
+  zh: d74c6fadd70e4d0c
+/agent-note-opt-in-image-generation-seam/alternatives-considered:
+  en: 8facd636708915c4
+  zh: 54f40ac9e7be39c9
+/agent-note-opt-in-image-generation-seam/consequences:
+  en: f519336bf499af6d
+  zh: 859673b9a97a85c3

@@ -1,0 +1,88 @@
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write packages/git/tool-git-track/README.md
+/:
+  en: cb56b5baa2152804
+  zh: ca6fee104b25ed95
+/deepseek-ai-dsh-tool-git-track:
+  en: 396cce90fccd3c43
+  zh: d3b8b335f25050f1
+/deepseek-ai-dsh-tool-git-track/summary:
+  en: 21e16568b5d2ee31
+  zh: 036f752af0b646af
+/deepseek-ai-dsh-tool-git-track/table-of-contents:
+  en: d152484eb41ac6b4
+  zh: d152484eb41ac6b4
+/deepseek-ai-dsh-tool-git-track/use-this-package:
+  en: 6634e47c7d399e82
+  zh: 53ebcc8da198a9e0
+/deepseek-ai-dsh-tool-git-track/use-this-package/when-to-choose-it:
+  en: 0b3f8165c80cd42d
+  zh: 1fef2cee6450068e
+/deepseek-ai-dsh-tool-git-track/use-this-package/minimal-configuration:
+  en: b185e71280c33ef6
+  zh: 92db13a87c89ec65
+/deepseek-ai-dsh-tool-git-track/use-this-package/what-each-call-does:
+  en: 271f9b052c284f48
+  zh: 19936902fc4118e9
+/deepseek-ai-dsh-tool-git-track/use-this-package/single-owner:
+  en: 0a3eb258fc6384a5
+  zh: 4364b4e978da6bc6
+/deepseek-ai-dsh-tool-git-track/understand-the-implementation:
+  en: 32a36a3fe388e2c1
+  zh: 1e54ac8789f6a66c
+/deepseek-ai-dsh-tool-git-track/understand-the-implementation/design-philosophy:
+  en: 1fb8c4498aa295a4
+  zh: b6e0fdffff349e21
+/deepseek-ai-dsh-tool-git-track/understand-the-implementation/source-map:
+  en: e50bdc5b1f202c37
+  zh: a1bad9a1d40decb1
+/deepseek-ai-dsh-tool-git-track/understand-the-implementation/export-shape:
+  en: 35b4f6c718e60dab
+  zh: 605d762a9dbc31cb
+/deepseek-ai-dsh-tool-git-track/understand-the-implementation/storage-domain:
+  en: 4e1499ec275a8077
+  zh: 312073bbc144b8a6
+/deepseek-ai-dsh-tool-git-track/understand-the-implementation/call-mechanics:
+  en: db78f518bd1e5042
+  zh: bfc85ad57d445e9c
+/deepseek-ai-dsh-tool-git-track/further-exploration:
+  en: 79736a8df5e76976
+  zh: 85121df295a28da4
+/deepseek-ai-dsh-tool-git-track/model-experience:
+  en: 215e7ba838619b7b
+  zh: 215e7ba838619b7b
+/deepseek-ai-dsh-tool-git-track/model-experience/tool-schema:
+  en: e4c7376d4f29dbd5
+  zh: e4c7376d4f29dbd5
+/deepseek-ai-dsh-tool-git-track/model-experience/tool-schema/what-the-model-sees:
+  en: 246fcf64550411f1
+  zh: f61dccbefb413f1a
+/deepseek-ai-dsh-tool-git-track/model-experience/tool-schema/token-effect:
+  en: ddb6f782c5bb8875
+  zh: 1a16450d581200fa
+/deepseek-ai-dsh-tool-git-track/model-experience/tool-schema/kv-cache-effect:
+  en: f58398bdfa95d8d1
+  zh: 9b0790516c8c4307
+/deepseek-ai-dsh-tool-git-track/model-experience/tool-call-history-and-result:
+  en: 9717b983b6a857e3
+  zh: 9717b983b6a857e3
+/deepseek-ai-dsh-tool-git-track/model-experience/tool-call-history-and-result/what-the-model-sees:
+  en: 63a1fe98d2c569e1
+  zh: 2f45d6d62ade673d
+/deepseek-ai-dsh-tool-git-track/model-experience/tool-call-history-and-result/token-effect:
+  en: a5332739ebba77cc
+  zh: f047641b014d1e88
+/deepseek-ai-dsh-tool-git-track/model-experience/tool-call-history-and-result/kv-cache-effect:
+  en: f5d5f97a153f7c70
+  zh: b57f9a98e1ab8687
+/deepseek-ai-dsh-tool-git-track/known-limitations-and-deferred-work:
+  en: 7ab232cee7e8ef7a
+  zh: b96f8996f2df92dd
+/deepseek-ai-dsh-tool-git-track/known-limitations-and-deferred-work/dev-note:
+  en: 506ccf837d0cc053
+  zh: 1112a97fd8c58d13
+/deepseek-ai-dsh-tool-git-track/known-limitations-and-deferred-work/dev-note/no-invariant-companion:
+  en: cd4099dc12832ad6
+  zh: b4bfb8f32f2954e1

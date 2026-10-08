@@ -13,6 +13,7 @@ import { pathToFileURL } from 'node:url'
 import z from '@deepseek-ai/schemastery'
 import { FileSystem, FsError, FsVersion } from '@deepseek-ai/dsh-fs'
 import type {
+  FsBinaryWriteOutcome,
   FsDirEntry,
   FsEditOutcome,
   FsEditRequest,
@@ -250,6 +251,34 @@ export class LocalFileSystem extends FileSystem {
         // overwrite must not read as every line changed. Line-ending restoration
         // is a storage detail the applied-hunk diff ignores.
         after: normalizeLineEndings(content),
+      }
+    })
+  }
+
+  override async writeBytes(
+    target: FsTarget,
+    data: Uint8Array,
+    expected?: FsWriteIntent,
+    signal?: AbortSignal,
+  ): Promise<FsBinaryWriteOutcome> {
+    return this.withLock(target.targetKey, async () => {
+      const existing = await probe(target.targetKey)
+      if (existing && existing.type !== 'file') {
+        throw new FsError(`cannot write "${target.displayPath}": not a regular file`, 'FS_NOT_REGULAR_FILE')
+      }
+      if (expected?.kind === 'replaceIfVersion') {
+        if (!existing) throw new FsError(`cannot write "${target.displayPath}": file no longer exists`, 'FS_STALE_VERSION')
+        if (existing.version !== expected.version) {
+          throw new FsError(`cannot write "${target.displayPath}": file changed since it was observed`, 'FS_STALE_VERSION')
+        }
+      } else if (expected?.kind === 'createIfAbsent' && existing) {
+        throw new FsError(`cannot overwrite existing "${target.displayPath}" without observing it first`, 'FS_NOT_OBSERVED')
+      }
+      await writeFileAtomic(target.targetKey, data, existing?.mode, signal)
+      const after = await probe(target.targetKey)
+      return {
+        operation: existing ? 'update' : 'create',
+        version: this.versionAfterWrite(after, target),
       }
     })
   }

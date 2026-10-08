@@ -1,0 +1,58 @@
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write packages/notification/notification-desktop/README.md
+/:
+  en: 60bfc762751b4c14
+  zh: 072c07990d3fc19c
+/deepseek-ai-dsh-notification-desktop:
+  en: 974857040ca5ae6a
+  zh: 514fa0c197a3f7f5
+/deepseek-ai-dsh-notification-desktop/summary:
+  en: f353bea5092747cd
+  zh: a629ab15ede13bd0
+/deepseek-ai-dsh-notification-desktop/table-of-contents:
+  en: d152484eb41ac6b4
+  zh: 071ea728d1fb7ad6
+/deepseek-ai-dsh-notification-desktop/use-this-package:
+  en: 62f4de9e2993c7ad
+  zh: 041036eaa75ec86d
+/deepseek-ai-dsh-notification-desktop/use-this-package/when-to-choose-it:
+  en: ab490c4be883ebc9
+  zh: d8cc97909f29b7a1
+/deepseek-ai-dsh-notification-desktop/use-this-package/composing-a-notification-stack:
+  en: 30b1678d31221783
+  zh: 9b9e16c10224ee70
+/deepseek-ai-dsh-notification-desktop/use-this-package/the-forwarded-message:
+  en: 264f473c91c232ef
+  zh: ac7c5902e97ebfdc
+/deepseek-ai-dsh-notification-desktop/use-this-package/failures-and-recovery:
+  en: b30f962024bf29c6
+  zh: 6b51be927d72b5ee
+/deepseek-ai-dsh-notification-desktop/understand-the-implementation:
+  en: 8a5efa64f5b12f88
+  zh: 4065cbd29437dbba
+/deepseek-ai-dsh-notification-desktop/understand-the-implementation/design-philosophy:
+  en: 2daf76ea1f6df6ca
+  zh: 16473dfd35b951bb
+/deepseek-ai-dsh-notification-desktop/understand-the-implementation/source-map:
+  en: d3acf95378907f45
+  zh: f4ecd0b4a1c9e1db
+/deepseek-ai-dsh-notification-desktop/understand-the-implementation/channel-and-error-propagation:
+  en: bfc1efb962215bbe
+  zh: 66eef0006f6f8a27
+/deepseek-ai-dsh-notification-desktop/further-exploration:
+  en: ce2a06d1321fa5c2
+  zh: 80def7f2d9b09ef1
+/deepseek-ai-dsh-notification-desktop/model-experience:
+  en: 9bffb976ee51f304
+  zh: 2d3f418c716524f6
+/deepseek-ai-dsh-notification-desktop/model-experience/kv-cache-effect:
+  en: e264cc0cc135e37c
+  zh: 5344a99946ba11ab
+/deepseek-ai-dsh-notification-desktop/known-limitations-and-deferred-work:
+  en: 64a4aad08eaa4977
+  zh: f92e907849cb170c
+/deepseek-ai-dsh-notification-desktop/known-limitations-and-deferred-work/dev-note:
+  en: e67f633dc6fe7773
+  zh: 9c6918ce849f6c93

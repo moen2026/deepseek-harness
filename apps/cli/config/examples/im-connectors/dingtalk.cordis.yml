@@ -1,0 +1,46 @@
+# Opt-in DingTalk connector overlay over the shipped Web composition. The
+# callback server lives in an isolated realm so exposing it never exposes the
+# UI API. Set DSH_DINGTALK_APP_SECRET before the platform sends callbacks; the
+# route is served at /dingtalk on DSH_CONNECTOR_PORT (default 3082), so point
+# the robot's callback URL there.
+
+- insert:
+    - id: webhook-runtime
+      name: '@deepseek-ai/dsh-webhook'
+
+    - id: webhook-outbox
+      name: '@deepseek-ai/dsh-webhook-outbox'
+      config:
+        maxAttempts: 3
+        retryBackoffMs: 30000
+        retentionMs: 604800000
+
+    - id: connector
+      name: '@deepseek-ai/dsh-connector'
+
+    - id: connector-dingtalk-inbound
+      name: './connector-inbound-rule.mjs'
+      config:
+        provider: dingtalk
+        workspacePath: !!js process.env.DSH_CONNECTOR_WORKSPACE ?? process.cwd()
+        agentPreset: standard
+        permissionPreset: read-only
+
+    - id: connector-dingtalk-ingress
+      name: cordis:group
+      group: true
+      isolate:
+        webServer: true
+      config:
+        - id: connector-dingtalk-server
+          name: '@deepseek-ai/dsh-host-webserver'
+          config:
+            host: '127.0.0.1'
+            port: !!js Number(process.env.DSH_CONNECTOR_PORT ?? 3082)
+
+        - id: connector-dingtalk
+          name: '@deepseek-ai/dsh-connector-dingtalk'
+          config:
+            path: /dingtalk
+            appSecretEnv: DSH_DINGTALK_APP_SECRET
+            maxBodyBytes: 1048576

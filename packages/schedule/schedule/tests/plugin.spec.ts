@@ -332,6 +332,37 @@ describe('shared Schedule management', () => {
 })
 
 
+describe('delivery receipt publication', () => {
+  it('publishes the committed delivery identity after a successful flush', async () => {
+    const { ctx, service, resolve } = await setup()
+    const delivered = vi.fn()
+    ctx.on('schedule/delivered', delivered)
+    const sessionId = SessionId('receipt')
+    const agent = agentFor(ctx, sessionId)
+    resolve.mockResolvedValue({ agent })
+    const record = await service.create(sessionId, { prompt: 'Standup', after_seconds: 1, title: 'Standup' })
+    await vi.advanceTimersByTimeAsync(1000)
+    expect(delivered).toHaveBeenCalledExactlyOnceWith({
+      sessionId, id: record.id, title: 'Standup', deliveredAt: '2026-09-16T00:00:01.000Z',
+    })
+  })
+
+  it('contains a throwing delivery listener and still reaches the Agent', async () => {
+    const { ctx, service, resolve } = await setup()
+    const warn = vi.spyOn(ctx.logger, 'warn')
+    ctx.on('schedule/delivered', () => { throw new Error('observer failed') })
+    const sessionId = SessionId('receipt-throwing')
+    const agent = agentFor(ctx, sessionId)
+    const followup = vi.spyOn(agent, 'followup')
+    resolve.mockResolvedValue({ agent })
+    await service.create(sessionId, { prompt: 'Standup', after_seconds: 1, title: 'Standup' })
+    await vi.advanceTimersByTimeAsync(1000)
+    expect(followup).toHaveBeenCalledTimes(1)
+    expect(warn).toHaveBeenCalledWith('schedule: schedule/delivered listener failed: Error: observer failed')
+  })
+})
+
+
 describe('retained Schedule delivery', () => {
   it('keeps ended tasks through restart without redelivery and deletes only within their Session binding', async () => {
     const first = await setup()

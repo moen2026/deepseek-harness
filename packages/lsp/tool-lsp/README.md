@@ -1,5 +1,5 @@
 ---
-description: "The model-facing lsp tool: four read-only code-navigation operations with one-based UTF-16 cursor coordinates, bounded results, and hover text, for users and maintainers composing model code navigation."
+description: "The model-facing lsp tool: read-only code-navigation, hover, and file-level diagnostics operations with one-based UTF-16 cursor coordinates, bounded results, and hover text, for users and maintainers composing model code navigation."
 kind: "package-reference"
 ---
 
@@ -9,7 +9,7 @@ English | [中文](README.zh.md)
 
 ## Summary
 
-`dsh-tool-lsp` lets a model navigate code through one read-only `lsp` tool: open a symbol's definition, find references and implementations, or read hover documentation. Requests use one-based UTF-16 line and character positions. Navigation results are bounded, grouped by file, and labeled when locations are omitted or text is truncated; hover results are normalized and distinguish missing information from errors. The package requires a configured LSP provider and a session workspace root. Choose it when textual search is ambiguous or a change needs precise symbol relationships; ordinary navigation should continue to use `search` and `read`.
+`dsh-tool-lsp` lets a model navigate code through one read-only `lsp` tool: open a symbol's definition, find references and implementations, read hover documentation, or list a file's current diagnostics. Cursor requests use one-based UTF-16 line and character positions; `diagnostics` takes only a file. Results are bounded and grouped by file, with omission and truncation markers; empty and no-problem outcomes are successful no-result responses. The package requires a configured LSP provider and a session workspace root. Choose it when search is ambiguous or a change needs precise symbol relationships; ordinary navigation should use `search` and `read`.
 
 ## Table of Contents
 
@@ -29,11 +29,11 @@ An agent uses `lsp` when textual matches are ambiguous or before a change that n
 
 ### The tool
 
-`lsp` takes `operation` (`goToDefinition`, `findReferences`, `goToImplementation`, or `hover`), `file_path`, `line`, and `character`. `line` and `character` are positive one-based UTF-16 cursor coordinates; an off-symbol position may return no results. `findReferences` always includes the declaration, so impact analysis never misses the defining site. Provider choice, language id, workspace root, limits, timeout, and executable stay outside model input.
+`lsp` takes `operation` (`goToDefinition`, `findReferences`, `goToImplementation`, `hover`, or `diagnostics`), `file_path`, and — for the four cursor operations — `line` and `character`. `line` and `character` are positive one-based UTF-16 cursor coordinates; an off-symbol position may return no results. `diagnostics` is file-level and needs no cursor. `findReferences` always includes the declaration, so impact analysis never misses the defining site. Provider choice, language id, workspace root, limits, timeout, and executable stay outside model input.
 
 ### What the model gets back
 
-Navigation returns `path:line:character` locations grouped by file (one-based); hover returns normalized text or a no-hover notice. Empty locations and no hover are successful no-result responses. Results are capped first by `maxLocations` and then by `maxResultChars`, with omission and truncation markers inside the complete cap; the caps affect only presentation, not the canonical result value.
+Navigation returns `path:line:character` locations grouped by file (one-based); hover returns normalized text or a no-hover notice; diagnostics returns one `path:line:character severity: source(code) message` line per problem or a no-problems notice. Empty locations, no hover, and no diagnostics are successful no-result responses. Results are capped first by `maxLocations` and then by `maxResultChars`, with omission and truncation markers inside the complete cap; the caps affect only presentation, not the canonical result value.
 
 ### Configuration
 
@@ -62,8 +62,8 @@ This section explains the design decisions behind the tool and where the code re
 ### Design notes
 
 - **Consumer-only.** The tool runtime-injects only `tools`, `lsp`, and `systemPrompt`, imports no provider, and passes only `exec.signal` to the seam.
-- **Coordinate conversion.** `parseLspArgs` validates that `line` and `character` are positive integers and converts them to the seam's zero-based positions; rendered locations convert back to one-based form.
-- **Canonical result passthrough.** The tool returns the seam's closed union (`{ kind: 'locations', locations, resolvedWorkspaceUri }` or `{ kind: 'hover', hover }`) so native renderers can inspect every acquired location and zero-based range directly.
+- **Coordinate conversion.** `parseLspArgs` validates that, when present, `line` and `character` are positive integers and converts them to the seam's zero-based positions; the file-level `diagnostics` operation omits them. Rendered locations convert back to one-based form.
+- **Canonical result passthrough.** The tool returns the seam's closed union (`{ kind: 'locations', locations, resolvedWorkspaceUri }`, `{ kind: 'hover', hover }`, or `{ kind: 'diagnostics', diagnostics, resolvedWorkspaceUri }`) so native renderers can inspect every acquired location, zero-based range, and normalized diagnostic directly.
 - **Execution-world URI rendering.** `renderUri` resolves a `file:` URI against the provider's canonical workspace URI — workspace-relative inside it, URI-derived absolute outside it, verbatim when malformed or not `file:` — never applying host-platform path rules to the session cwd.
 - **Caps after rendering.** `maxLocations` bounds the item count first, then `maxResultChars` bounds the complete rendered text including its omission or truncation marker.
 - **Generic search-card presentation.** `presentLspCall` renders a `{ card: 'generic', kind: 'search', title, locations: [{ path, line }] }` view; the args-derived title carries the operation and one-based cursor, and follow-along focuses the queried line while the title preserves the column.
@@ -134,7 +134,7 @@ Prefix-stable while the visible tool definition and order are unchanged; registr
 
 #### What the model sees
 
-File-grouped `path:line:character` location lines or normalized hover text, capped first by `maxLocations` and then by `maxResultChars`; omission and truncation markers are included inside the complete character cap. These caps affect only Native/model presentation, not the canonical value. Empty results use distinct `No results.` / `No hover information.` lines.
+File-grouped `path:line:character` location lines, normalized hover text, or one `path:line:character severity: source(code) message` line per diagnostic, capped first by `maxLocations` and then by `maxResultChars`; omission and truncation markers are included inside the complete character cap. These caps affect only Native/model presentation, not the canonical value. Empty results use distinct `No results.` / `No hover information.` / `No problems reported.` lines.
 
 #### Token effect
 

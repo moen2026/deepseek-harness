@@ -2,13 +2,14 @@
 
 [English](github-review.md) | 中文
 
-此可选 overlay 会为 `dsh web` 增加一个签名 GitHub 端点。当已配置仓库中的 pull request 从 draft 变为 ready for review 时，规则会在该仓库的 Web Workspace 下创建带标题的根 Session，并启动只读评审提示词。
+此可选 overlay 会为 `dsh web` 增加一个签名 GitHub 端点。当已配置仓库中的 pull request 从 draft 变为 ready for review 时，规则会在该仓库的 Web Workspace 下创建带标题的根 Session，并启动只读评审提示词；overlay 同时挂载 `github_comment` 工具，让评审可以把结论以一条 PR 评论的形式发布回去。
 
 ## 前置条件
 
 - 一个可由 DSH 注册为 Web Workspace 的本地 checkout。
 - 一个可通过 `DSH_GITHUB_WEBHOOK_SECRET` 凭据引用访问的高熵 GitHub webhook 密钥。
 - 一个可以把单个公共 URL 转发到 loopback 监听器的 TLS 反向代理或 tunnel。
+- 一个具备 PR 写权限、可通过 `DSH_GITHUB_REVIEW_TOKEN` 凭据引用访问的 GitHub token；缺失时评审 Session 会把评论报告为不可用，而不是发表。
 - GitHub webhook 订阅 Pull requests 事件，且 content type 为 `application/json`。
 
 overlay 默认使用启动目录作为 Workspace，并监听 `127.0.0.1:3081`。可通过 `DSH_GITHUB_REVIEW_WORKSPACE` 与 `DSH_GITHUB_WEBHOOK_PORT` 覆盖它们。
@@ -65,7 +66,7 @@ Active:       yes
 
 ## 规则行为
 
-规则只接受来源 `primary-github`、仓库 `deepseek-harness/deepseek-harness`、事件 `pull_request` 与动作 `ready_for_review`。它会把精确 head SHA 和选定 PR 字段传给评审提示词，把 JSON 标为不受信任的元数据，并禁止修改文件、分支、PR 或 GitHub 状态。
+规则只接受来源 `primary-github`、仓库 `deepseek-harness/deepseek-harness`、事件 `pull_request` 与动作 `ready_for_review`。它会把精确 head SHA 和选定 PR 字段传给评审提示词，把 JSON 标为不受信任的元数据，禁止修改文件、分支与仓库状态，并把 GitHub 交互限定为一次 `github_comment` 发表。
 
 Session 请求选择 `standard` agent preset 与 `read-only` permission preset。`workspacePath` 通过 `WorkspaceRegistry.create()` 规范化，因此第一次匹配交付会在 Workspace 不存在时创建它，后续交付会复用它。
 
@@ -99,4 +100,4 @@ if (workspacePath === undefined) return null
 
 webhook runtime 不存储交付或执行状态。重复交付会运行规则，并可能创建另一个 Session。崩溃会丢失尚未接纳提示词的规则调用。提示词接纳后，工作由普通 Session 日志、persistence、Workspace 与 Agent 生命周期拥有。
 
-webhook 密钥只验证入站 GitHub 数据。它不会向规则代码或所创建 Agent 授予出站 GitHub 访问权；规则或 Agent 需要时应单独配置该权限。
+webhook 密钥只验证入站 GitHub 数据。出站权限是独立的：overlay 以 `DSH_GITHUB_REVIEW_TOKEN` 凭据引用挂载 `@deepseek-ai/dsh-tool-github`，仅在该凭据可解析时评审 Session 才能把结论发表为一条 PR 评论。不需要出站访问的部署省略该挂载。

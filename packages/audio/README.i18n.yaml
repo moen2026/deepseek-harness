@@ -1,0 +1,25 @@
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write packages/audio/README.md
+/:
+  en: 1759002dca974dbd
+  zh: a56a03b3f8315665
+/audio-audio-transcription-for-agents:
+  en: e72573f9ac353f31
+  zh: 24b6755129aef317
+/audio-audio-transcription-for-agents/summary:
+  en: 7bb1a0de92fb1358
+  zh: 30a4b04e84957246
+/audio-audio-transcription-for-agents/table-of-contents:
+  en: 1eb35b015a6c423f
+  zh: a8a3dceee2c9e943
+/audio-audio-transcription-for-agents/packages:
+  en: dca6ab48be443d1c
+  zh: 9d493a4295c541b9
+/audio-audio-transcription-for-agents/related-documentation:
+  en: ddc7ed91b50a112c
+  zh: b17c4b3cba4ae980
+/audio-audio-transcription-for-agents/dev-note:
+  en: 5de1d6304e00c58f
+  zh: 3fee785f424f1018

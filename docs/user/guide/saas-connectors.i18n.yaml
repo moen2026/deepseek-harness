@@ -1,0 +1,34 @@
+# Bilingual-pair consistency record for saas-connectors.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write docs/user/guide/saas-connectors.md
+/connect-a-saas-provider-through-mcp:
+  en: 99af8fb8bd43d702
+  zh: 87b046f3b18d0c1f
+/connect-a-saas-provider-through-mcp/what-dsh-does:
+  en: 7784a6c9b6ad31d7
+  zh: d64bdf0adb86cc28
+/connect-a-saas-provider-through-mcp/choose-one:
+  en: d5f73ccba05f644c
+  zh: 52caccdccb83dfe0
+/connect-a-saas-provider-through-mcp/enable-one:
+  en: 3cef32b4098be4a0
+  zh: e6827f34cd1aecbf
+/connect-a-saas-provider-through-mcp/provider-setup:
+  en: ea88b3912a142edc
+  zh: aaccbb2fb9a851a4
+/connect-a-saas-provider-through-mcp/provider-setup/stripe:
+  en: 03328a61f668315b
+  zh: b1e7d92e11814041
+/connect-a-saas-provider-through-mcp/provider-setup/supabase:
+  en: bc2352a325bac377
+  zh: 99614024e700715a
+/connect-a-saas-provider-through-mcp/provider-setup/figma:
+  en: f7d413383aa5924a
+  zh: 5022eb6a9ae76851
+/connect-a-saas-provider-through-mcp/lark-and-feishu:
+  en: 9618978923b05947
+  zh: 13cd09f0ace325c1
+/connect-a-saas-provider-through-mcp/verify:
+  en: 56b2d88384722f78
+  zh: 1d256a8af1c525cd

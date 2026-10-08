@@ -12,6 +12,7 @@ import { Context, Service } from '@deepseek-ai/cordis'
 import type { SandboxExecutionPolicy, SandboxMode } from '@deepseek-ai/dsh-sandbox'
 import { FsError } from './types.ts'
 import type {
+  FsBinaryWriteOutcome,
   FsDirEntry,
   FsEditOutcome,
   FsEditRequest,
@@ -30,6 +31,7 @@ export {
   FsVersion,
 } from './types.ts'
 export type {
+  FsBinaryWriteOutcome,
   FsEditOutcome,
   FsEditRequest,
   FsDirEntry,
@@ -270,6 +272,30 @@ export abstract class FileSystem extends Service {
     signal?: AbortSignal,
     sandboxPolicy?: SandboxExecutionPolicy,
   ): Promise<FsWriteOutcome>
+
+  /**
+   * Atomically create or replace binary content, such as a generated document
+   * archive. Carries no textual diff basis. Backends that only carry UTF-8 text
+   * reject with `FS_NOT_TEXT`; the local and SSH backends override it.
+   * @param target - the resolved target to write.
+   * @param data - the full new file content.
+   * @param expected - the write intent guarding the write; omit for unconditional.
+   * @param signal - aborts before atomic publication takes effect.
+   * @param sandboxPolicy - the per-call mode and workspace root this write
+   *   runs under; a sandboxing backend fences the write by it, the bare backend
+   *   ignores it. Omit to leave the backend its own default.
+   * @returns the outcome, including the version the write produced.
+   */
+  writeBytes(
+    target: FsTarget,
+    data: Uint8Array,
+    expected?: FsWriteIntent,
+    signal?: AbortSignal,
+    sandboxPolicy?: SandboxExecutionPolicy,
+  ): Promise<FsBinaryWriteOutcome> {
+    void data; void expected; void signal; void sandboxPolicy
+    return Promise.reject(new FsError(`binary writes are not supported for "${target.displayPath}" on this filesystem backend`, 'FS_NOT_TEXT'))
+  }
 
   /**
    * Atomically edit literal text. When supplied, the version guard is checked

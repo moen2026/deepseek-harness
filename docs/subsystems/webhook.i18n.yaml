@@ -14,6 +14,9 @@
 /webhook-runtime/session-creation:
   en: 2ccdbc45140f9c41
   zh: af509a7fb0f84e18
+/webhook-runtime/durable-outbox:
+  en: 7863539ac59c00fe
+  zh: 86019ce5b6c9e08f
 /webhook-runtime/github-adapter:
   en: ddb0522ef321a8c5
   zh: 6f08a99848facaf3

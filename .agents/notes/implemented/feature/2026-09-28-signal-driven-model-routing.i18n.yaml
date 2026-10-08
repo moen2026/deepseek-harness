@@ -1,0 +1,19 @@
+# Bilingual-pair consistency record for 2026-09-28-signal-driven-model-routing.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-09-28-signal-driven-model-routing.md
+/agent-note-signal-driven-model-routing:
+  en: f12a25e871c32d1c
+  zh: e6bcaf316b1f005c
+/agent-note-signal-driven-model-routing/problem:
+  en: 21460ebd11af4835
+  zh: 7f486ae625b1ab83
+/agent-note-signal-driven-model-routing/decision:
+  en: e018ae597dc9881e
+  zh: 66fcff3e56b273e9
+/agent-note-signal-driven-model-routing/alternatives-considered:
+  en: 4e8a53c4386d3902
+  zh: 53aae35ce1ecc2c5
+/agent-note-signal-driven-model-routing/consequences:
+  en: fe5c59cf36c4548f
+  zh: f550ddb465acbc52

@@ -1,0 +1,10 @@
+# Bilingual-pair consistency record for session-rewind.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write docs/subsystems/session-rewind.md
+/session-rewind:
+  en: 269a9d2948dc644c
+  zh: eed42210f587a410
+/session-rewind/restore-outcomes:
+  en: 74d293fe3736c2eb
+  zh: cc1d64784947a9df

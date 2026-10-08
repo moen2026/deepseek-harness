@@ -4,10 +4,10 @@ import { describe, expect, it, vi } from 'vitest'
 import { LocalSandboxProvider } from '@deepseek-ai/dsh-sandbox-local'
 import { z } from 'zod'
 import { createHelperHarness as helper } from './fixtures/helper.ts'
-import { targetSchema, writeResultSchema, editResultSchema, infoSchema, entriesSchema } from '../src/schemas.ts'
+import { targetSchema, writeBytesResultSchema, writeResultSchema, editResultSchema, infoSchema, entriesSchema } from '../src/schemas.ts'
 
 
-const policy = (workspaceRoot: string) => ({ mode: 'workspace-write', workspaceRoot })
+const policy = (workspaceRoot: string) => ({ mode: 'workspace-write', network: 'allowed' as const, workspaceRoot })
 
 describe.skipIf(process.platform === 'win32')('SSH helper runtime', () => {
   it('binds relative filesystem operations to the negotiated workspace without chdir', async () => {
@@ -40,6 +40,17 @@ describe.skipIf(process.platform === 'win32')('SSH helper runtime', () => {
       await test.client.request('fs.edit', { target, edit: { oldString: 'third', newString: 'fourth', replaceAll: false }, policy: policy(test.root) }, editResultSchema)
       expect(await test.client.request('fs.readText', { target }, z.string())).toBe('fourth text')
       await expect(test.client.request('fs.write', { target, content: 'denied', policy: { mode: 'read-only', workspaceRoot: test.root } }, writeResultSchema)).rejects.toMatchObject({ code: 'FS_SANDBOX_DENIED' })
+    } finally { await test.close() }
+  })
+
+  it('round-trips binary writes with base64 framing', async () => {
+    const test = await helper()
+    try {
+      const target = await test.client.request('fs.resolve', { path: 'archive.bin' }, targetSchema)
+      const bytes = Buffer.from([0x50, 0x4b, 0x03, 0x04, 0xff])
+      const written = await test.client.request('fs.writeBytes', { target, data: bytes.toString('base64'), policy: policy(test.root), expected: { kind: 'createIfAbsent' } }, writeBytesResultSchema)
+      expect(written).toMatchObject({ operation: 'create' })
+      expect(await test.client.request('fs.readBytes', { target, maxBytes: 64 }, z.string())).toBe(bytes.toString('base64'))
     } finally { await test.close() }
   })
 

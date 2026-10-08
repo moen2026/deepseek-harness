@@ -1,0 +1,52 @@
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write packages/audio/audio-http/README.md
+/:
+  en: 73b9b1cb0b6c5697
+  zh: 7af53dab7efbc0e2
+/deepseek-ai-dsh-audio-http:
+  en: dbeb82e3a0ba8ac6
+  zh: 2ead285d41f937da
+/deepseek-ai-dsh-audio-http/summary:
+  en: e05f87d56876c4d8
+  zh: d40e38e66c40f4c5
+/deepseek-ai-dsh-audio-http/table-of-contents:
+  en: d152484eb41ac6b4
+  zh: 38a9cf56ae32940b
+/deepseek-ai-dsh-audio-http/use-this-package:
+  en: bbff250eba0f1b89
+  zh: 0a618f05cc88ee2b
+/deepseek-ai-dsh-audio-http/use-this-package/when-to-choose-it:
+  en: e900a4346d9f5fa5
+  zh: fdeb3081e064f568
+/deepseek-ai-dsh-audio-http/use-this-package/configuration:
+  en: 68baf98301a35bdc
+  zh: c53b02c906445ba4
+/deepseek-ai-dsh-audio-http/use-this-package/failures-and-recovery:
+  en: c6a6a835ae8efc4f
+  zh: a79e6dfcf69cfe6c
+/deepseek-ai-dsh-audio-http/understand-the-implementation:
+  en: 42b15ac6321706aa
+  zh: c5500056b41ce570
+/deepseek-ai-dsh-audio-http/understand-the-implementation/design-philosophy:
+  en: f6559d1ec0d9fc6c
+  zh: 433e89ce2a5b0aea
+/deepseek-ai-dsh-audio-http/understand-the-implementation/source-map:
+  en: d79083cc67ca6e44
+  zh: 8ea6d53bfd777af0
+/deepseek-ai-dsh-audio-http/further-exploration:
+  en: cf282b9a20dddc41
+  zh: 73d1a0d62b994480
+/deepseek-ai-dsh-audio-http/model-experience:
+  en: 11ec620db312b781
+  zh: 287c68c4d31bd67a
+/deepseek-ai-dsh-audio-http/model-experience/kv-cache-effect:
+  en: 6947158f3e271b4a
+  zh: 55e88340a45cef89
+/deepseek-ai-dsh-audio-http/known-limitations-and-deferred-work:
+  en: a8feeed94a4b7f18
+  zh: 695ecc80e314f5f6
+/deepseek-ai-dsh-audio-http/known-limitations-and-deferred-work/dev-note:
+  en: e67f633dc6fe7773
+  zh: e88aeb617ffb74ea

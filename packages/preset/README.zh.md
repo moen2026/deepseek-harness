@@ -24,6 +24,7 @@ kind: "package-group"
 |---|---|---|
 | [agent-preset-registry](agent-preset-registry/README.zh.md) | 选择、代际保留和 profile 编辑 | `ctx.agentPresets` |
 | [agent-preset](agent-preset/README.zh.md) | 声明式子插件和元数据 | — |
+| [output-style](output-style/README.zh.md) | 可选择的输出风格段落 | — |
 | [persona](persona/README.zh.md) | 可组装的 Agent 人设 | — |
 
 <a id="related-documentation"></a>

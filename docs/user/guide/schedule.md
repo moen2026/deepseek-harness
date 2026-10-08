@@ -9,6 +9,7 @@ Create reminders in a conversation, then inspect active and inactive tasks and e
 ## Table of Contents
 
 - [Create reminders](#create-reminders)
+- [Heartbeat patrol](#heartbeat-patrol)
 - [Inspect and delete tasks](#manage-tasks)
 - [Edit an active task](#edit-timing)
 - [Timing and delivery reference](#timing-and-delivery)
@@ -22,6 +23,11 @@ The shipped Web profile mounts Schedule with the clock context that gives the mo
 Ask the model to create, list, edit, or delete reminders. It uses `schedule_create`, `schedule_list`, `schedule_update`, and `schedule_delete` (update changes one reminder in place and keeps its id and saved delivery records); the Automation tasks page's New action opens a New Session for a creation instead, with the request already written in its composer. Supported choices are a one-time delay in positive whole seconds, an absolute date and time, a fixed interval of at least one minute, a daily local time with an IANA time zone, a weekly local time with an IANA time zone and ISO weekdays from Monday 1 through Sunday 7, or a five-field cron expression with an explicit IANA time zone, stored in canonical form.
 
 For example, ask: “Remind me every day at 23:00 in Asia/Shanghai to check the weather.” Open Automation tasks and select the created reminder. Check that its frequency shows a daily rule and the requested zone, not Once. A one-time reminder does not become recurring after delivery.
+
+<a id="heartbeat-patrol"></a>
+## Heartbeat patrol
+
+For a standing to-do list the agent rechecks on its own, ask the model to enable the heartbeat patrol. It creates a recurring reminder (every 30 minutes by default, configurable per deployment) that wakes the conversation periodically. Keep the items to check in `HEARTBEAT.md` at the workspace root; at each heartbeat the agent reads that file, acts on its pending items, records completed items back into the file, and answers only `HEARTBEAT_OK` when the file is missing or lists nothing pending. Ask the model to stop the patrol when you no longer want the wake-ups; the reminder appears as “Heartbeat” in Automation tasks, where you can also delete it. Removing the `[HEARTBEAT]` prefix from the reminder's instruction leaves a task the model's stop tool no longer recognizes; delete such a task from Automation tasks instead.
 
 <a id="manage-tasks"></a>
 ## Inspect and delete tasks
@@ -70,6 +76,7 @@ Pause and a new Session for each run are not supported. Name, instruction, and r
 ## Further Exploration
 
 - [Schedule reference](../../../packages/schedule/schedule/README.md) documents exact timing selectors, persistence, and delivery limits.
+- [Heartbeat reference](../../../packages/schedule/heartbeat/README.md) describes the per-session patrol tools and their reminder prompt.
 - [Automation tasks page reference](../../../packages/client/ui-schedule/README.md) describes the global page and conversation-header catalog.
 
 ## Dev Note

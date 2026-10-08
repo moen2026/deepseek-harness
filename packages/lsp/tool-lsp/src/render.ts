@@ -7,12 +7,15 @@
  */
 
 import type { GenericCallView } from '@deepseek-ai/dsh-tools'
-import type { LspHover, LspLocation, LspOperation, LspPosition } from '@deepseek-ai/dsh-lsp'
+import type { LspDiagnostic, LspHover, LspLocation, LspOperation, LspPosition } from '@deepseek-ai/dsh-lsp'
 import { posix, win32 } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-/** The four operations the tool exposes, as a runtime tuple for schema enum + validation. */
-export const LSP_OPERATIONS: readonly LspOperation[] = ['goToDefinition', 'findReferences', 'goToImplementation', 'hover']
+/** The operations the tool exposes, as a runtime tuple for schema enum + validation. */
+export const LSP_OPERATIONS: readonly LspOperation[] = ['goToDefinition', 'findReferences', 'goToImplementation', 'hover', 'diagnostics']
+
+/** Operations that query at a cursor and therefore require `line`/`character`. */
+const POSITION_OPERATIONS: ReadonlySet<LspOperation> = new Set<LspOperation>(['goToDefinition', 'findReferences', 'goToImplementation', 'hover'])
 
 /** Default cap on rendered locations before an omission marker is appended. */
 export const DEFAULT_MAX_LOCATIONS = 100
@@ -24,30 +27,38 @@ export const DEFAULT_MAX_RESULT_CHARS = 16_000
 export interface LspToolInput {
   readonly operation: LspOperation
   readonly filePath: string
-  /** Zero-based UTF-16 position converted from the one-based model coordinates. */
-  readonly position: LspPosition
+  /**
+   * Zero-based UTF-16 position converted from the one-based model coordinates. Present for the
+   * navigation and hover operations; absent for the file-level `diagnostics` operation.
+   */
+  readonly position?: LspPosition
 }
 
 /** The raw, schema-typed argument shape. */
 export interface LspToolArgs {
   readonly operation: string
   readonly file_path: string
-  readonly line: number
-  readonly character: number
+  readonly line?: number
+  readonly character?: number
 }
 
 /**
- * Validate and convert model arguments: `operation` must be one of the four; `line`/`character` are
- * positive one-based integers converted to the seam's zero-based position.
+ * Validate and convert model arguments: `operation` must be one of the known set; for the navigation
+ * and hover operations `line`/`character` are positive one-based integers converted to the seam's
+ * zero-based position. The file-level `diagnostics` operation ignores coordinates entirely.
  * @param args - the schema-validated raw arguments.
- * @returns the validated input with a zero-based position.
- * @throws Error when the operation is unknown or a coordinate is not a positive integer.
+ * @returns the validated input, with a zero-based position for cursor operations.
+ * @throws Error when the operation is unknown or a required coordinate is not a positive integer.
  */
 export function parseLspArgs(args: LspToolArgs): LspToolInput {
   if (!isOperation(args.operation)) {
     throw new Error(`operation must be one of ${LSP_OPERATIONS.join(', ')}`)
   }
   if (args.file_path.trim().length === 0) throw new Error('file_path must be a non-empty string')
+  if (!POSITION_OPERATIONS.has(args.operation)) {
+    // `diagnostics` is file-level; drop any coordinates the model may still have sent.
+    return { operation: args.operation, filePath: args.file_path }
+  }
   const line = oneBased(args.line, 'line')
   const character = oneBased(args.character, 'character')
   return {
@@ -58,14 +69,14 @@ export function parseLspArgs(args: LspToolArgs): LspToolInput {
   }
 }
 
-/** Whether a string is one of the four operations. */
+/** Whether a string is one of the known operations. */
 function isOperation(value: string): value is LspOperation {
   return (LSP_OPERATIONS as readonly string[]).includes(value)
 }
 
 /** Validate a one-based coordinate is a positive integer. */
-function oneBased(value: number, name: string): number {
-  if (!Number.isInteger(value) || value < 1) {
+function oneBased(value: number | undefined, name: string): number {
+  if (value === undefined || !Number.isInteger(value) || value < 1) {
     throw new Error(`${name} must be a positive integer (one-based)`)
   }
   return value
@@ -117,6 +128,41 @@ export function formatLocations(
 export function formatHover(hover: LspHover | null, maxResultChars: number): string {
   const text = hover === null ? 'No hover information.' : hover.contents
   return boundResult(text, maxResultChars, 'hover')
+}
+
+/**
+ * Render a diagnostics result (the `GetProblems` view), one problem per line as
+ * `file:line:character severity [source(code)] message`. Every diagnostic belongs to the single
+ * queried document, so the caller supplies that file's display path. Applies `maxDiagnostics` and
+ * appends an omission marker when it truncates by count, then caps the complete result.
+ * @param diagnostics - the seam's diagnostics (possibly empty).
+ * @param filePath - the queried file's display path (the model's `file_path`).
+ * @param maxDiagnostics - the cap before truncation.
+ * @param maxResultChars - the complete rendered-text cap, including truncation metadata.
+ * @returns the rendered list; a distinct no-problems line when there are none.
+ */
+export function formatDiagnostics(
+  diagnostics: readonly LspDiagnostic[],
+  filePath: string,
+  maxDiagnostics: number,
+  maxResultChars: number,
+): string {
+  if (diagnostics.length === 0) return boundResult('No problems reported.', maxResultChars, 'diagnostics')
+  const shown = diagnostics.slice(0, maxDiagnostics)
+  const omitted = diagnostics.length - shown.length
+  const lines: string[] = []
+  for (const diagnostic of shown) {
+    const line = diagnostic.range.start.line + 1
+    const character = diagnostic.range.start.character + 1
+    const label = [diagnostic.source, diagnostic.code].filter((part): part is string => part !== undefined && part.length > 0).join('(')
+    const suffix = label.length === 0 ? '' : `${label}${diagnostic.code === undefined ? '' : ')'}`
+    const prefix = suffix.length === 0 ? '' : `[${suffix}] `
+    lines.push(`${filePath}:${line}:${character} ${diagnostic.severity}: ${prefix}${diagnostic.message}`)
+  }
+  if (omitted > 0) {
+    lines.push(`… ${omitted} more problem${omitted === 1 ? '' : 's'} omitted (limit ${maxDiagnostics}).`)
+  }
+  return boundResult(lines.join('\n'), maxResultChars, 'diagnostics')
 }
 
 /** Bound a complete rendered result, including the truncation notice itself. */
@@ -176,16 +222,25 @@ function filePath(url: URL, windows: boolean): string | undefined {
 
 /**
  * UI presentation for a pending `lsp` call. Uses a generic search card; the title carries the
- * operation and one-based cursor, and `locations` focuses the queried line. The shared location
- * shape has no character, so the title preserves the column.
+ * operation and, for the cursor operations, the one-based cursor. The file-level `diagnostics`
+ * operation shows only the file. `locations` focuses the queried line when one is known.
  * @param args - the raw tool arguments.
  * @returns the generic call view.
  */
 export function presentLspCall(args: LspToolArgs): GenericCallView {
+  if (args.operation === 'diagnostics') {
+    return {
+      card: 'generic',
+      kind: 'search',
+      title: `LSP diagnostics ${args.file_path}`,
+      locations: [{ path: args.file_path }],
+    }
+  }
   return {
     card: 'generic',
     kind: 'search',
     title: `LSP ${args.operation} ${args.file_path}:${args.line}:${args.character}`,
-    locations: [{ path: args.file_path, line: args.line }],
+    // Cursor operations require `line` by schema; guard to satisfy exact optional properties.
+    locations: [{ path: args.file_path, ...(args.line === undefined ? {} : { line: args.line }) }],
   }
 }

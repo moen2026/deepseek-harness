@@ -1,5 +1,5 @@
 ---
-description: "面向模型的 lsp 工具：四种只读代码导航操作、从 1 开始的 UTF-16 光标坐标、有边界的结果与悬停文本，供组合模型代码导航的用户与维护者阅读。"
+description: "面向模型的 lsp 工具：只读的代码导航／悬停／文件级诊断操作、从 1 开始的 UTF-16 光标坐标、有边界的结果与悬停文本，供组合模型代码导航的用户与维护者阅读。"
 kind: "package-reference"
 ---
 
@@ -9,7 +9,7 @@ kind: "package-reference"
 
 ## 概述
 
-`dsh-tool-lsp` 让模型通过单个只读 `lsp` 工具导航代码：打开符号定义、查找引用与实现，或阅读悬停文档。请求使用从 1 开始的 UTF-16 行列位置。导航结果数量有上限、按文件分组，并在省略位置或截断文本时显示标记；悬停结果经过规范化，且会区分信息缺失与错误。该包要求配置 LSP 提供方，并要求会话具有工作区根目录。当文本搜索有歧义，或修改需要精确的符号关系时选择它；普通导航应继续使用 `search` 与 `read`。
+`dsh-tool-lsp` 让模型通过单个只读 `lsp` 工具导航代码：打开符号定义、查找引用与实现、阅读悬停文档，或列出文件当前的诊断。光标请求使用从 1 开始的 UTF-16 行列位置；`diagnostics` 只需一个文件。结果有上限、按文件分组，并带省略与截断标记；空结果与无问题都是成功的无结果响应。该包要求配置 LSP 提供方，并要求会话具有工作区根目录。当搜索有歧义，或修改需要精确的符号关系时选择它；普通导航应使用 `search` 与 `read`。
 
 ## 目录
 
@@ -29,11 +29,11 @@ kind: "package-reference"
 
 ### 工具
 
-`lsp` 接受 `operation`（`goToDefinition`、`findReferences`、`goToImplementation` 或 `hover`）、`file_path`、`line` 与 `character`。`line` 与 `character` 是正的、从 1 开始的 UTF-16 光标坐标；未落在符号上的位置可能返回空结果。`findReferences` 始终包含声明，因此影响分析绝不会遗漏定义位置。提供方、language id、工作区根目录、限制、超时与可执行文件均不进入模型输入。
+`lsp` 接受 `operation`（`goToDefinition`、`findReferences`、`goToImplementation`、`hover` 或 `diagnostics`）、`file_path`，以及（仅对四种光标操作）`line` 与 `character`。`line` 与 `character` 是正的、从 1 开始的 UTF-16 光标坐标；未落在符号上的位置可能返回空结果。`diagnostics` 是文件级的，不需要光标。`findReferences` 始终包含声明，因此影响分析绝不会遗漏定义位置。提供方、language id、工作区根目录、限制、超时与可执行文件均不进入模型输入。
 
 ### 模型得到什么
 
-导航返回按文件分组的 `path:line:character` 位置行（从 1 开始）；悬停返回规范化文本或无可悬停提示。空位置与无悬停都是成功的无结果响应。结果先由 `maxLocations` 限制，再由 `maxResultChars` 限制，省略与截断标记计入完整上限；这些上限只影响呈现，不影响规范结果值。
+导航返回按文件分组的 `path:line:character` 位置行（从 1 开始）；悬停返回规范化文本或无可悬停提示；诊断逐条返回 `path:line:character severity: source(code) message` 行，或无问题提示。空位置、无悬停与无诊断都是成功的无结果响应。结果先由 `maxLocations` 限制，再由 `maxResultChars` 限制，省略与截断标记计入完整上限；这些上限只影响呈现，不影响规范结果值。
 
 ### 配置
 
@@ -62,8 +62,8 @@ kind: "package-reference"
 ### 设计说明
 
 - **只做消费方。** 工具运行时只注入 `tools`、`lsp` 与 `systemPrompt`，不导入任何提供方，并且只把 `exec.signal` 传给 seam。
-- **坐标转换。** `parseLspArgs` 验证 `line` 与 `character` 是正整数，并转换为 seam 从零开始的位置；渲染出的位置再转回从 1 开始的形式。
-- **规范结果透传。** 工具返回 seam 的封闭联合（`{ kind: 'locations', locations, resolvedWorkspaceUri }` 或 `{ kind: 'hover', hover }`），原生渲染器可以直接检查每个已取得的位置与从零开始的范围。
+- **坐标转换。** `parseLspArgs` 验证（当存在时）`line` 与 `character` 是正整数，并转换为 seam 从零开始的位置；文件级的 `diagnostics` 会省略它们。渲染出的位置再转回从 1 开始的形式。
+- **规范结果透传。** 工具返回 seam 的封闭联合（`{ kind: 'locations', locations, resolvedWorkspaceUri }`、`{ kind: 'hover', hover }` 或 `{ kind: 'diagnostics', diagnostics, resolvedWorkspaceUri }`），原生渲染器可以直接检查每个已取得的位置、从零开始的范围与规范化的诊断。
 - **执行世界 URI 渲染。** `renderUri` 以提供方的规范工作区 URI 为基准解析 `file:` URI——在其内为工作区相对路径，在其外为从 URI 派生的绝对路径，格式错误或非 `file:` 时原样保留——绝不把宿主平台路径规则应用到会话 cwd。
 - **渲染后再设限。** `maxLocations` 先限制条目数量，`maxResultChars` 再限制包含省略或截断标记在内的完整渲染文本。
 - **通用搜索卡片呈现。** `presentLspCall` 渲染 `{ card: 'generic', kind: 'search', title, locations: [{ path, line }] }` 视图；从 args 派生的标题携带操作与从 1 开始的光标，跟随焦点对准查询行，标题则保留列号。
@@ -134,7 +134,7 @@ Use search/read for ordinary navigation. Use lsp when textual matches are ambigu
 
 #### 模型看到什么
 
-按文件分组的 `path:line:character` 位置行或规范化悬停文本，先由 `maxLocations` 限制，再由 `maxResultChars` 限制；省略与截断标记计入完整字符上限。这些上限只影响原生／模型呈现，不影响规范值。空结果使用不同的 `No results.`／`No hover information.` 行。
+按文件分组的 `path:line:character` 位置行、规范化悬停文本，或逐条诊断的 `path:line:character severity: source(code) message` 行，先由 `maxLocations` 限制，再由 `maxResultChars` 限制；省略与截断标记计入完整字符上限。这些上限只影响原生／模型呈现，不影响规范值。空结果使用不同的 `No results.`／`No hover information.`／`No problems reported.` 行。
 
 #### Token 影响
 

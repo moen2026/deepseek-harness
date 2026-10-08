@@ -8,15 +8,23 @@ Source: [`packages/lsp/lsp/src/types.ts`](../../packages/lsp/lsp/src/types.ts)
 
 ## Operations and coordinates
 
-The seam and model expose exactly four semantic queries; the union is closed, so adding one is a compile-enforced change across the seam, providers, and the tool. Positions and ranges are zero-based UTF-16, matching the protocol; the model-facing tool owns the one-based cursor convention and converts on the way in and out.
+The seam and model expose five semantic queries; the union is closed, so adding one is a compile-enforced change across the seam, providers, and the tool. Four take a cursor position; the file-level `diagnostics` operation reports the document's current problems (the `GetProblems` equivalent) and needs none. Positions and ranges are zero-based UTF-16, matching the protocol; the model-facing tool owns the one-based cursor convention and converts on the way in and out.
 
 ```ts type-equiv
 /**
- * The four semantic queries the seam and model expose. A closed union: adding an operation is a
+ * The semantic queries the seam and model expose. A closed union: adding an operation is a
  * compile-enforced change across the seam, providers, and the tool. Symbols and call hierarchy are
  * not operations here; they need different schemas.
+ *
+ * `diagnostics` is the only file-level operation: it reports the language server's errors, warnings,
+ * and hints for a document (the `GetProblems` equivalent) and needs no cursor `position`.
  */
-type LspOperation = 'goToDefinition' | 'findReferences' | 'goToImplementation' | 'hover'
+type LspOperation =
+  | 'goToDefinition'
+  | 'findReferences'
+  | 'goToImplementation'
+  | 'hover'
+  | 'diagnostics'
 ```
 
 ```ts type-equiv
@@ -39,21 +47,25 @@ interface LspRange {
 
 ## Request
 
-Every field is required: `workspaceRoot` is caller-supplied, `languageId` comes from the provider's registration (not the request), and consumers own timeouts and result limits — so no field needs implementation defaulting and there is no `resolve()` step. The provider receives the caller's request plus the derived `languageId`, which only synchronizes the transient document and never participates in selection.
+Required fields are never defaulted: `workspaceRoot` is caller-supplied, `languageId` comes from the provider's registration (not the request), and consumers own timeouts and result limits — so there is no `resolve()` step. The only optional field is `position`, which the file-level `diagnostics` operation omits. The provider receives the caller's request plus the derived `languageId`, which only synchronizes the transient document and never participates in selection.
 
 ```ts type-equiv
 /**
- * A caller's normalized query. Every field is required: `workspaceRoot` is caller-supplied,
- * `languageId` comes from the provider registration (not here), and consumers own timeouts and
- * result limits — so no field needs implementation defaulting and there is no `resolve()` step.
+ * A caller's normalized query. Required fields are never defaulted: `workspaceRoot` is
+ * caller-supplied, `languageId` comes from the provider registration (not here), and consumers own
+ * timeouts and result limits — so there is no `resolve()` step. The only optional field is
+ * `position`, which the file-level `diagnostics` operation omits.
  */
 interface LspQueryRequest {
   /** Which semantic query to run. */
   readonly operation: LspOperation
   /** The source file to query (relative to `workspaceRoot` or absolute; the provider canonicalizes). */
   readonly filePath: string
-  /** The zero-based UTF-16 cursor position to query at. */
-  readonly position: LspPosition
+  /**
+   * The zero-based UTF-16 cursor position to query at. Required by the three navigation operations
+   * and `hover`; ignored by the file-level `diagnostics` operation, so a caller may omit it there.
+   */
+  readonly position?: LspPosition
   /** The workspace root the provider resolves against and indexes; required, never defaulted. */
   readonly workspaceRoot: string
 }
@@ -73,7 +85,7 @@ interface LspProviderQuery extends LspQueryRequest {
 
 ## Result
 
-A CLOSED discriminated union: navigation operations normalize to `locations`, `hover` to content or `null`. Consumers `switch` on `kind` to exhaustiveness so a new arm breaks compilation until handled. `findReferences` always includes declarations — the provider enforces this internally, so callers get no flag. The `locations` variant carries `resolvedWorkspaceUri`, the provider's canonical workspace `file:` URI. A caller relativizing location URIs uses that coordinate rather than applying host-platform path rules to the possibly-symlinked request root.
+A CLOSED discriminated union: navigation operations normalize to `locations`, `hover` to content or `null`, and the file-level `diagnostics` operation to an array of normalized problems (empty when the server reports none). Consumers `switch` on `kind` to exhaustiveness so a new arm breaks compilation until handled. `findReferences` always includes declarations — the provider enforces this internally, so callers get no flag. The `locations` and `diagnostics` variants carry `resolvedWorkspaceUri`, the provider's canonical workspace `file:` URI. A caller relativizing location URIs uses that coordinate rather than applying host-platform path rules to the possibly-symlinked request root.
 
 ```ts type-equiv
 /** One resolved location: a document URI and the range within it. */
@@ -98,17 +110,20 @@ interface LspHover {
 ```ts type-equiv
 /**
  * The closed result union. Navigation operations (`goToDefinition`, `findReferences`,
- * `goToImplementation`) normalize to `locations`; `hover` normalizes to content or `null`.
+ * `goToImplementation`) normalize to `locations`; `hover` normalizes to content or `null`;
+ * the file-level `diagnostics` operation normalizes to a `diagnostics` array (empty when the
+ * server reports no problems).
  * Consumers `switch` on `kind` to exhaustiveness so a new arm breaks compilation until handled.
  *
- * The `locations` variant carries `resolvedWorkspaceUri`: the provider's canonical `file:` URI for
- * the request's workspace root. A caller that relativizes location URIs MUST use this, not parse the
- * request's possibly symlinked process path with host-platform rules; the execution platform may
- * differ from the caller's.
+ * The `locations` and `diagnostics` variants carry `resolvedWorkspaceUri`: the provider's canonical
+ * `file:` URI for the request's workspace root. A caller that relativizes location URIs MUST use
+ * this, not parse the request's possibly symlinked process path with host-platform rules; the
+ * execution platform may differ from the caller's.
  */
 type LspQueryResult =
   | { readonly kind: 'locations'; readonly locations: readonly LspLocation[]; readonly resolvedWorkspaceUri: string }
   | { readonly kind: 'hover'; readonly hover: LspHover | null }
+  | { readonly kind: 'diagnostics'; readonly diagnostics: readonly LspDiagnostic[]; readonly resolvedWorkspaceUri: string }
 ```
 
 ## Provider and service
@@ -140,7 +155,7 @@ interface LspProvider {
 ```ts type-equiv
 /**
  * The LSP capability seam (`ctx.lsp`). Owns provider registration/selection and normalized query
- * execution; exposes exactly the four operations and no protocol escape hatch.
+ * execution; exposes exactly the five operations and no protocol escape hatch.
  */
 interface LspService {
   /**
@@ -176,7 +191,7 @@ Generated from source by `scripts/gen-cordis-catalog.ts` (verified fresh by `pnp
 
 ### `ctx.lsp` — `LspService`
 
-The LSP capability seam (`ctx.lsp`). Owns provider registration/selection and normalized query execution; exposes exactly the four operations and no protocol escape hatch.
+The LSP capability seam (`ctx.lsp`). Owns provider registration/selection and normalized query execution; exposes exactly the five operations and no protocol escape hatch.
 
 ```ts cordis-catalog
 /**

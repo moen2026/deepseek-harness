@@ -15,7 +15,7 @@ import type { SandboxExecutionPolicy, SandboxPolicy } from '@deepseek-ai/dsh-san
 import { z } from 'zod'
 import { SshRpcPeer, RemoteOperationError, SSH_MAX_PROCESS_HANDLES, SSH_MAX_TEXT_STREAMS, SSH_PROTOCOL_VERSION } from './protocol.ts'
 import { RemoteProcesses } from './helper-processes.ts'
-import { editSchema, environmentSchema, intentSchema, policySchema, processIdSchema, remotePath, targetSchema, textStreamIdSchema } from './schemas.ts'
+import { editSchema, environmentSchema, intentSchema, policySchema, processIdSchema, remotePath, targetSchema, textStreamIdSchema, writeBytesResultSchema } from './schemas.ts'
 import type { SshTextStreamId } from './schemas.ts'
 
 const MAX_FRAME_BYTES = 64 * 1024 * 1024
@@ -235,6 +235,20 @@ export async function runSshHelper(transport: HelperTransport): Promise<void> {
           ? undefined : z.object({ version: z.string() }).strict().parse(input.expected) as { version: FsVersion },
         signal, resolved,
       )
+    }
+    if (method === 'fs.writeBytes') {
+      const input = z.object({
+        target: targetSchema, data: z.string(),
+        expected: z.union([intentSchema, z.object({ version: z.string() }).strict()]).optional(), policy: policySchema,
+      }).strict().parse(raw)
+      const target = asTarget(input.target)
+      const resolved = await policy(input.policy, signal)
+      const data = Buffer.from(z.string().parse(input.data), 'base64')
+      if (data.byteLength > MAX_TEXT_BYTES) throw new FsError('SSH binary write exceeds its bounded frame budget', 'FS_TOO_LARGE')
+      return writeBytesResultSchema.parse(await ctx.fs.writeBytes(
+        target, data,
+        input.expected === undefined ? undefined : intentSchema.parse(input.expected) as FsWriteIntent, signal, resolved,
+      ))
     }
     throw new Error(`Unknown SSH helper operation: ${method}`)
   })

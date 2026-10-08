@@ -1,5 +1,5 @@
 ---
-description: "The LLM capability group: a provider-neutral model-call service, the DeepSeek and pi-ai provider adapters, request-retry execution, and replay-aware token measurement."
+description: "The LLM capability group: a provider-neutral model-call service, the DeepSeek and pi-ai provider adapters, request-retry execution, signal-driven request routing, and replay-aware token measurement."
 kind: "package-group"
 ---
 
@@ -9,7 +9,7 @@ English | [中文](README.zh.md)
 
 ## Summary
 
-The llm group provides the harness's model-call capability: one provider-neutral service through which any composition streams requests to a model provider, plus adapters, provider-specific request metadata, retry execution, and measurement. The core `llm` package defines the message, content-block, and stream-chunk vocabulary every plugin and the session log use; provider adapters translate a provider's wire format into that vocabulary; DeepSeek request-extension plugins contribute lifecycle-owned metadata outside model input; `llm-retry` re-runs failed requests at durable agent-step boundaries; and `token-meter` measures request and context pressure from the durable log. This page maps the group; each package README owns its per-package contract.
+The llm group provides the harness's model-call capability: one provider-neutral service streaming requests to model providers, plus adapters, provider-specific request metadata, retry execution, and measurement. The core `llm` package defines the message, block, and chunk vocabulary plugins and the session log use; adapters translate a provider's wire format into that vocabulary; DeepSeek request-extension plugins contribute lifecycle-owned metadata outside model input; `llm-retry` re-runs failed requests at durable agent-step boundaries; `llm-router` routes requests through ordered rules and an auto branch; and `token-meter` measures request and context pressure from the durable log. This page maps the group; each README owns its contract.
 
 ## Table of Contents
 
@@ -33,6 +33,7 @@ The llm group provides the harness's model-call capability: one provider-neutral
 | [`plugin-package-inventory-deepseek/`](plugin-package-inventory-deepseek/README.md) | Contributes the active Loader package inventory to official DeepSeek requests | contributes `dsh_plugin_packages` |
 | [`llm-retry/`](llm-retry/README.md) | Retries failed model requests under each provider's policy at durable agent-step boundaries | listens to `agent/request-error` |
 | [`token-meter/`](token-meter/README.md) | Measures request and context pressure from the durable session log with a fixed heuristic | `ctx.tokenMeter` |
+| [`llm-router/`](llm-router/README.md) | Routes model requests through ordered rules and a signal-driven auto branch over context pressure and tool density | listens to `agent/request` |
 
 -----
 
@@ -43,6 +44,7 @@ The llm group provides the harness's model-call capability: one provider-neutral
 - [Token meter subsystem](../../docs/subsystems/token-meter.md) — the measurement semantics behind `ctx.tokenMeter`.
 - [Twin LLM adapters](../../.agents/notes/implemented/architecture/2026-06-13-twin-llm-adapters.md) — why the DeepSeek route ships two structurally different adapters.
 - [Routed model context](../../.agents/notes/implemented/architecture/2026-07-20-routed-model-context-and-compaction-policy.md) — how the loop routes model requests and compacts context.
+- [Signal-driven model routing](../../.agents/notes/implemented/feature/2026-09-28-signal-driven-model-routing.md) — the explicit-rule and auto-branch design on the `agent/request` waterfall.
 
 <a id="dev-note"></a>
 ## Dev Note

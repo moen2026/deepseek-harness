@@ -1,0 +1,58 @@
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write packages/image/image/README.md
+/:
+  en: d8ae35ca0b8fe1cb
+  zh: 8213ecb41f1debdf
+/deepseek-ai-dsh-image:
+  en: 80d67431831880d7
+  zh: a508afd71383a126
+/deepseek-ai-dsh-image/summary:
+  en: 6433eb9e3d52fab9
+  zh: 14ca62acf327db8f
+/deepseek-ai-dsh-image/table-of-contents:
+  en: d152484eb41ac6b4
+  zh: ffab54373e9e61f0
+/deepseek-ai-dsh-image/use-this-package:
+  en: 05c22dd8716b2684
+  zh: 645aca4a523b85f5
+/deepseek-ai-dsh-image/use-this-package/when-to-choose-it:
+  en: 73ee69cd44a91521
+  zh: 156755c882871287
+/deepseek-ai-dsh-image/use-this-package/composing-an-image-stack:
+  en: 98a6468ff2173a16
+  zh: 964f1f3958486f07
+/deepseek-ai-dsh-image/use-this-package/the-operation:
+  en: 8ca1eff6a0bb5595
+  zh: 9d34f846aeb1f60e
+/deepseek-ai-dsh-image/use-this-package/failures-and-recovery:
+  en: 5dadac9f0cfe0b3b
+  zh: 4ad646abdb59ee65
+/deepseek-ai-dsh-image/understand-the-implementation:
+  en: 1e0acac55fc6c314
+  zh: c22d1a00043e32ae
+/deepseek-ai-dsh-image/understand-the-implementation/design-philosophy:
+  en: 5bb2387d020b7f0d
+  zh: 48f45d55e17b57f5
+/deepseek-ai-dsh-image/understand-the-implementation/source-map:
+  en: 4ffe3c12cd60c2b4
+  zh: 4094dfc5d1bc68e2
+/deepseek-ai-dsh-image/understand-the-implementation/registration-and-disposal-lifecycle:
+  en: 20f6211681c606ca
+  zh: 25299adeee98b3eb
+/deepseek-ai-dsh-image/further-exploration:
+  en: 2c4e1b2d3f360227
+  zh: c00751422b47906b
+/deepseek-ai-dsh-image/model-experience:
+  en: e98a3c53d43bc3b9
+  zh: e44d7ed3b178bd14
+/deepseek-ai-dsh-image/model-experience/kv-cache-effect:
+  en: bafa3063071f5558
+  zh: 3ba710e4ae4be73a
+/deepseek-ai-dsh-image/known-limitations-and-deferred-work:
+  en: ca2471e933ffe0c7
+  zh: e3d2e331f610c33f
+/deepseek-ai-dsh-image/known-limitations-and-deferred-work/dev-note:
+  en: e67f633dc6fe7773
+  zh: cdd2a143b725accd

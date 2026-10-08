@@ -8,15 +8,23 @@ LSP seam 是一个[能力 seam](../glossary.zh.md#capability-seam)：它在单�
 
 ## 操作与坐标
 
-seam 与模型恰好公开 4 项语义查询；该联合是闭合的，因此新增一项查询会通过编译强制要求同步修改 seam、提供方和工具。位置与范围采用从零开始的 UTF-16 坐标，与协议一致；面向模型的工具采用从 1 开始的光标约定，并在输入和输出时进行转换。
+seam 与模型公开 5 项语义查询；该联合是闭合的，因此新增一项查询会通过编译强制要求同步修改 seam、提供方和工具。其中四项接受一个光标位置；文件级的 `diagnostics` 操作报告文档当前的疑难（`GetProblems` 等价），不需要位置。位置与范围采用从零开始的 UTF-16 坐标，与协议一致；面向模型的工具采用从 1 开始的光标约定，并在输入和输出时进行转换。
 
 ```ts type-equiv
 /**
- * The four semantic queries the seam and model expose. A closed union: adding an operation is a
+ * The semantic queries the seam and model expose. A closed union: adding an operation is a
  * compile-enforced change across the seam, providers, and the tool. Symbols and call hierarchy are
  * not operations here; they need different schemas.
+ *
+ * `diagnostics` is the only file-level operation: it reports the language server's errors, warnings,
+ * and hints for a document (the `GetProblems` equivalent) and needs no cursor `position`.
  */
-type LspOperation = 'goToDefinition' | 'findReferences' | 'goToImplementation' | 'hover'
+type LspOperation =
+  | 'goToDefinition'
+  | 'findReferences'
+  | 'goToImplementation'
+  | 'hover'
+  | 'diagnostics'
 ```
 
 ```ts type-equiv
@@ -39,21 +47,25 @@ interface LspRange {
 
 ## 请求
 
-每个字段都是必填项：`workspaceRoot` 由调用方提供，`languageId` 来自提供方注册而非请求，超时与结果上限由消费方决定。因此没有字段需要由实现提供默认值，也不存在 `resolve()` 步骤。提供方收到调用方请求和派生的 `languageId`；后者只用于同步瞬态文档，从不参与选择。
+必填字段绝不会被默认填充：`workspaceRoot` 由调用方提供，`languageId` 来自提供方注册而非请求，超时与结果上限由消费方决定，因此不存在 `resolve()` 步骤。唯一可选的字段是 `position`，文件级的 `diagnostics` 操作会省略它。提供方收到调用方请求和派生的 `languageId`；后者只用于同步瞬态文档，从不参与选择。
 
 ```ts type-equiv
 /**
- * A caller's normalized query. Every field is required: `workspaceRoot` is caller-supplied,
- * `languageId` comes from the provider registration (not here), and consumers own timeouts and
- * result limits — so no field needs implementation defaulting and there is no `resolve()` step.
+ * A caller's normalized query. Required fields are never defaulted: `workspaceRoot` is
+ * caller-supplied, `languageId` comes from the provider registration (not here), and consumers own
+ * timeouts and result limits — so there is no `resolve()` step. The only optional field is
+ * `position`, which the file-level `diagnostics` operation omits.
  */
 interface LspQueryRequest {
   /** Which semantic query to run. */
   readonly operation: LspOperation
   /** The source file to query (relative to `workspaceRoot` or absolute; the provider canonicalizes). */
   readonly filePath: string
-  /** The zero-based UTF-16 cursor position to query at. */
-  readonly position: LspPosition
+  /**
+   * The zero-based UTF-16 cursor position to query at. Required by the three navigation operations
+   * and `hover`; ignored by the file-level `diagnostics` operation, so a caller may omit it there.
+   */
+  readonly position?: LspPosition
   /** The workspace root the provider resolves against and indexes; required, never defaulted. */
   readonly workspaceRoot: string
 }
@@ -73,7 +85,7 @@ interface LspProviderQuery extends LspQueryRequest {
 
 ## 结果
 
-这是一个闭合的可辨识联合：导航操作规范化为 `locations`，`hover` 规范化为内容或 `null`。消费方使用 `switch` 对 `kind` 做穷尽处理，因此新增分支会使编译失败，直到完成处理。`findReferences` 始终包含声明；提供方在内部强制保证这一点，因此调用方没有对应 flag。`locations` 变体携带 `resolvedWorkspaceUri`，即提供方的规范工作区 `file:` URI。调用方相对化位置 URI 时应使用这一坐标，而不是对可能经过符号链接的请求根目录应用宿主平台路径规则。
+这是一个闭合的可辨识联合：导航操作规范化为 `locations`，`hover` 规范化为内容或 `null`，文件级的 `diagnostics` 操作规范化为规范化的问题数组（服务器未报告时为空）。消费方使用 `switch` 对 `kind` 做穷尽处理，因此新增分支会使编译失败，直到完成处理。`findReferences` 始终包含声明；提供方在内部强制保证这一点，因此调用方没有对应 flag。`locations` 与 `diagnostics` 变体携带 `resolvedWorkspaceUri`，即提供方的规范工作区 `file:` URI。调用方相对化位置 URI 时应使用这一坐标，而不是对可能经过符号链接的请求根目录应用宿主平台路径规则。
 
 ```ts type-equiv
 /** One resolved location: a document URI and the range within it. */
@@ -98,17 +110,20 @@ interface LspHover {
 ```ts type-equiv
 /**
  * The closed result union. Navigation operations (`goToDefinition`, `findReferences`,
- * `goToImplementation`) normalize to `locations`; `hover` normalizes to content or `null`.
+ * `goToImplementation`) normalize to `locations`; `hover` normalizes to content or `null`;
+ * the file-level `diagnostics` operation normalizes to a `diagnostics` array (empty when the
+ * server reports no problems).
  * Consumers `switch` on `kind` to exhaustiveness so a new arm breaks compilation until handled.
  *
- * The `locations` variant carries `resolvedWorkspaceUri`: the provider's canonical `file:` URI for
- * the request's workspace root. A caller that relativizes location URIs MUST use this, not parse the
- * request's possibly symlinked process path with host-platform rules; the execution platform may
- * differ from the caller's.
+ * The `locations` and `diagnostics` variants carry `resolvedWorkspaceUri`: the provider's canonical
+ * `file:` URI for the request's workspace root. A caller that relativizes location URIs MUST use
+ * this, not parse the request's possibly symlinked process path with host-platform rules; the
+ * execution platform may differ from the caller's.
  */
 type LspQueryResult =
   | { readonly kind: 'locations'; readonly locations: readonly LspLocation[]; readonly resolvedWorkspaceUri: string }
   | { readonly kind: 'hover'; readonly hover: LspHover | null }
+  | { readonly kind: 'diagnostics'; readonly diagnostics: readonly LspDiagnostic[]; readonly resolvedWorkspaceUri: string }
 ```
 
 ## 提供方与服务
@@ -140,7 +155,7 @@ interface LspProvider {
 ```ts type-equiv
 /**
  * The LSP capability seam (`ctx.lsp`). Owns provider registration/selection and normalized query
- * execution; exposes exactly the four operations and no protocol escape hatch.
+ * execution; exposes exactly the five operations and no protocol escape hatch.
  */
 interface LspService {
   /**
@@ -176,7 +191,7 @@ Generated from source by `scripts/gen-cordis-catalog.ts` (verified fresh by `pnp
 
 ### `ctx.lsp` — `LspService`
 
-The LSP capability seam (`ctx.lsp`). Owns provider registration/selection and normalized query execution; exposes exactly the four operations and no protocol escape hatch.
+The LSP capability seam (`ctx.lsp`). Owns provider registration/selection and normalized query execution; exposes exactly the five operations and no protocol escape hatch.
 
 ```ts cordis-catalog
 /**

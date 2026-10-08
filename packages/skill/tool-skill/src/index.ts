@@ -22,7 +22,11 @@ import {
 } from '@deepseek-ai/dsh-skill'
 
 export const name = 'tool-skill'
-export const inject = ['agents', 'tools', 'skills']
+export const inject = ['agents', 'tools', 'skills', 'systemPrompt']
+
+/** Stable system-prompt guidance for persisting a reusable workflow as a project skill. */
+export const SKILL_AUTHORING_PROMPT_TEXT =
+  'When the user asks to save a reusable workflow, or after you complete a multi-step process worth repeating, persist it as a project skill with the file write tools: create `.dsh/skills/<name>/SKILL.md` under the project root, starting with YAML frontmatter `name` (kebab-case, matching the directory) and `description` (what the skill does and when to use it), followed by the step-by-step instructions in Markdown. The session skill catalog refreshes automatically after the write. Only write outside the project skill directories when the user explicitly asks for a user-level skill.'
 
 const DEFAULT_CATALOG_DESCRIPTION_MAX_LENGTH = 500
 /**
@@ -77,6 +81,12 @@ export const Config: z<Config> = z.object({
 export function apply(ctx: Context, config: Config = {}): void {
   const catalogDescriptionMaxLength = config.catalogDescriptionMaxLength ?? DEFAULT_CATALOG_DESCRIPTION_MAX_LENGTH
   assertPositiveInteger('catalogDescriptionMaxLength', catalogDescriptionMaxLength, 3)
+
+  ctx.systemPrompt.section({
+    name: 'tool:skill-authoring',
+    order: ctx.systemPrompt.getSectionOrder('TOOL_SKILL'),
+    text: SKILL_AUTHORING_PROMPT_TEXT,
+  })
 
   const skillTool = defineTool({
     name: 'skill',

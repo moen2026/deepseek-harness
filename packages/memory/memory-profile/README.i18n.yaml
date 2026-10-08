@@ -1,0 +1,64 @@
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write packages/memory/memory-profile/README.md
+/:
+  en: 4e7fa2c68ffcec16
+  zh: ca8c8c8db378abef
+/deepseek-ai-dsh-memory-profile:
+  en: 4cc19b904bc66629
+  zh: 499ec227c1521a79
+/deepseek-ai-dsh-memory-profile/summary:
+  en: 63ed3cc5003b3da3
+  zh: c38c5c2efeac2ff1
+/deepseek-ai-dsh-memory-profile/table-of-contents:
+  en: d152484eb41ac6b4
+  zh: 09388d293f9be9cb
+/deepseek-ai-dsh-memory-profile/use-this-package:
+  en: 7b1522f8673b4e98
+  zh: 5cf2b07b0370640f
+/deepseek-ai-dsh-memory-profile/use-this-package/the-injected-section:
+  en: 01d51ea375d608d4
+  zh: 7b699ced04785872
+/deepseek-ai-dsh-memory-profile/use-this-package/configuration:
+  en: 888056f22af4b0bc
+  zh: 1e2841b488395939
+/deepseek-ai-dsh-memory-profile/use-this-package/failures-and-recovery:
+  en: 7198bca22a2bda90
+  zh: 0f1713c71820e7bb
+/deepseek-ai-dsh-memory-profile/understand-the-implementation:
+  en: f8a67246617131a0
+  zh: 8912bcd798c8c7aa
+/deepseek-ai-dsh-memory-profile/understand-the-implementation/design-notes:
+  en: 433d27c38de1740e
+  zh: 63147b88ac714666
+/deepseek-ai-dsh-memory-profile/understand-the-implementation/source-map:
+  en: b693bb78e78b04ee
+  zh: 14977efc72875eb6
+/deepseek-ai-dsh-memory-profile/further-exploration:
+  en: 72344d4b0502549b
+  zh: 61d82c647f41be95
+/deepseek-ai-dsh-memory-profile/model-experience:
+  en: 215e7ba838619b7b
+  zh: a311da3843709f90
+/deepseek-ai-dsh-memory-profile/model-experience/system-prompt-context:
+  en: 9e9b51fe88b2d09a
+  zh: fa636951b27c283a
+/deepseek-ai-dsh-memory-profile/model-experience/system-prompt-context/what-the-model-sees:
+  en: 5804925818b7c10a
+  zh: 262df36ebb6378f0
+/deepseek-ai-dsh-memory-profile/model-experience/system-prompt-context/what-the-model-sees/rendered-section:
+  en: 2af0025f33a2a98b
+  zh: b6a52d5a0b76006e
+/deepseek-ai-dsh-memory-profile/model-experience/system-prompt-context/token-effect:
+  en: a7d32739af5b9e0a
+  zh: 8636780f14acbed6
+/deepseek-ai-dsh-memory-profile/model-experience/system-prompt-context/kv-cache-effect:
+  en: f88faf1db2c59b03
+  zh: bddb47dada1d9f04
+/deepseek-ai-dsh-memory-profile/known-limitations-and-deferred-work:
+  en: 026ec4e46b0ff7ed
+  zh: e53d129387c41d6e
+/deepseek-ai-dsh-memory-profile/known-limitations-and-deferred-work/dev-note:
+  en: e67f633dc6fe7773
+  zh: 3bb0c20c93f16f98

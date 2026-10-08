@@ -19,6 +19,8 @@ import { scopeOf } from '@deepseek-ai/dsh-scope'
 import { MAX_TIMER_DELAY_MS } from '@deepseek-ai/dsh-timeout'
 import { DEFAULT_MAX_INSTRUCTION_BYTES, RECONNECT_DEFAULTS, resolveReconnectPolicy, startConnection } from './connection.ts'
 import type { ReconnectConfig } from './connection.ts'
+import { LoopbackOAuthProvider, credentialStoreOf, ensureAuthorized, resolveOAuthConfig } from './oauth.ts'
+import type { OAuthConfig } from './oauth.ts'
 import { registerServerContext } from './server-context.ts'
 // Side-effect type import: declaration-merges `ctx.tools` onto Context.
 import type {} from '@deepseek-ai/dsh-tools'
@@ -26,6 +28,8 @@ import type {} from '@deepseek-ai/dsh-tools'
 export { createMcpToolDefinition } from './tools.ts'
 export type { McpResult, McpToolDefinitionOptions } from './tools.ts'
 export type { ReconnectConfig, ResolvedReconnectPolicy } from './connection.ts'
+export { ensureAuthorized, resolveOAuthConfig, credentialGrantStore } from './oauth.ts'
+export type { OAuthConfig, OAuthStore, ResolvedOAuthConfig } from './oauth.ts'
 
 /** Cordis plugin name used by loader diagnostics. */
 export const name = 'mcp-client'
@@ -98,6 +102,13 @@ export interface StreamableHttpConfig {
   maxInstructionBytes?: number
   /** Automatic reconnect policy after a lost connection; omission uses the defaults. */
   reconnect?: ReconnectConfig
+  /**
+   * Interactive OAuth authorization-code flow (Streamable HTTP only). The
+   * browser round trip runs once at plugin load and the resulting tokens are
+   * stored through the credential seam; later loads and runtime token
+   * refreshes are silent.
+   */
+  oauth?: OAuthConfig
 }
 
 /** Configuration for one stdio or Streamable HTTP MCP server. */
@@ -106,7 +117,7 @@ export type Config = StdioConfig | StreamableHttpConfig
 type StdioConfigInput = Omit<StdioConfig, 'args' | 'env' | 'cwd' | 'toolCallTimeoutMs' | 'failOnStartupError'>
   & Partial<Pick<StdioConfig, 'args' | 'env' | 'cwd' | 'toolCallTimeoutMs' | 'failOnStartupError'>>
 type StreamableHttpConfigInput = Omit<StreamableHttpConfig, 'headers' | 'toolCallTimeoutMs' | 'failOnStartupError'>
-  & Partial<Pick<StreamableHttpConfig, 'headers' | 'toolCallTimeoutMs' | 'failOnStartupError'>>
+  & Partial<Pick<StreamableHttpConfig, 'headers' | 'toolCallTimeoutMs' | 'failOnStartupError' | 'oauth'>>
 type ConfigInput = StdioConfigInput | StreamableHttpConfigInput
 
 const Reconnect: z<ReconnectConfig> = z.object({
@@ -114,6 +125,14 @@ const Reconnect: z<ReconnectConfig> = z.object({
   initialDelayMs: z.number().min(1).max(MAX_TIMER_DELAY_MS).default(RECONNECT_DEFAULTS.initialDelayMs),
   maxDelayMs: z.number().min(1).max(MAX_TIMER_DELAY_MS).default(RECONNECT_DEFAULTS.maxDelayMs),
   maxAttempts: z.number().step(1).min(1).max(Number.MAX_SAFE_INTEGER).default(RECONNECT_DEFAULTS.maxAttempts),
+})
+
+const OAuth: z<OAuthConfig> = z.object({
+  scopes: z.array(String).default([]),
+  redirectUri: z.string(),
+  clientId: z.string(),
+  clientSecret: z.string(),
+  callbackTimeoutMs: z.number().min(1).max(MAX_TIMER_DELAY_MS).default(300_000),
 })
 
 export const Config = z.union([
@@ -138,6 +157,7 @@ export const Config = z.union([
     failOnStartupError: z.boolean().default(false),
     maxInstructionBytes: z.number().step(1).min(1).default(DEFAULT_MAX_INSTRUCTION_BYTES),
     reconnect: Reconnect,
+    oauth: OAuth,
   }),
 ]) as z<ConfigInput, Config>
 
@@ -175,10 +195,33 @@ export async function apply(ctx: Context, config: Config): Promise<void> {
     return () => void names.delete(config.serverName)
   }, 'mcp-client.serverName')
 
+  // Interactive OAuth runs before the connection starts: the browser round
+  // trip must block activation so the initial connect already carries tokens.
+  // A deployment without any credential provider cannot persist tokens, so
+  // the misconfiguration fails here rather than re-prompting on every load.
+  let authProvider: LoopbackOAuthProvider | undefined
+  if (config.transport === 'streamable-http' && config.oauth !== undefined) {
+    const store = credentialStoreOf(ctx, config.serverName)
+    if (store === undefined) {
+      throw new Error(
+        `mcp-client(${config.serverName}): oauth requires a credential provider — load @deepseek-ai/dsh-credentials-local before this plugin`,
+      )
+    }
+    const oauth = resolveOAuthConfig(config.oauth, `mcp-client(${config.serverName}): oauth`)
+    authProvider = new LoopbackOAuthProvider({
+      serverName: config.serverName,
+      oauth: config.oauth,
+      store,
+      log: ctx.logger,
+    })
+    ctx.effect(() => () => void authProvider?.dispose(), 'mcp-client.oauth-listener')
+    await ensureAuthorized(authProvider, config.url, oauth.callbackTimeoutMs)
+  }
+
   // The supervisor owns the client/transport generations, the reconnect
   // loop, and the live tool registrations; disposal stops reconnection,
   // quiesces in-flight work, and unregisters the current generation.
-  const connection = startConnection(ctx, config, reconnect)
+  const connection = startConnection(ctx, config, reconnect, authProvider)
   registerServerContext(ctx, config.serverName, connection)
   let stopping: Promise<void> | undefined
   const dispose = (): Promise<void> => stopping ??= connection.dispose()

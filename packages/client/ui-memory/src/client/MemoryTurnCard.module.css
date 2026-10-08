@@ -1,0 +1,36 @@
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.card {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 1px solid var(--dsw-alias-border-l1);
+  border-radius: var(--dsw-radius-lg);
+  background: var(--dsw-static-neutral-50);
+}
+
+.excerpt {
+  color: var(--dsw-static-neutral-850);
+  font-size: 13px;
+  line-height: 1.5;
+  min-width: 0;
+  flex: 1;
+  overflow-wrap: anywhere;
+}
+
+.namespace {
+  flex-shrink: 0;
+  padding: 1px 6px;
+  border-radius: var(--dsw-radius-lg);
+  background: var(--dsw-static-neutral-50);
+  color: var(--dsw-static-neutral-500);
+  font-size: 11px;
+}

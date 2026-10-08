@@ -1,0 +1,13 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "duration_ms": 2871,
+  "num_turns": 1,
+  "result": "The refactor begins by extracting the shared option",
+  "session_id": "11111111-2222-4333-8444-555555555555",
+  "stop_reason": "max_tokens",
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "uuid": "22222222-3333-4444-8555-666666666666"
+}

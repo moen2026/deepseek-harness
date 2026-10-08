@@ -22,7 +22,7 @@ async function setup() {
   class Policy extends Service {
     readonly defaultMode = 'read-only'
     constructor(ctx: Context) { super(ctx, 'sandboxPolicy') }
-    resolve(): SandboxExecutionPolicy { return { mode: 'read-only', workspaceRoot: '/remote/work' } }
+    resolve(): SandboxExecutionPolicy { return { mode: 'read-only', network: 'allowed', workspaceRoot: '/remote/work' } }
   }
   const ctx = new Context()
   const fibers = [await ctx.plugin(WireConnection), await ctx.plugin(Policy), await ctx.plugin(SshFileSystem)]
@@ -108,7 +108,7 @@ describe('SSH filesystem provider', () => {
     const edited = { version: 'v3', before: 'new', after: 'next' }
     dispatch.mockResolvedValueOnce(written).mockResolvedValueOnce(edited)
     const signal = new AbortController().signal
-    const policy: SandboxExecutionPolicy = { mode: 'workspace-write', workspaceRoot: '/remote/link/..' }
+    const policy: SandboxExecutionPolicy = { mode: 'workspace-write', network: 'allowed', workspaceRoot: '/remote/link/..' }
     const expected = { kind: 'replaceIfVersion' as const, version: FsVersion('v1') }
     const edit = { oldString: 'new', newString: 'next', replaceAll: false }
     expect(await fs.writeText(target, 'new', expected, signal, policy)).toEqual(written)
@@ -124,6 +124,19 @@ describe('SSH filesystem provider', () => {
     await fs.writeText(target, 'new', { kind: 'createIfAbsent' })
     await fs.editText(target, { oldString: 'new', newString: 'next', replaceAll: true })
     for (const [, params] of dispatch.mock.calls) expect(params).toMatchObject({ policy: { mode: 'read-only', workspaceRoot: '/remote/work' } })
+  })
+
+  it('sends binary writes as base64 and returns the compact outcome', async () => {
+    const { fs, dispatch } = await setup()
+    const bytes = new Uint8Array([0x50, 0x4b, 0x03, 0x04])
+    const written = { operation: 'create', version: 'v1' }
+    dispatch.mockResolvedValueOnce(written)
+    expect(await fs.writeBytes(target, bytes, { kind: 'createIfAbsent' })).toEqual(written)
+    expect(dispatch).toHaveBeenLastCalledWith(
+      'fs.writeBytes',
+      { target, data: Buffer.from(bytes).toString('base64'), expected: { kind: 'createIfAbsent' }, policy: { mode: 'read-only', network: 'allowed', workspaceRoot: '/remote/work' } },
+      undefined,
+    )
   })
 
   it('pulls text through completion without an unnecessary close request', async () => {

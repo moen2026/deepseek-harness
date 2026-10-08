@@ -1,15 +1,15 @@
 ---
-description: "Package map for Host Office conversion and reusable PDF results."
+description: "Package map for Host Office conversion, reusable PDF results, and Office document creation."
 kind: "package-group"
 ---
 
-# document/ — Office conversion
+# document/ — Office conversion and creation
 
 English | [中文](README.zh.md)
 
 ## Summary
 
-Convert authorized Office files to reusable PDFs on the Host. The shared service converts through LibreOffice kit. Targets with a declared native engine use it; other targets use Node WASM.
+Convert authorized Office files to reusable PDFs on the Host, and create new Office documents from model-supplied content blocks. The shared conversion service and the creation provider both run through LibreOffice kit. Targets with a declared native engine use it; other targets use Node WASM.
 
 ## Table of Contents
 
@@ -22,11 +22,14 @@ Convert authorized Office files to reusable PDFs on the Host. The shared service
 <a id="packages"></a>
 ## Packages
 
-Each package owns its configuration and lifetime rules; the subsystem reference describes their shared conversion operation.
+Each package owns its configuration and lifetime rules; the subsystem references describe the shared conversion operation and the creation seam.
 
 | Package | Role | ctx key |
 |---|---|---|
 | [office-to-pdf](office-to-pdf/README.md) | Authorized Office bytes to complete PDFs with bounded queues and caching | `ctx.officeToPdf` |
+| [documents](documents/README.md) | The document-creation seam: one `create` route over neutral content blocks | `ctx.documents` |
+| [office-create](office-create/README.md) | LibreOffice-kit creation provider rendering blocks into DOCX/XLSX/PPTX | — |
+| [tool-document](tool-document/README.md) | Model-facing `create_document` tool writing deliverables into the workspace | — |
 
 -----
 
@@ -36,6 +39,7 @@ Each package owns its configuration and lifetime rules; the subsystem reference 
 Consumers own source authorization and presentation.
 
 - [Document conversion](../../docs/subsystems/office-to-pdf.md) — shared operation and generated service reference.
+- [Document creation](../../docs/subsystems/documents.md) — the creation seam and generated service reference.
 - [Independent kit ownership](../../.agents/notes/implemented/architecture/2026-09-14-independent-libreoffice-kit.md) — engine distribution and application integration.
 - [Workspace Files](../api/workspace-files/README.md) — authorized bounded source reads.
 

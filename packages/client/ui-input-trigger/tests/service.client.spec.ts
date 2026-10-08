@@ -408,7 +408,7 @@ describe('track', () => {
     expect(controller.menu.getSnapshot().open).toBe(false)
   })
 
-  it('a rejecting source logs and silently drops its group', async () => {
+  it('a rejecting source logs and keeps a failed group in place', async () => {
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
     try {
       const cmd = deferredSource('/', 'command')
@@ -419,7 +419,8 @@ describe('track', () => {
       cmd.pending[0]!.resolve([{ name: 'goal' }])
       await tick()
       const state = controller.menu.getSnapshot()
-      expect(state.groups.map(g => g.source)).toEqual(['command'])
+      expect(state.open).toBe(true)
+      expect(state.groups.map(g => [g.source, g.status])).toEqual([['command', 'ready'], ['skill', 'failed']])
       expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('skill'), expect.any(Error))
     } finally {
       errorSpy.mockRestore()

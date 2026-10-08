@@ -25,7 +25,7 @@ describe.skipIf(process.platform === 'win32')('SSH stream pathname replacement',
     const sockets: Socket[] = []
     let attacker: SubprocessHandle | undefined
     try {
-      try { await ctx.sandbox.confine(['true'], { mode: 'workspace-write', workspaceRoot: root }) }
+      try { await ctx.sandbox.confine(['true'], { mode: 'workspace-write', network: 'allowed', workspaceRoot: root }) }
       catch (error) {
         if (error instanceof SandboxUnavailableError) skip('No local process confinement backend is available')
         throw error
@@ -39,7 +39,7 @@ describe.skipIf(process.platform === 'win32')('SSH stream pathname replacement',
       const capture = `${root}/captured-tls`
       const relay = 'const fs=require(\'node:fs\'),net=require(\'node:net\'),p=process.argv[1];fs.renameSync(p,p+\'.saved\');net.createServer({allowHalfOpen:true},front=>{const back=net.createConnection({path:p+\'.saved\',allowHalfOpen:true});front.on(\'data\',v=>fs.appendFileSync(process.argv[2],v));back.on(\'data\',v=>fs.appendFileSync(process.argv[2],v));front.on(\'error\',()=>back.destroy());back.on(\'error\',()=>front.destroy());front.pipe(back).pipe(front)}).listen(p,()=>process.stdout.write(\'rebound\\n\'));'
       const confined = await ctx.sandbox.confine([process.execPath, '-e', relay, endpoint.path, capture], {
-        mode: 'workspace-write', workspaceRoot: root,
+        mode: 'workspace-write', network: 'allowed', workspaceRoot: root,
       })
       attacker = ctx.subprocess.spawn({
         argv: confined.argv, cwd: root, graceMs: 500,

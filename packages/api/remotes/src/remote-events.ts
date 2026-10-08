@@ -8,6 +8,7 @@
 
 import type {} from '@deepseek-ai/dsh-api-session-controller/remote-events'
 import type {} from '@deepseek-ai/dsh-deepseek-account/types'
+import type {} from '@deepseek-ai/dsh-notification/types'
 import type {} from '@deepseek-ai/dsh-permission-presets/types'
 import type {} from '@deepseek-ai/dsh-plugin-manager/types'
 import type {} from '@deepseek-ai/dsh-schedule/client'
@@ -38,6 +39,7 @@ export const API_REMOTE_FORWARDED_EVENTS = [
   { event: 'cordis/inspect-query', mode: 'emit' },
   { event: 'cordis/inspect-query-resolved', mode: 'emit' },
   { event: 'llm/adapters-updated', mode: 'emit' },
+  { event: 'notification/raised', mode: 'emit' },
   { event: 'permission-presets/catalog-changed', mode: 'emit' },
   { event: 'plugin-manager/changed', mode: 'emit' },
   { event: 'plugin-manager/install-log', mode: 'emit' },

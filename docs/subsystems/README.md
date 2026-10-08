@@ -43,6 +43,14 @@ One page per subsystem of the DeepSeek Harness: what it is, the data structures 
 | [extensions.md](extensions.md) | versioned dynamic Cordis Plugins and Packages, Host/Client activation, approval, runtime inspection, and lifecycle teardown |
 | [filesystem.md](filesystem.md) | the filesystem seam: `FsTarget`, read/write/edit outcomes, observed-file state, `FsErrorCode` |
 | [lsp.md](lsp.md) | the LSP navigation seam: `LspQueryRequest`/`Result`, `LspProvider`/`Service`, four operations, `LspError` |
+| [code-index.md](code-index.md) | the code-index seam: `CodeSearchRequest`/`CodeSearchPage`, `CodeIndexProvider`/`Service`, one `search` operation, `CodeIndexError` |
+| [knowledge.md](knowledge.md) | the knowledge-base seam: `KnowledgeDraft`/`KnowledgeRecord`, search and listing types, `KnowledgeProvider`/`Service`, four operations, `KnowledgeError` |
+| [memory.md](memory.md) | the memory seam: `MemoryDraft`/`MemoryRecord`, recall and listing types, `MemoryProvider`/`Service`, four operations, `MemoryError` |
+| [audio.md](audio.md) | the audio seam: `AudioTranscribeRequest`/`AudioTranscript`, `AudioProvider`/`Service`, one `transcribe` operation, `AudioError` |
+| [image.md](image.md) | the image seam: `ImageGenerateRequest`/`ImageResult`, `ImageProvider`/`Service`, one `generate` operation, `ImageError` |
+| [documents.md](documents.md) | the document-creation seam: `DocumentCreateRequest`/`DocumentResult`, `DocumentsProvider`/`Service`, one `create` operation, `DocumentsError` |
+| [repo-wiki.md](repo-wiki.md) | the repository-wiki seam: `WikiPageSummary`/`WikiPage`/`WikiOutlineEntry`/`WikiListing`, `RepoWikiProvider`/`Service`, three read routes, `RepoWikiError` |
+| [notification.md](notification.md) | the notification seam: `NotificationRequest`/`NotificationUrgency`, `NotificationProvider`/`Service`, one routed `notify` operation, `NotificationError` |
 | [skills.md](skills.md) | the skill service: discovery priority, `SkillSummary`/`SkillDefinition`, session-prefix catalog, model-facing `skill` loading |
 | [compaction.md](compaction.md) | the compaction seam: the `compaction/*` session events, `CompactionResult`, the `CompactionEngine` interface |
 | [subagent.md](subagent.md) | the subagent seam: the named-provider registry, `SubagentStartRequest`/`Result`/`Run`, the start-time-vs-runtime capability split |
@@ -57,6 +65,7 @@ One page per subsystem of the DeepSeek Harness: what it is, the data structures 
 | [invariants.md](invariants.md) | the runtime-invariant registry: selection `Config`, `InvariantInstaller`/`InvariantFailure`, the empty-companion contract |
 | [web-server.md](web-server.md) | the HTTP carrier: `WebRouteKind`/`WebRoute`, match order, the claimable fallback seat, index taps |
 | [webhook.md](webhook.md) | authenticated provider deliveries, arbitrary programmatic rules, and fire-and-forget Workspace Session creation |
+| [connector.md](connector.md) | multi-provider IM channels, inbound deliveries continuing one deterministic Session per channel, outbound pushes, and process-local channel bindings |
 | [storage.md](storage.md) | the storage subsystem: the backend contract (`StorageBackend`), `StorageForms`, `DomainSpec`/`Domain`, `domain/changed` |
 | [workspace.md](workspace.md) | the workspace registry: `Workspace`/`WorkspaceId`, registration and resolution, the session `cwd` relationship |
 | [web-client.md](web-client.md) | the browser architecture: boot, Remote communication, paired Client models, UI adapters, Conversation assembly, Slots, and reconnect semantics |
@@ -66,6 +75,7 @@ One page per subsystem of the DeepSeek Harness: what it is, the data structures 
 | [sidebar-right.md](sidebar-right.md) | the right Sidebar: resource and navigation addresses, tab-type registration and routing, the `ctx.sidebarRight` navigation service, the pane-tab slots and owner props, the resource model, and the Workspace Files service |
 | [conversation.md](conversation.md) | target-neutral Session-event assembly: Context identity, Location data, replay paths, view builders, and target-owned render nodes |
 | [session-projection.md](session-projection.md) | the projection seam: `SessionProjectionMap`, the pure `ProjectionDefinition` unit, `ProjectionSnapshot`'s consistent cut, the change feed |
+| [session-rewind.md](session-rewind.md) | per-turn file-tool restore points, the content-addressed capture store, and the `workspace_rewind` restore semantics |
 | [session-telemetry.md](session-telemetry.md) | the outbound session-reporting capability seam: `SessionTelemetryRecord`/`SessionTelemetrySeverity`, the `SessionTelemetrySink` contract, and the `session-telemetry/record` redact waterfall |
 | [product-telemetry.md](product-telemetry.md) | Explicit product analytics submission and OTLP/HTTP transport |
 

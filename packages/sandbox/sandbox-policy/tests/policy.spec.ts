@@ -71,6 +71,7 @@ describe('SandboxPolicyService', () => {
     const ctx = await mounted({ mode: 'workspace-write', workspaceRoot: '/fallback' })
     expect(ctx.sandboxPolicy.resolve()).toEqual({
       mode: 'workspace-write',
+      network: 'allowed',
       workspaceRoot: '/fallback',
     })
   })
@@ -83,11 +84,13 @@ describe('SandboxPolicyService', () => {
 
     expect(ctx.sandboxPolicy.resolve({ session: first })).toEqual({
       mode: 'workspace-write',
+      network: 'allowed',
       workspaceRoot: '/projects/first',
       sessionId: 'sess-first',
     })
     expect(ctx.sandboxPolicy.resolve({ session: second })).toEqual({
       mode: 'read-only',
+      network: 'allowed',
       workspaceRoot: '/projects/second',
       sessionId: 'sess-second',
     })
@@ -95,6 +98,7 @@ describe('SandboxPolicyService', () => {
     expect(ctx.sandboxPolicy.overrideOf(second)).toBe('read-only')
     expect(ctx.sandboxPolicy.resolve()).toEqual({
       mode: 'workspace-write',
+      network: 'allowed',
       workspaceRoot: '/fallback',
     })
   })
@@ -114,6 +118,7 @@ describe('SandboxPolicyService', () => {
 
       expect(ctx.sandboxPolicy.resolve({ session: session('sess-symlink-parent', cwd) })).toEqual({
         mode: 'workspace-write',
+        network: 'allowed',
         workspaceRoot: cwd,
         sessionId: 'sess-symlink-parent',
       })
@@ -128,6 +133,7 @@ describe('SandboxPolicyService', () => {
     setSandboxMode(active, 'read-only')
     expect(ctx.sandboxPolicy.resolve({ session: active, mode: 'danger-full-access' })).toEqual({
       mode: 'danger-full-access',
+      network: 'allowed',
       workspaceRoot: '/projects/approved',
       sessionId: 'sess-approved',
     })

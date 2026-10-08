@@ -100,7 +100,7 @@ function withBinding(fn: PtcBindingFunction): PtcRunRequest {
 }
 
 function confinement(argv: string[]): ConfinedArgv {
-  return { argv, enforcement: 'partial', denialSignatures: ['EACCES'], runnerFailureRules: [{ fatalSignatures: ['sandbox-fatal:'] }] }
+  return { argv, enforcement: 'partial', networkEnforcement: 'partial', denialSignatures: ['EACCES'], runnerFailureRules: [{ fatalSignatures: ['sandbox-fatal:'] }] }
 }
 
 describe('Node runtime host failures', () => {

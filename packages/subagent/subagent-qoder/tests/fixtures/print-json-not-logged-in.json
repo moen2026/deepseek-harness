@@ -1,0 +1,14 @@
+{
+  "type": "result",
+  "subtype": "error_during_execution",
+  "is_error": true,
+  "duration_ms": 186,
+  "duration_api_ms": 0,
+  "num_turns": 0,
+  "result": "Not logged in · Please run /login",
+  "session_id": "9f8e7d6c-5b4a-4321-9876-0123456789ab",
+  "stop_reason": null,
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "uuid": "c0ffee00-1234-4567-89ab-cdef01234567"
+}

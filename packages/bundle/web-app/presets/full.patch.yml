@@ -1,0 +1,417 @@
+# Agent preset full: one `@deepseek-ai/dsh-agent-preset` declaration inserted
+# after the web patch. It composes everything `standard` gives a session plus
+# the read-side intelligence a repository-scale agent needs: persistent
+# terminals, the transient-open LSP queries, the string-replacement editor, and
+# cross-session history search.
+#
+# Host-plane switches this preset's tools depend on stay with the deployment:
+# `session-query-sqlite` needs a later layer to open its index, and `schedule`
+# needs its `disabled` flags dropped. Edits saved from the Web editor override
+# this row's `config.plugins` by id from the profile patch.
+- insert:
+    - id: preset-full
+      name: '@deepseek-ai/dsh-agent-preset'
+      config:
+        id: full
+        order: 4
+        plugins:
+          - id: persona
+            name: '@deepseek-ai/dsh-persona'
+            config:
+              suffix: Your working directory is {{cwd}}.
+              prefix: You are a coding agent powered by the {{model}} model.
+          - id: output-style
+            name: '@deepseek-ai/dsh-output-style'
+            config:
+              style: default
+          - id: agent-instructions
+            name: '@deepseek-ai/dsh-agent-instructions'
+            config:
+              maxBytes: 65536
+          - id: tool-bash
+            name: '@deepseek-ai/dsh-tool-bash'
+            disabled: !!js process.platform === 'win32'
+          - id: tool-pwsh
+            name: '@deepseek-ai/dsh-tool-pwsh'
+            disabled: !!js process.platform !== 'win32'
+          # Stateful shells beside the one-shot tools: one PTY per Agent, with
+          # retained screen output a later step can page back through.
+          - id: persistent-shell
+            name: cordis:group
+            group: true
+            isolate:
+              terminals: true
+            config:
+              - id: pty
+                name: '@deepseek-ai/dsh-terminal'
+              - id: terminal-bash
+                name: '@deepseek-ai/dsh-terminal-bash'
+                disabled: !!js process.platform === 'win32'
+                config:
+                  timeoutMs: 300000
+              - id: terminal-pwsh
+                name: '@deepseek-ai/dsh-terminal-bash'
+                disabled: !!js process.platform !== 'win32'
+                config:
+                  shellDialect: pwsh
+                  timeoutMs: 300000
+              - id: tool-terminal
+                name: '@deepseek-ai/dsh-tool-terminal'
+          - id: tool-fs
+            name: '@deepseek-ai/dsh-tool-fs'
+          - id: str-replace-editor
+            name: '@deepseek-ai/dsh-tool-str-replace-editor'
+          - id: tool-fs-search
+            name: '@deepseek-ai/dsh-tool-fs-search'
+            config:
+              sampleOverCapGlobResults: false
+          # Symbol navigation over transiently opened documents. `lsp-stdio`
+          # resolves every configured server executable when it mounts and
+          # rejects the whole plugin when one is missing, so the row stays
+          # disabled until a deployment names a binary that exists on its host
+          # through `DSH_LSP_TYPESCRIPT_COMMAND`. The `lsp` service and the
+          # `tool-lsp` tools always mount; without a provider each query returns
+          # an `LSP_UNAVAILABLE` answer the model can report instead of breaking
+          # session boot. On POSIX, name the `typescript-language-server` shim.
+          # On Windows the extension-less shim is not executable and the `.CMD`
+          # shim cannot be spawned without a shell, so instead set
+          # `DSH_LSP_TYPESCRIPT_COMMAND=node` and
+          # `DSH_LSP_TYPESCRIPT_ARGS=["<…>/typescript-language-server/lib/cli.mjs","--stdio"]`.
+          - id: code-intelligence
+            name: cordis:group
+            group: true
+            isolate:
+              lsp: true
+            config:
+              - id: lsp
+                name: '@deepseek-ai/dsh-lsp'
+              - id: lsp-stdio
+                name: '@deepseek-ai/dsh-lsp-stdio'
+                disabled: !!js process.env.DSH_LSP_TYPESCRIPT_COMMAND === undefined
+                config:
+                  servers:
+                    typescript:
+                      command: !!js process.env.DSH_LSP_TYPESCRIPT_COMMAND
+                      args: !!js JSON.parse(process.env.DSH_LSP_TYPESCRIPT_ARGS || '["--stdio"]')
+                      extensionToLanguage:
+                        '.ts': typescript
+                        '.tsx': typescriptreact
+                        '.mts': typescript
+                        '.cts': typescript
+                        '.js': javascript
+                        '.jsx': javascriptreact
+                        '.mjs': javascript
+                        '.cjs': javascript
+              - id: tool-lsp
+                name: '@deepseek-ai/dsh-tool-lsp'
+          # Workspace code search over a derived, owner-only FTS5 index. The
+          # `dsh-code-index` service and `dsh-tool-code-index` always mount; with
+          # no provider `search_codebase` returns an actionable unavailable answer
+          # instead of breaking session boot. The `dsh-code-index-sqlite` provider
+          # stays disabled until a deployment names a derived-index file through
+          # `DSH_CODE_INDEX_PATH`, indexing the workspace root from
+          # `DSH_CODE_INDEX_ROOT` (defaulting to the process working directory).
+          - id: code-index
+            name: cordis:group
+            group: true
+            isolate:
+              codeIndex: true
+            config:
+              - id: code-index-service
+                name: '@deepseek-ai/dsh-code-index'
+              - id: code-index-sqlite
+                name: '@deepseek-ai/dsh-code-index-sqlite'
+                disabled: !!js process.env.DSH_CODE_INDEX_PATH === undefined
+                config:
+                  path: !!js process.env.DSH_CODE_INDEX_PATH
+                  root: !!js process.env.DSH_CODE_INDEX_ROOT || process.cwd()
+              - id: tool-code-index
+                name: '@deepseek-ai/dsh-tool-code-index'
+          # Durable knowledge documents. The `dsh-knowledge` service and
+          # `dsh-tool-knowledge` always mount; with no provider the knowledge
+          # tool returns an actionable unavailable answer instead of breaking
+          # session boot. The `dsh-knowledge-sqlite` provider stays disabled
+          # until a deployment names a store file through `DSH_KNOWLEDGE_PATH`.
+          # `dsh-knowledge/browser` is the read-and-remove Remote face the Web
+          # knowledge center consumes; it owns no storage.
+          - id: knowledge
+            name: cordis:group
+            group: true
+            isolate:
+              knowledge: true
+            config:
+              - id: knowledge-service
+                name: '@deepseek-ai/dsh-knowledge'
+              - id: knowledge-sqlite
+                name: '@deepseek-ai/dsh-knowledge-sqlite'
+                disabled: !!js process.env.DSH_KNOWLEDGE_PATH === undefined
+                config:
+                  path: !!js process.env.DSH_KNOWLEDGE_PATH
+              - id: knowledge-browser
+                name: '@deepseek-ai/dsh-knowledge/browser'
+              - id: tool-knowledge
+                name: '@deepseek-ai/dsh-tool-knowledge'
+          # Durable long-term memory. The `dsh-memory` service and `dsh-tool-memory`
+          # always mount; with no provider the memory tools return an actionable
+          # unavailable answer instead of breaking session boot. The
+          # `dsh-memory-sqlite` provider stays disabled until a deployment names a
+          # derived-store file through `DSH_MEMORY_PATH`. Recall is lexical by
+          # default; the optional semantic (vector) path activates only when the
+          # deployment supplies its own embedding endpoint by setting
+          # `DSH_EMBEDDING_URL` with `DSH_EMBEDDING_MODEL`, `DSH_EMBEDDING_AUTH_ENV`
+          # naming the bearer-token variable, and `DSH_EMBEDDING_DIMENSION`. DSH
+          # never selects a model or embedding provider, and the credential is read
+          # from the named environment variable at call time and never stored.
+          - id: memory
+            name: cordis:group
+            group: true
+            isolate:
+              memory: true
+            config:
+              - id: memory-service
+                name: '@deepseek-ai/dsh-memory'
+              - id: memory-sqlite
+                name: '@deepseek-ai/dsh-memory-sqlite'
+                disabled: !!js process.env.DSH_MEMORY_PATH === undefined
+                config:
+                  path: !!js process.env.DSH_MEMORY_PATH
+                  embedding: !!js (process.env.DSH_EMBEDDING_URL && {url:process.env.DSH_EMBEDDING_URL,model:process.env.DSH_EMBEDDING_MODEL,authEnv:process.env.DSH_EMBEDDING_AUTH_ENV,dimension:Number(process.env.DSH_EMBEDDING_DIMENSION)})
+              - id: memory-browser
+                name: '@deepseek-ai/dsh-memory/browser'
+              - id: tool-memory
+                name: '@deepseek-ai/dsh-tool-memory'
+              # `dsh-memory-profile` adds saved collaboration-style memories to
+              # the runtime context; `dsh-memory-reflection` extracts durable
+              # user preferences after each completed turn and writes them
+              # through the same seam, asking the user first by default
+              # (`write: 'ask'`) or writing directly (`write: 'auto'`).
+              - id: memory-profile
+                name: '@deepseek-ai/dsh-memory-profile'
+              - id: memory-reflection
+                name: '@deepseek-ai/dsh-memory-reflection'
+          # Audio transcription. The `dsh-audio` service and `dsh-tool-audio` always
+          # mount; with no provider `transcribe_audio` returns an actionable
+          # unavailable answer instead of breaking session boot. The
+          # `dsh-audio-http` provider stays disabled until a deployment names an
+          # OpenAI-compatible transcription endpoint through `DSH_AUDIO_URL` with
+          # `DSH_AUDIO_MODEL` and `DSH_AUDIO_AUTH_ENV` naming the bearer-token
+          # variable. The credential is read from the named environment variable at
+          # call time and never stored.
+          - id: audio
+            name: cordis:group
+            group: true
+            isolate:
+              audio: true
+            config:
+              - id: audio-service
+                name: '@deepseek-ai/dsh-audio'
+              - id: audio-http
+                name: '@deepseek-ai/dsh-audio-http'
+                disabled: !!js process.env.DSH_AUDIO_URL === undefined
+                config:
+                  url: !!js process.env.DSH_AUDIO_URL
+                  model: !!js process.env.DSH_AUDIO_MODEL || 'whisper-1'
+                  authEnv: !!js process.env.DSH_AUDIO_AUTH_ENV || 'DSH_AUDIO_API_KEY'
+              - id: tool-audio
+                name: '@deepseek-ai/dsh-tool-audio'
+          # Image generation. The `dsh-image` service and `dsh-tool-image` always
+          # mount; with no provider `generate_image` returns an actionable
+          # unavailable answer instead of breaking session boot. The
+          # `dsh-image-http` provider stays disabled until a deployment names an
+          # OpenAI-compatible generation endpoint through `DSH_IMAGE_URL` with
+          # `DSH_IMAGE_MODEL` and `DSH_IMAGE_AUTH_ENV` naming the bearer-token
+          # variable. The credential is read from the named environment variable at
+          # call time and never stored.
+          - id: image
+            name: cordis:group
+            group: true
+            isolate:
+              image: true
+            config:
+              - id: image-service
+                name: '@deepseek-ai/dsh-image'
+              - id: image-http
+                name: '@deepseek-ai/dsh-image-http'
+                disabled: !!js process.env.DSH_IMAGE_URL === undefined
+                config:
+                  url: !!js process.env.DSH_IMAGE_URL
+                  model: !!js process.env.DSH_IMAGE_MODEL || 'dall-e-3'
+                  authEnv: !!js process.env.DSH_IMAGE_AUTH_ENV || 'DSH_IMAGE_API_KEY'
+              - id: tool-image
+                name: '@deepseek-ai/dsh-tool-image'
+          # Office document creation. The `dsh-documents` service and
+          # `dsh-tool-document` always mount; with no provider `create_document`
+          # returns an actionable unavailable answer instead of breaking session
+          # boot. The `dsh-office-create` provider renders each request into a
+          # minimal OpenDocument intermediate and converts it with the local
+          # LibreOffice engine, so it mounts unconditionally like
+          # `office-to-pdf` and pays the engine startup on first use.
+          - id: documents
+            name: cordis:group
+            group: true
+            isolate:
+              documents: true
+            config:
+              - id: documents-service
+                name: '@deepseek-ai/dsh-documents'
+              - id: office-create
+                name: '@deepseek-ai/dsh-office-create'
+              - id: tool-document
+                name: '@deepseek-ai/dsh-tool-document'
+          # Generated repository wiki. The `dsh-repo-wiki` service and
+          # `dsh-tool-repo-wiki` always mount; with no provider `read_wiki`
+          # returns an actionable unavailable answer instead of breaking session
+          # boot. The `dsh-repo-wiki-generator` provider stays disabled until a
+          # deployment names a generation route through `DSH_WIKI_LLM_PROVIDER`
+          # with `DSH_WIKI_MODEL`, generating Markdown pages under
+          # `<root>/.dsh/wiki/` (overridable through `DSH_WIKI_ROOT`). DSH never
+          # selects a model, and pages are plain files a team can share in Git.
+          - id: repo-wiki
+            name: cordis:group
+            group: true
+            isolate:
+              repoWiki: true
+            config:
+              - id: repo-wiki-service
+                name: '@deepseek-ai/dsh-repo-wiki'
+              - id: repo-wiki-generator
+                name: '@deepseek-ai/dsh-repo-wiki-generator'
+                disabled: !!js (process.env.DSH_WIKI_LLM_PROVIDER === undefined || process.env.DSH_WIKI_MODEL === undefined)
+                config:
+                  root: !!js process.env.DSH_WIKI_ROOT || process.cwd()
+                  llmProvider: !!js process.env.DSH_WIKI_LLM_PROVIDER
+                  llmModel: !!js process.env.DSH_WIKI_MODEL
+              - id: tool-repo-wiki
+                name: '@deepseek-ai/dsh-tool-repo-wiki'
+          # History across sessions: content search needs the host
+          # `session-query-sqlite` row to have opened its index, and reports an
+          # actionable error when the deployment left it closed.
+          - id: tool-session-query
+            name: '@deepseek-ai/dsh-tool-session-query'
+          - id: tool-jobs
+            name: '@deepseek-ai/dsh-tool-jobs'
+          - id: skill-filesystem
+            name: '@deepseek-ai/dsh-skill-filesystem'
+          - id: tool-skill
+            name: '@deepseek-ai/dsh-tool-skill'
+          - id: command-goal
+            name: '@deepseek-ai/dsh-command-goal'
+          - id: tool-goal
+            name: '@deepseek-ai/dsh-tool-goal'
+          - id: planning
+            name: cordis:group
+            group: true
+            isolate:
+              planMode: true
+            config:
+              - id: plan-mode
+                name: '@deepseek-ai/dsh-plan-mode'
+                config:
+                  section: |
+                    You are in plan mode. Stay in plan mode until exit_plan_mode succeeds or the user switches the session mode. Imperative language to implement changes means plan the implementation, not execute it. A user's conversational agreement — including an answer confirming something you asked — approves nothing and does not end plan mode; fold the confirmed decision into the plan and submit it through exit_plan_mode.
+
+                    Explore first. Use non-mutating reads, searches, static analysis, and checks to ground the plan in the actual repository. Do not edit or write files, change configuration, run formatters or code generation that rewrites tracked files, commit, or otherwise carry out the plan. Prefer existing functions and patterns over new machinery.
+
+                    The tool catalog stays the same across modes for request-cache stability. These plan-mode rules override any later tool description or guidance that suggests using mutation tools; those tools remain listed to keep the tool catalog unchanged. Do not use todo_write to track this planning phase: it tracks implementation after an approved plan, while the plan itself belongs in exit_plan_mode.
+
+                    Resolve discoverable facts by inspection. Use ask_user_question only for user-owned choices or material ambiguity that inspection cannot answer. Do not ask the user where code lives or how current behavior works when you can find out.
+
+                    Make the plan decision-complete: state the goal and success criteria; group implementation changes by subsystem; identify public API, schema, and data-flow changes; cover edge cases, failure modes, tests, acceptance criteria, and explicit assumptions. Keep it concise enough to review but detailed enough that another engineer can implement it without making design decisions.
+
+                    When ready, call exit_plan_mode with the complete plan markdown, starting with a # title. Make exit_plan_mode the only and final tool call in that assistant response: it presents the plan for approval, and implementation begins only in a later step after approval. Do not paste the final plan as a plain reply or ask "should I proceed?" through prose or ask_user_question. If the review rejects it, incorporate the feedback and present again. If the review channel is unavailable or aborted, stay in plan mode and ask the user to switch modes manually; do not proceed with implementation.
+          - id: compaction
+            name: cordis:group
+            group: true
+            isolate:
+              compaction: true
+              toolResultPruner: true
+            config:
+              - id: compaction-basic
+                name: '@deepseek-ai/dsh-compaction-basic'
+              - id: command-compact
+                name: '@deepseek-ai/dsh-command-compact'
+              - id: tool-result-pruner
+                name: '@deepseek-ai/dsh-compaction-tool-result-pruner'
+                config:
+                  thresholdChars: 8192
+                  headChars: 4096
+                  tailChars: 1024
+          - id: delegation
+            name: cordis:group
+            group: true
+            isolate:
+              workflowEngine: true
+            config:
+              - id: tool-subagent-control
+                name: '@deepseek-ai/dsh-tool-subagent-control'
+              - id: tool-subagent-list-agents
+                name: '@deepseek-ai/dsh-tool-subagent-control/list-agents'
+              - id: tool-subagent
+                name: '@deepseek-ai/dsh-tool-subagent'
+                config:
+                  provider: spawn
+                  toolName: subagent
+                  modelSelectionSettings: true
+                  backgroundMode: continuable
+              - id: tool-subagent-fork
+                name: '@deepseek-ai/dsh-tool-subagent'
+                config:
+                  provider: fork
+                  toolName: subagent_fork
+                  backgroundMode: continuable
+              - id: tool-subagent-codex
+                name: '@deepseek-ai/dsh-tool-subagent'
+                disabled: true
+                config:
+                  provider: codex
+                  toolName: subagent_codex
+                  backgroundMode: one-shot
+                  maxDepth: provider-managed
+              - id: tool-subagent-claude-code
+                name: '@deepseek-ai/dsh-tool-subagent'
+                disabled: true
+                config:
+                  provider: claude-code
+                  toolName: subagent_claude_code
+                  backgroundMode: one-shot
+                  maxDepth: provider-managed
+              - id: workflow-ptc
+                name: '@deepseek-ai/dsh-workflow-ptc'
+                config:
+                  provider: spawn
+              - id: tool-workflow
+                name: '@deepseek-ai/dsh-tool-workflow'
+              - id: tool-ralph
+                name: '@deepseek-ai/dsh-tool-ralph'
+                disabled: true
+                config:
+                  subagentProvider: spawn
+                  maxRounds: 64
+          - id: tool-ask-user
+            name: '@deepseek-ai/dsh-tool-ask-user'
+          - id: tool-todo
+            name: '@deepseek-ai/dsh-tool-todo'
+            config:
+              allowParallelInProgress: true
+          - id: tool-web
+            name: '@deepseek-ai/dsh-tool-web'
+            config:
+              fetch: true
+              searchTimeoutMs: 60000
+          - id: present
+            name: '@deepseek-ai/dsh-tool-present'
+          - id: tool-plugin-manager
+            name: '@deepseek-ai/dsh-plugin-manager/tools'
+            disabled: true
+          # Deployment-selected model routing: ordered rules first, then the
+          # signal-driven auto branch over tool density and context pressure.
+          # The plugin stays disabled until a deployment names at least one
+          # rule or an auto branch through `DSH_LLM_ROUTER_ROUTES` or
+          # `DSH_LLM_ROUTER_AUTO` (both JSON), so the default chat model is
+          # never silently rerouted.
+          - id: llm-router
+            name: '@deepseek-ai/dsh-llm-router'
+            disabled: !!js (process.env.DSH_LLM_ROUTER_ROUTES === undefined && process.env.DSH_LLM_ROUTER_AUTO === undefined)
+            config:
+              routes: !!js process.env.DSH_LLM_ROUTER_ROUTES === undefined ? undefined:JSON.parse(process.env.DSH_LLM_ROUTER_ROUTES)
+              auto: !!js process.env.DSH_LLM_ROUTER_AUTO === undefined ? undefined:JSON.parse(process.env.DSH_LLM_ROUTER_AUTO)

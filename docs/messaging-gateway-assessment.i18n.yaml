@@ -1,0 +1,25 @@
+# Bilingual-pair consistency record for messaging-gateway-assessment.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write docs/messaging-gateway-assessment.md
+/messaging-platform-gateway-assessment:
+  en: 94b087116a1ad82e
+  zh: 6e5b5a5cf0a0b877
+/messaging-platform-gateway-assessment/summary:
+  en: 4d467c7e644c9345
+  zh: a2b8216577016f20
+/messaging-platform-gateway-assessment/what-exists-today:
+  en: 35abc4a6272fafd8
+  zh: 6ef795f9962efaac
+/messaging-platform-gateway-assessment/gap-analysis:
+  en: 98f084be1cf0401e
+  zh: 1c81f02a5b8a0555
+/messaging-platform-gateway-assessment/suggested-phases:
+  en: 9d33c54242e6bddf
+  zh: 0d5ef66b8deafcfd
+/messaging-platform-gateway-assessment/risks-and-open-questions:
+  en: 8d166a7527f843ab
+  zh: 3bbf9e3905909985
+/messaging-platform-gateway-assessment/related-documentation:
+  en: 144a4607e01faa09
+  zh: a221bdea2f5fb439

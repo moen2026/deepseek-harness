@@ -1,0 +1,70 @@
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write packages/llm/llm-router/README.md
+/:
+  en: 621a05ca4832701a
+  zh: e7c6003ce374682f
+/deepseek-ai-dsh-llm-router:
+  en: 79d6a4368b86fd96
+  zh: 7db5fc8a7dd7d63a
+/deepseek-ai-dsh-llm-router/summary:
+  en: d5b62995c53e2a7a
+  zh: 904238120f7cb485
+/deepseek-ai-dsh-llm-router/table-of-contents:
+  en: d152484eb41ac6b4
+  zh: 09388d293f9be9cb
+/deepseek-ai-dsh-llm-router/use-this-package:
+  en: e0287e9bb8e213f0
+  zh: c42467cc162a3fa5
+/deepseek-ai-dsh-llm-router/use-this-package/when-to-choose-it:
+  en: 17656c623f347e99
+  zh: 599b491dacfe8888
+/deepseek-ai-dsh-llm-router/use-this-package/minimal-configuration:
+  en: aa0ce67f45e23c99
+  zh: b98f51037c957cd0
+/deepseek-ai-dsh-llm-router/use-this-package/what-you-can-observe:
+  en: 3ead040eb06a2454
+  zh: 7450082f1a347074
+/deepseek-ai-dsh-llm-router/use-this-package/signals:
+  en: 5956d3e2f30e66d8
+  zh: e9d3aebf25ab5708
+/deepseek-ai-dsh-llm-router/understand-the-implementation:
+  en: 85f60dc472974ec8
+  zh: d749144ac41c5b05
+/deepseek-ai-dsh-llm-router/understand-the-implementation/design-philosophy:
+  en: 337e356bacd2ce52
+  zh: c3aba4117db4c3b3
+/deepseek-ai-dsh-llm-router/understand-the-implementation/source-map:
+  en: 309cb142cdd6d601
+  zh: f559fbf3d56ada79
+/deepseek-ai-dsh-llm-router/understand-the-implementation/routing-flow:
+  en: a904cf9508577fcc
+  zh: 287db5279b42647e
+/deepseek-ai-dsh-llm-router/understand-the-implementation/waterfall-composition:
+  en: 22ed1628a671e77f
+  zh: be79b78925a05d6d
+/deepseek-ai-dsh-llm-router/further-exploration:
+  en: 84494cfe272b8104
+  zh: fa38c033edcbf628
+/deepseek-ai-dsh-llm-router/model-experience:
+  en: 215e7ba838619b7b
+  zh: a311da3843709f90
+/deepseek-ai-dsh-llm-router/model-experience/request-routing:
+  en: 9feb962b0224e508
+  zh: bbe0b924f3a2a122
+/deepseek-ai-dsh-llm-router/model-experience/request-routing/what-the-model-sees:
+  en: ad88edbea66228ce
+  zh: 374d537420c79ef1
+/deepseek-ai-dsh-llm-router/model-experience/request-routing/token-effect:
+  en: d32de54b24c9a49a
+  zh: 60f36fb697b6b07a
+/deepseek-ai-dsh-llm-router/model-experience/request-routing/kv-cache-effect:
+  en: 0870560af98dc580
+  zh: 65a7ea2637505601
+/deepseek-ai-dsh-llm-router/known-limitations-and-deferred-work:
+  en: 01af2ffb006418ac
+  zh: d401a13ee834554b
+/deepseek-ai-dsh-llm-router/known-limitations-and-deferred-work/dev-note:
+  en: 1b8841c0e57b5ce4
+  zh: 8f85958f68303bdf

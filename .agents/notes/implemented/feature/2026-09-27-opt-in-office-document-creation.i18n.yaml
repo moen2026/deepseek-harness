@@ -1,0 +1,19 @@
+# Bilingual-pair consistency record for 2026-09-27-opt-in-office-document-creation.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-09-27-opt-in-office-document-creation.md
+/agent-note-opt-in-office-document-creation:
+  en: 0ca25d855821c54f
+  zh: a4f17ba275f5ee44
+/agent-note-opt-in-office-document-creation/problem:
+  en: 9c653c981bbf7a38
+  zh: 7676e4b9a46e85d5
+/agent-note-opt-in-office-document-creation/decision:
+  en: c888c08dcd2733f7
+  zh: ef503de92066ad5c
+/agent-note-opt-in-office-document-creation/alternatives-considered:
+  en: 0b8bdc0c859e6d81
+  zh: 5011a24b91d9b2fd
+/agent-note-opt-in-office-document-creation/consequences:
+  en: c821f0d7c89909b0
+  zh: b41944d1d6650ba4

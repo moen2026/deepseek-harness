@@ -1,0 +1,7 @@
+{
+  "name": "example-product",
+  "version": "0.0.0",
+  "bin": {
+    "other": "bundle/other.js"
+  }
+}

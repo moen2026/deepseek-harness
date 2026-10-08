@@ -18,8 +18,11 @@
   en: e77871d58566601a
   zh: c5ef229d22eb3ebf
 /deepseek-ai-dsh-mcp-client/use-this-package/minimal-configuration:
-  en: 4d8b58f6a5e0c3f1
-  zh: 28e1c06aeef33131
+  en: 590a2ddd7cfb9eca
+  zh: 94c1c760228f7271
+/deepseek-ai-dsh-mcp-client/use-this-package/oauth:
+  en: e544913b5a96d42b
+  zh: 80bfe90c6529a6ab
 /deepseek-ai-dsh-mcp-client/use-this-package/tool-naming-and-coexistence:
   en: 75ae9745d5b04796
   zh: 8ae5b8ca6e73296e

@@ -1,27 +1,33 @@
 /**
  * Keyless real-server e2e: drives the real `typescript-language-server` through the full
- * `ctx.lsp` → `dsh-lsp-stdio` stack over the base protocol, exercising all four operations. No API
- * key needed — the server is a local dev dependency. This establishes one compatibility floor
- * (TypeScript), not a cross-language claim.
+ * `ctx.lsp` → `dsh-lsp-stdio` stack over the base protocol, exercising navigation, hover, and the
+ * file-level `diagnostics` operation. No API key needed — the server is a local dev dependency.
+ * This establishes one compatibility floor (TypeScript), not a cross-language claim.
  */
 
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { mkdtemp, mkdir, rm, writeFile, realpath } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { Context } from '@deepseek-ai/cordis'
 import LocalSubprocessRuntime from '@deepseek-ai/dsh-subprocess-local'
 import LocalFileSystem from '@deepseek-ai/dsh-fs-local'
 import Lsp, { type LspQueryRequest, type LspQueryResult } from '@deepseek-ai/dsh-lsp'
 import * as LspLocal from '@deepseek-ai/dsh-lsp-stdio'
 
-// The server binary is a dev dependency of this package; resolve its pnpm-hoisted .bin path.
-const serverBin = join(
-  new URL('..', import.meta.url).pathname,
-  'node_modules',
-  '.bin',
-  'typescript-language-server',
-)
+// The server is a dev dependency of this package. On POSIX, launch the hoisted `.bin` shim directly;
+// on Windows, run the real `cli.mjs` through `process.execPath` — the `.CMD`/`.ps1` shims cannot be
+// spawned without a shell (Node rejects them with EINVAL), and the extension-less shim is not an
+// executable file. Both paths launch the same `typescript-language-server --stdio`.
+const packageDir = fileURLToPath(new URL('..', import.meta.url))
+const windows = process.platform === 'win32'
+const serverCommand = windows
+  ? process.execPath
+  : join(packageDir, 'node_modules', '.bin', 'typescript-language-server')
+const serverArgs = windows
+  ? [join(packageDir, 'node_modules', 'typescript-language-server', 'lib', 'cli.mjs'), '--stdio']
+  : ['--stdio']
 
 let root: string
 let ws: string
@@ -59,8 +65,8 @@ beforeAll(async () => {
   await ctx.plugin(LspLocal, {
     servers: {
       typescript: {
-        command: serverBin,
-        args: ['--stdio'],
+        command: serverCommand,
+        args: serverArgs,
         extensionToLanguage: { '.ts': 'typescript', '.tsx': 'typescriptreact' },
       },
     },
@@ -113,6 +119,19 @@ describe('real typescript-language-server', () => {
     if (result.kind === 'hover') {
       expect(result.hover).not.toBeNull()
       expect(result.hover?.contents).toContain('Circle')
+    }
+  }, 60_000)
+
+  it('reports a well-typed document as a diagnostics snapshot', async () => {
+    // The file-level operation needs no cursor. A strict-clean file completes the real server's
+    // push/pull window and yields a normalized (empty) problem list plus the workspace URI —
+    // proving the transient-open diagnostics path works end to end against typescript-language-server.
+    const result = await ctx.lsp.query({ operation: 'diagnostics', filePath: 'shapes.ts', workspaceRoot: ws })
+    expect(result.kind).toBe('diagnostics')
+    if (result.kind === 'diagnostics') {
+      expect(Array.isArray(result.diagnostics)).toBe(true)
+      expect(result.diagnostics.every(d => ['error', 'warning', 'information', 'hint'].includes(d.severity))).toBe(true)
+      expect(result.resolvedWorkspaceUri).toMatch(/^file:\//)
     }
   }, 60_000)
 })

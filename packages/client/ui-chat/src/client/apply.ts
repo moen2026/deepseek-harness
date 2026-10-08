@@ -2,6 +2,7 @@
 import type { Context } from '@deepseek-ai/cordis'
 import type { ImageAttachmentRef } from '@deepseek-ai/dsh-attachment'
 import type {} from '@deepseek-ai/dsh-api-remotes/client'
+import type {} from '@deepseek-ai/dsh-experimental-api-text-to-speech/remote'
 import type { SessionBinding } from '@deepseek-ai/dsh-api-session-controller/client'
 import type { GroupKey } from '@deepseek-ai/dsh-client-ui-conversation/client'
 import { createSnapshotStore, type ObservableSnapshot } from '@deepseek-ai/dsh-client-store'
@@ -23,9 +24,11 @@ import type {} from '@deepseek-ai/dsh-client-ui-workspace/client'
 import type {
   ChatNodeInjected, ChatScrollPosition, ChatViewInjected, QuotaNoticeInjected, QuotaNoticeState, TurnTailOwnerProps,
 } from './contract/slots.ts'
+import type { ChatNode } from './contract/chat-nodes.ts'
 import type { ChatSnapshot } from './contract/snapshot.ts'
 import { EMPTY_CHAT_SNAPSHOT } from './contract/snapshot.ts'
 import { ApprovalCommand } from './chat/ApprovalCommand.tsx'
+import { AutoReadAloudAction, type AutoReadAloudInjected } from './chat/AutoReadAloudAction.tsx'
 import { ChatView } from './chat/ChatView.tsx'
 import { registerChatNodeRenderers } from './chat/register-node-renderers.ts'
 import { StatsPills } from './chat/StatsPills.tsx'
@@ -40,8 +43,39 @@ import { CHAT_SETTINGS_NAMESPACE, DEFAULT_LINK_OPENING, type ChatSettings } from
 import { LinkOpeningRow, type LinkOpeningRowInjected } from './settings/LinkOpeningRow.tsx'
 import { PerformanceUsageRow, type PerformanceUsageRowInjected } from './settings/PerformanceUsageRow.tsx'
 import { PerformanceUsagePolicy } from './performance-usage.ts'
+import { createAutoReadAloudStore } from './chat/auto-read-aloud.ts'
+import { bindReadAloudRemote, readAloudEngine, speakBrowserText, speakRemoteText } from './chat/read-aloud.ts'
+import { observeTtsReadiness } from './chat/tts-readiness.ts'
+import type { TtsReadiness } from './chat/tts-readiness.ts'
 import { useTurnDataValue } from './chat/use-turn-data.ts'
 import { bindDisclosure } from './chat/use-disclosure.ts'
+
+declare module '@deepseek-ai/dsh-api-session-controller/client' {
+  interface SessionReferenceSourceMap {
+    /** A retry re-prompt waiting for the fork child's initial open. */
+    retryPrompt: unknown
+  }
+}
+
+/**
+ * Resolve one Turn's retryable prompt: the cut before its user message and the
+ * joined text. Undefined when the Turn has no plain user message, the content
+ * carries non-text blocks, or the message is the Session's first event.
+ */
+function retryPromptOf(snapshot: ChatSnapshot, turn: number): { readonly atSeq: number; readonly text: string } | undefined {
+  for (const key of snapshot.locations.getTurn(turn)) {
+    const node = snapshot.nodes.get(key) as ChatNode | undefined
+    if (node === undefined || node.kind !== 'user') continue
+    let text = ''
+    for (const block of node.data.content) {
+      if (block.type !== 'text') return undefined
+      text += text === '' ? block.text : `\n${block.text}`
+    }
+    if (node.data.seq < 1 || text.trim() === '') return undefined
+    return { atSeq: node.data.seq - 1, text }
+  }
+  return undefined
+}
 
 const CHAT_NODE_INJECT: ChatNodeInjected = {
   hooks: {
@@ -114,8 +148,35 @@ export function apply(ctx: Context): void {
   })
 
   ctx.effect(() => ctx.locale.register(NS, { zh, en }), 'ui-chat: dictionaries')
+  // The synthesis Remote is mounted by an optional bundle, not by this stable
+  // plugin: the mirror and synthesizer join once `remote.tts` appears, and a
+  // composition without it keeps the disconnected snapshot the read-aloud
+  // action reads as the browser-engine fallback.
+  const ttsReadiness = createSnapshotStore<TtsReadiness>({ catalog: null, connected: false, error: null })
+  ctx.effect(() => {
+    const injection = ctx.inject(['remote.tts'], (scope) => {
+      const observation = observeTtsReadiness(scope, ttsReadiness)
+      const unbind = bindReadAloudRemote({
+        readiness: ttsReadiness,
+        synthesize: async (text, signal) => {
+          const result = await scope.remote.tts.synthesize({ text }, signal)
+          if (!result.ok) throw result.error
+          const binary = window.atob(result.value.audioBase64)
+          const bytes = new Uint8Array(binary.length)
+          for (let index = 0; index < binary.length; index += 1) bytes[index] = binary.charCodeAt(index)
+          return bytes
+        },
+      })
+      return async () => { unbind(); await observation.dispose() }
+    })
+    return () => { void injection.dispose() }
+  }, 'ui-chat: tts readiness')
+  ctx.provide('readAloud', {
+    readiness: ttsReadiness, engine: readAloudEngine, speak: speakRemoteText, speakBrowser: speakBrowserText,
+  })
   const t = ctx.locale.bind(NS)
   const chatStore = createChatStore()
+  const autoReadAloud = createAutoReadAloudStore()
   const chatScrollPositions = new Map<SessionId, ChatScrollPosition>()
   const chatSettings = ctx.configForms.get<ChatSettings>(CHAT_SETTINGS_NAMESPACE)
   const linkOpening = createSnapshotStore(chatSettings.getSnapshot().value?.linkOpening ?? DEFAULT_LINK_OPENING)
@@ -251,6 +312,31 @@ export function apply(ctx: Context): void {
                 // Fork or child-title failure leaves the source view unchanged.
               })
           },
+          retryTurn: (turn: number): void => {
+            const prompt = retryPromptOf(chat.getSnapshot(), turn)
+            if (prompt === undefined) return
+            ctx.sessions.fork({ sessionId, atSeq: prompt.atSeq, increaseTitle: true })
+              .then((childId) => {
+                ctx.uiWorkspace.openSession(childId)
+                return ctx.sessions.using(childId, { source: 'retryPrompt' }, async (reference) => {
+                  await reference.ready
+                  const state = reference.binding.session.getSnapshot()
+                  if (state.openState !== 'open') {
+                    throw state.openError ?? new Error(`ui-chat: fork child "${childId}" is not open`)
+                  }
+                  const result = await reference.binding.session.prompt(
+                    [{ type: 'text', text: prompt.text }], 'queue')
+                  if (!result.ok) {
+                    throw new Error(`ui-chat: retry prompt failed: ${result.error.code}: ${result.error.message}`)
+                  }
+                })
+              })
+              .catch(() => {
+                // Fork, child-open, or admission failure leaves the source view
+                // unchanged; a landed prompt failure surfaces through the child's
+                // promptError state.
+              })
+          },
         }
       },
     }, ChatView)
@@ -284,5 +370,19 @@ export function apply(ctx: Context): void {
 
   ctx.slots.inject('conversation.approval.detail', () =>
     ctx.slots.register({ name: 'conversation.approval.detail' }, ApprovalCommand))
+
+  // One preference spans every Session: each open header renders its own
+  // toggle over the shared store. The entry sits left of the overflow menu
+  // (order 0) and right of the reminder catalog (order -5).
+  ctx.slots.inject('conversation.session.header.utilities', () => ctx.slots.register({
+    name: 'conversation.session.header.utilities',
+    id: 'auto-read-aloud',
+    order: -4,
+    locale: NS,
+    inject: (): AutoReadAloudInjected => ({
+      hooks: { autoReadAloud },
+      setAutoReadAloud: (enabled) => { autoReadAloud.set(enabled) },
+    }),
+  }, AutoReadAloudAction))
 
 }

@@ -123,25 +123,26 @@ describe('menuReduce source-settled', () => {
 })
 
 describe('menuReduce source-failed', () => {
-  it('silently removes the failed group', () => {
+  it('marks the failed group and keeps the menu open', () => {
     let s = open(['command', 'skill'])
     s = menuReduce(s, { type: 'source-settled', generation: 1, source: 'skill', items: [item('commit')] })
     s = menuReduce(s, { type: 'source-failed', generation: 1, source: 'command' })
-    expect(s.groups.map(g => g.source)).toEqual(['skill'])
+    expect(s.groups.map(g => [g.source, g.status])).toEqual([['command', 'failed'], ['skill', 'ready']])
     expect(s.open).toBe(true)
   })
 
-  it('closes when the last group fails', () => {
+  it('keeps the menu open when the only group fails', () => {
     let s = open(['command'])
     s = menuReduce(s, { type: 'source-failed', generation: 1, source: 'command' })
-    expect(s.open).toBe(false)
+    expect(s.open).toBe(true)
+    expect(s.groups).toEqual([{ source: 'command', status: 'failed', items: [] }])
   })
 
-  it('closes when the surviving groups are all ready and empty', () => {
+  it('stays open when the other groups settle empty beside a failure', () => {
     let s = open(['command', 'skill'])
     s = menuReduce(s, { type: 'source-settled', generation: 1, source: 'skill', items: [] })
     s = menuReduce(s, { type: 'source-failed', generation: 1, source: 'command' })
-    expect(s.open).toBe(false)
+    expect(s.open).toBe(true)
   })
 
   it('moves the highlight off the failed group', () => {

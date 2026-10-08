@@ -1,0 +1,16 @@
+# Bilingual-pair consistency record for git.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write docs/subsystems/git.md
+/git-tracking:
+  en: 19d62341f171c6de
+  zh: 557b134e60115c4b
+/git-tracking/trackedworktree-one-recorded-worktree:
+  en: 5e0c99b28a04d9cc
+  zh: 26cd3edfb57ea299
+/git-tracking/trackedpullrequest-one-recorded-pull-request:
+  en: 6a55e92982555974
+  zh: 8dc10ce5ffb2dd12
+/git-tracking/durable-storage:
+  en: 711bcedeb5a508b9
+  zh: 5402c4d333e4535e

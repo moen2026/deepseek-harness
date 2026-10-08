@@ -58,6 +58,7 @@ Add one entry per server; nothing else is required. After the harness starts, th
 | `serverName` | required | Namespace for the server's tool names; `[A-Za-z0-9_-]{1,32}`, unique inside one registration scope |
 | `command` / `args` / `env` / `cwd` | — | stdio: executable, arguments, extra env merged over scrubbed ambient env, working directory |
 | `url` / `headers` | — | streamable-http: endpoint URL and extra request headers |
+| `oauth` | — | streamable-http: interactive OAuth 2.0 authorization; see [OAuth](#oauth) |
 | `toolCallTimeoutMs` | `60,000` | Timeout per `tools/call` or resource request |
 | `maxInstructionBytes` | `32,768` | Maximum UTF-8 bytes of server instructions including attribution; an oversized value rejects the connection |
 | `failOnStartupError` | `false` | Reject plugin activation when the initial connection or tool synchronization fails |
@@ -69,6 +70,10 @@ Add one entry per server; nothing else is required. After the harness starts, th
 The generated [configuration catalog](../../../docs/config-catalog.md#deepseek-aidsh-mcp-client) is the exhaustive source for every accepted field.
 
 After startup, the server's tools appear as `mcp__<serverName>__<tool>` — try a prompt that uses one. If the initial connection fails, the harness still starts but no tools from that server appear, and an error is logged. Setting `failOnStartupError: true` rejects plugin activation; [app-boot's startup policy](../../boot/app-boot/README.md) still permits an optional MCP entry to fail without aborting the harness.
+
+### OAuth
+
+A `transport: streamable-http` entry whose server requires OAuth accepts an `oauth` block. On the first load the plugin opens your browser and completes the authorization-code flow with PKCE through a loopback redirect, then stores the tokens in a credential-seam grant record (`mcp-client/<server-name>`); later loads reuse the stored tokens without another browser round trip, and expired access tokens refresh automatically through the stored refresh token. Fields: `scopes` (default `[]`; include `offline_access` when the server opt-ins refresh tokens), `redirectUri` (default an OS-assigned loopback port), `clientId` / `clientSecret` for a client registered outside the Harness (omission registers dynamically), and `callbackTimeoutMs` (default `300000`). The flow needs the [credential-local provider](../../credentials/credentials-local/README.md) loaded before this plugin; configuring `oauth` without one fails the plugin at load.
 
 ### Tool naming and coexistence
 

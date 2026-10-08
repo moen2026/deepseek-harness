@@ -1,0 +1,64 @@
+﻿native/system/packages/darwin-arm64      | [WARN] Unsupported platform: wanted: {"cpu":["arm64"],"os":["darwin"],"libc":["any"]} (current: {"os":"win32","cpu":"x64","libc":"unknown"})
+native/system/packages/darwin-x64        | [WARN] Unsupported platform: wanted: {"cpu":["x64"],"os":["darwin"],"libc":["any"]} (current: {"os":"win32","cpu":"x64","libc":"unknown"})
+native/system/packages/linux-arm64       | [WARN] Unsupported platform: wanted: {"cpu":["arm64"],"os":["linux"],"libc":["any"]} (current: {"os":"win32","cpu":"x64","libc":"unknown"})
+native/system/packages/linux-x64         | [WARN] Unsupported platform: wanted: {"cpu":["x64"],"os":["linux"],"libc":["any"]} (current: {"os":"win32","cpu":"x64","libc":"unknown"})
+Scope: all 335 workspace projects
+[WARN] There are cyclic workspace dependencies: E:\DSHqoder\apps\cli, E:\DSHqoder\packages\sdk\client; E:\DSHqoder\apps\web, E:\DSHqoder\packages\test-support\client-runtime, E:\DSHqoder\packages\bundle\web-app; E:\DSHqoder\packages\api\remotes, E:\DSHqoder\packages\client\ui-plugin-manager, E:\DSHqoder\packages\client\ui-sidebar, E:\DSHqoder\packages\client\ui-workspace, E:\DSHqoder\packages\client\ui-conversation; E:\DSHqoder\packages\api\session-controller, E:\DSHqoder\packages\subagent\subagent, E:\DSHqoder\packages\schedule\schedule; E:\DSHqoder\packages\compaction\compaction-basic, E:\DSHqoder\packages\compaction\compaction-image-offload; E:\DSHqoder\packages\compaction\compaction-tool-result-pruner, E:\DSHqoder\packages\llm\token-meter, E:\DSHqoder\packages\llm\llm-retry, E:\DSHqoder\packages\llm\llm-deepseek, E:\DSHqoder\packages\llm\plugin-package-inventory-deepseek, E:\DSHqoder\packages\preset\agent-preset-registry, E:\DSHqoder\packages\preset\agent-preset; E:\DSHqoder\packages\core\agent-default-model, E:\DSHqoder\packages\settings\settings; E:\DSHqoder\packages\sandbox\sandbox-local, E:\DSHqoder\packages\sandbox\sandbox-windows-acl; E:\DSHqoder\packages\ssh\fs-ssh, E:\DSHqoder\packages\ssh\ssh; E:\DSHqoder\packages\subagent\subagent-spawn-in-process, E:\DSHqoder\packages\subagent\tool-subagent; E:\DSHqoder\vendor\cordis, E:\DSHqoder\vendor\include
+鉁?Lockfile passes supply-chain policies (verified 13h ago)
+Progress: resolved 1, reused 0, downloaded 0, added 0
+Progress: resolved 70, reused 63, downloaded 0, added 0
+Progress: resolved 84, reused 84, downloaded 0, added 0
+Progress: resolved 105, reused 104, downloaded 0, added 0
+Progress: resolved 117, reused 117, downloaded 0, added 0
+Progress: resolved 124, reused 121, downloaded 0, added 0
+Progress: resolved 163, reused 162, downloaded 0, added 0
+Progress: resolved 177, reused 176, downloaded 0, added 0
+Progress: resolved 179, reused 179, downloaded 0, added 0
+Progress: resolved 181, reused 180, downloaded 0, added 0
+Progress: resolved 181, reused 181, downloaded 0, added 0
+Progress: resolved 285, reused 264, downloaded 0, added 0
+Progress: resolved 316, reused 306, downloaded 0, added 0
+Progress: resolved 344, reused 326, downloaded 0, added 0
+Progress: resolved 447, reused 399, downloaded 0, added 0
+Progress: resolved 586, reused 478, downloaded 0, added 0
+Progress: resolved 731, reused 585, downloaded 0, added 0
+Progress: resolved 749, reused 591, downloaded 0, added 0
+Progress: resolved 750, reused 592, downloaded 0, added 0
+Progress: resolved 792, reused 595, downloaded 0, added 0
+Progress: resolved 991, reused 770, downloaded 0, added 0
+Progress: resolved 1183, reused 936, downloaded 0, added 0
+Progress: resolved 1238, reused 982, downloaded 0, added 0
+Progress: resolved 1241, reused 982, downloaded 0, added 0
+Progress: resolved 1242, reused 982, downloaded 0, added 0
+Progress: resolved 1418, reused 1156, downloaded 1, added 0
+Progress: resolved 1451, reused 1190, downloaded 1, added 0
+Progress: resolved 1469, reused 1205, downloaded 2, added 0
+Progress: resolved 1553, reused 1289, downloaded 3, added 0
+Progress: resolved 1579, reused 1313, downloaded 4, added 0
+Progress: resolved 1631, reused 1350, downloaded 5, added 0
+Progress: resolved 1660, reused 1377, downloaded 5, added 0
+Progress: resolved 1660, reused 1377, downloaded 8, added 0
+[WARN] Tarball download average speed 15 KiB/s (size 66 KiB) is below 50 KiB/s: https://registry.npmjs.org/@emnapi/runtime/-/runtime-1.11.0.tgz (GET)
+Progress: resolved 1661, reused 1378, downloaded 8, added 0
+Progress: resolved 1661, reused 1378, downloaded 9, added 0
+Progress: resolved 1662, reused 1378, downloaded 9, added 0
+Progress: resolved 1679, reused 1379, downloaded 9, added 0
+Progress: resolved 1680, reused 1379, downloaded 9, added 0
+[WARN] 12 deprecated subdependencies found: boolean@3.2.0, fstream@1.0.12, glob@10.5.0, glob@7.2.3, inflight@1.0.6, lodash.isequal@4.5.0, node-domexception@1.0.0, prebuild-install@7.1.3, rimraf@2.6.3, tsconfck@3.1.6, uuid@8.3.2, whatwg-encoding@2.0.0
+Packages: +3
++++
+[WARN] Tarball download average speed 15 KiB/s (size 237 KiB) is below 50 KiB/s: https://registry.npmjs.org/@emnapi/core/-/core-1.11.0.tgz (GET)
+Progress: resolved 1680, reused 1379, downloaded 10, added 0
+Progress: resolved 1680, reused 1379, downloaded 11, added 0
+Progress: resolved 1680, reused 1379, downloaded 11, added 1
+Progress: resolved 1680, reused 1379, downloaded 12, added 1
+Progress: resolved 1680, reused 1379, downloaded 12, added 2
+[WARN] GET https://registry.npmjs.org/@openai/codex/-/codex-0.153.4-win32-x64.tgz error (23). Will retry in 10 seconds. 2 retries left.
+Progress: resolved 1680, reused 1379, downloaded 13, added 2
+Progress: resolved 1680, reused 1379, downloaded 13, added 3, done
+packages/subprocess/subprocess-local postinstall$ node scripts/ensure-spawn-helper.mjs
+packages/subprocess/subprocess-local postinstall: Done
+. postinstall$ node scripts/install-lefthook.mjs
+. postinstall: Done
+
+Done in 2m 11.3s using pnpm v11.7.0

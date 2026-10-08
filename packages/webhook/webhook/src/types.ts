@@ -1,5 +1,7 @@
 /** Provider-neutral webhook deliveries, rules, and Session requests. */
 
+import type { FileAttachmentRef, ImageAttachmentRef } from '@deepseek-ai/dsh-attachment'
+import type { SessionId } from '@deepseek-ai/dsh-session'
 import type { JsonValue } from '@deepseek-ai/dsh-util-values'
 import type { WebhookDeliveryId, WebhookRuleId, WebhookSourceId } from './brand.ts'
 
@@ -34,6 +36,16 @@ export interface WebhookModelSelection {
   readonly maxTokens?: number
 }
 
+/**
+ * One admitted attachment block a Session prompt may carry beyond its text:
+ * the durable reference the attachment capability committed before the
+ * request was built. The prompt text stays in `prompt`; these blocks append
+ * after it in the admitted user message.
+ */
+export type AdmittedAttachmentBlock =
+  | { readonly type: 'image'; readonly attachment: ImageAttachmentRef }
+  | { readonly type: 'file'; readonly attachment: FileAttachmentRef }
+
 /** The sole runtime action: create and prompt one root Session. */
 export interface WebhookSessionRequest {
   /** Existing local directory to resolve or create as a Web Workspace. */
@@ -42,10 +54,18 @@ export interface WebhookSessionRequest {
   readonly title: string
   /** Non-empty initial text prompt. */
   readonly prompt: string
+  /**
+   * Admitted attachment blocks appended after the prompt text; omission means
+   * a text-only prompt. Every reference must already be durable: the caller
+   * admits attachments through `ctx.attachments` before building the request.
+   */
+  readonly attachments?: readonly AdmittedAttachmentBlock[]
   /** Agent composition mounted before publication. */
   readonly agentPreset: string
   /** Sandbox and approval preset applied before prompt admission. */
   readonly permissionPreset: string
+  /** Caller-chosen Session identity reused across creation retries; omission generates `webhook-<uuid>`. */
+  readonly sessionId?: SessionId
   /** Optional explicit route; omission uses the complete current default, including reasoning effort. */
   readonly model?: WebhookModelSelection
 }

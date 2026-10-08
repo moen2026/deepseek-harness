@@ -1,13 +1,13 @@
 /**
  * Service Definition for the LSP capability seam (`ctx.lsp`): a language-server provider registry and per-query,
  * order-independent selection over normalized goToDefinition/findReferences/goToImplementation/
- * hover queries.
+ * hover/diagnostics queries.
  *
  * A provider reserves a branded id and an exclusive set of file extensions atomically:
  * {@link Lsp.registerProvider} validates and conflict-checks everything before mutating, so an
  * invalid or conflicting registration publishes nothing, and its disposer releases every
  * reservation together. Selection routes a query by the file's final extension; it never depends on
- * registration order. The seam exposes exactly the four operations and no JSON-RPC escape hatch.
+ * registration order. The seam exposes exactly the five operations and no JSON-RPC escape hatch.
  * @module @deepseek-ai/dsh-lsp
  */
 
@@ -23,6 +23,8 @@ import type {
 
 export { LspProviderId } from './brand.ts'
 export type {
+  LspDiagnostic,
+  LspDiagnosticSeverity,
   LspHover,
   LspLocation,
   LspOperation,

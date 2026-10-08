@@ -1,0 +1,52 @@
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write packages/image/image-http/README.md
+/:
+  en: 83d6e7f35e08882b
+  zh: be7a09927d31df74
+/deepseek-ai-dsh-image-http:
+  en: e32d3e0ed0dfa0a2
+  zh: 64762044600e5685
+/deepseek-ai-dsh-image-http/summary:
+  en: 7b09caea129a001f
+  zh: b8deccef7e72abff
+/deepseek-ai-dsh-image-http/table-of-contents:
+  en: d152484eb41ac6b4
+  zh: ffab54373e9e61f0
+/deepseek-ai-dsh-image-http/use-this-package:
+  en: bbff250eba0f1b89
+  zh: 0a618f05cc88ee2b
+/deepseek-ai-dsh-image-http/use-this-package/when-to-choose-it:
+  en: 9b280f00b2789b42
+  zh: 09643e12109d6bd6
+/deepseek-ai-dsh-image-http/use-this-package/configuration:
+  en: 68baf98301a35bdc
+  zh: 54fa5e47fcca2121
+/deepseek-ai-dsh-image-http/use-this-package/failures-and-recovery:
+  en: 8d4ec544c2f8e142
+  zh: 9827959f1d0988be
+/deepseek-ai-dsh-image-http/understand-the-implementation:
+  en: 42b15ac6321706aa
+  zh: 8d8e9843515830f6
+/deepseek-ai-dsh-image-http/understand-the-implementation/design-philosophy:
+  en: 5c9e00a456068c36
+  zh: e8cf1dc5d4a1b0a7
+/deepseek-ai-dsh-image-http/understand-the-implementation/source-map:
+  en: 336caa88f839c3b2
+  zh: e0b14027091aafb0
+/deepseek-ai-dsh-image-http/further-exploration:
+  en: 87e4f5a87ee1084e
+  zh: 47d65956aca7d36f
+/deepseek-ai-dsh-image-http/model-experience:
+  en: b5ba5bed5e7c2034
+  zh: 970957bc3f32bf5e
+/deepseek-ai-dsh-image-http/model-experience/kv-cache-effect:
+  en: 6947158f3e271b4a
+  zh: ce7f21ced5aea80d
+/deepseek-ai-dsh-image-http/known-limitations-and-deferred-work:
+  en: dd3a81f43328cc61
+  zh: 46a6e9309a3bc29d
+/deepseek-ai-dsh-image-http/known-limitations-and-deferred-work/dev-note:
+  en: e67f633dc6fe7773
+  zh: cdd2a143b725accd

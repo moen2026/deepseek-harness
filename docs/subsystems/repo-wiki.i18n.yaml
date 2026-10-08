@@ -1,0 +1,10 @@
+# Bilingual-pair consistency record for repo-wiki.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write docs/subsystems/repo-wiki.md
+/repository-wiki:
+  en: 958eb4c8c60cd708
+  zh: 50bde50dc0da27b7
+/repository-wiki/pages-and-staleness:
+  en: 3566ca2dfe5289c7
+  zh: c9ab7a9223873ff4

@@ -1,0 +1,19 @@
+# Bilingual-pair consistency record for 2026-10-03-recording-voice-intake.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-10-03-recording-voice-intake.md
+/agent-note-recording-voice-intake:
+  en: bb599709c9efb7e0
+  zh: 61760959080e415e
+/agent-note-recording-voice-intake/problem:
+  en: 6f25fc5a551d97e0
+  zh: 9009fd52b16c1bc3
+/agent-note-recording-voice-intake/decision:
+  en: ecc90c6ddf9826de
+  zh: b5d7820e540315d8
+/agent-note-recording-voice-intake/alternatives-considered:
+  en: a09ee87fb4bdcb6a
+  zh: dfb0b92592f8d908
+/agent-note-recording-voice-intake/consequences:
+  en: 67ddf39ddec5438c
+  zh: 22d790f57130d8e9

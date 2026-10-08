@@ -1,10 +1,14 @@
-// Shared IconActions chrome for user and assistant messages: copy
-// live, optional branch wiring, and an optional date-aware clock.
+// Shared IconActions chrome for user and assistant messages: copy,
+// assistant read-aloud, optional retry and branch wiring, and a date-aware clock.
 
 import { useCallback, useEffect, useId, useRef, useState, type ReactNode } from 'react'
 import {
-  IconBranchOutlineRegular, IconCheckOutlineRegular, IconCopyOutlineRegular, Tooltip, writeClipboard,
+  IconBranchOutlineRegular, IconCheckOutlineRegular, IconCopyOutlineRegular, IconRefreshOutlineRegular,
+  IconSpeakerOutlineRegular, IconStopFillRegular, Tooltip, writeClipboard,
 } from '@deepseek-ai/dsh-client-ui-primitives'
+import {
+  browserEngineSelected, readAloudSupported, remoteReadAloudReady, speakRemoteText, speakText, stopSpeaking,
+} from './read-aloud.ts'
 import type { ChatViewSlotProps } from '../contract/slots.ts'
 import { formatMessageClock } from './message-chrome.ts'
 import { useCalendarDay } from './use-calendar-day.ts'
@@ -21,6 +25,12 @@ export interface MessageIconActionsProps {
   onBranch?: (() => void) | undefined
   /** The message is not a completed transcript tail, so branch stays visible but unavailable. */
   branchUnavailable?: boolean | undefined
+  /** Re-run this turn in a fork; omission hides the retry action. */
+  onRetry?: (() => void) | undefined
+  /** The turn is not a retryable text-only tail, so retry stays visible but unavailable. */
+  retryUnavailable?: boolean | undefined
+  /** The message is an assistant reply; shows the read-aloud action when the browser exposes a speech engine. */
+  speakable?: boolean | undefined
   /** Parent layout class composed onto the actions row. */
   className?: string | undefined
   /**
@@ -38,16 +48,17 @@ export interface MessageIconActionsProps {
 }
 
 /**
- * Copy / branch (/ clock) IconActions row shared by user and assistant chrome.
- * @param props - Copy text, event time, clock side, branch callback, className.
+ * Copy / read-aloud / branch (/ clock) IconActions row shared by user and assistant chrome.
+ * @param props - Copy text, event time, clock side, read-aloud opt-in, branch callback, className.
  * @returns The actions row element.
  */
 export function MessageIconActions({
-  text, time, clock, onBranch, branchUnavailable = false, className,
-  extraActions, usageAction, t,
+  text, time, clock, onBranch, branchUnavailable = false, onRetry, retryUnavailable = false, speakable = false,
+  className, extraActions, usageAction, t,
 }: MessageIconActionsProps) {
   const day = useCalendarDay()
   const reasonId = useId()
+  const retryReasonId = useId()
   // Same success chrome as CodeBlock: a short check swap after the write,
   // gated so re-clicks during the window neither re-copy nor stack timers.
   const [copied, setCopied] = useState(false)
@@ -74,6 +85,45 @@ export function MessageIconActions({
       }, 1000)
     })
   }, [copied, text])
+  const speechAvailable = speakable && readAloudSupported()
+  const [speaking, setSpeaking] = useState(false)
+  // Only the row that started a reading cancels it on unmount; unrelated rows
+  // mounting and unmounting must not cut an in-flight reading short. The
+  // remote path cancels through its playback handle, the engine path through
+  // the shared speech synthesis queue.
+  const speakingRef = useRef(false)
+  const cancelPlayback = useRef<(() => void) | undefined>(undefined)
+  useEffect(() => () => {
+    if (!speakingRef.current) return
+    if (cancelPlayback.current !== undefined) cancelPlayback.current()
+    else stopSpeaking()
+  }, [])
+  const idle = (): void => {
+    speakingRef.current = false
+    cancelPlayback.current = undefined
+    setSpeaking(false)
+  }
+  const onSpeak = useCallback(() => {
+    if (speakingRef.current) {
+      if (cancelPlayback.current !== undefined) cancelPlayback.current()
+      else stopSpeaking()
+      idle()
+      return
+    }
+    speakingRef.current = true
+    setSpeaking(true)
+    if (!browserEngineSelected() && remoteReadAloudReady()) {
+      void speakRemoteText(text, idle).then((cancel) => {
+        if (speakingRef.current) cancelPlayback.current = cancel
+        else cancel()
+      }).catch(() => {
+        if (!speakingRef.current) return
+        speakText(text, idle)
+      })
+      return
+    }
+    speakText(text, idle)
+  }, [text])
   const clockEl = time === undefined ? null : (
     <span className={clock === 'start' ? css.timeStart : css.timeEnd}>
       {formatMessageClock(time, t, day)}
@@ -87,7 +137,38 @@ export function MessageIconActions({
           {copied ? <IconCheckOutlineRegular /> : <IconCopyOutlineRegular />}
         </button>
       </Tooltip>
+      {speechAvailable && (
+        <Tooltip label={speaking ? t('message.readAloudStop') : t('message.readAloud')} side="bottom">
+          <button
+            type="button"
+            className={css.action}
+            aria-label={speaking ? t('message.readAloudStop') : t('message.readAloud')}
+            aria-pressed={speaking || undefined}
+            onClick={onSpeak}
+          >
+            {speaking ? <IconStopFillRegular /> : <IconSpeakerOutlineRegular />}
+          </button>
+        </Tooltip>
+      )}
       {extraActions}
+      {onRetry !== undefined && (
+        <Tooltip label={retryUnavailable ? t('message.retryTurnUnavailable') : t('message.retryTurn')} side="bottom">
+          <button
+            type="button"
+            className={css.action}
+            aria-label={t('message.retryTurn')}
+            aria-disabled={retryUnavailable || undefined}
+            aria-describedby={retryUnavailable ? retryReasonId : undefined}
+            data-unavailable={retryUnavailable || undefined}
+            onClick={retryUnavailable ? undefined : onRetry}
+          >
+            <IconRefreshOutlineRegular />
+          </button>
+        </Tooltip>
+      )}
+      {onRetry !== undefined && retryUnavailable && (
+        <span id={retryReasonId} className={css.visuallyHidden}>{t('message.retryTurnUnavailable')}</span>
+      )}
       {onBranch !== undefined && (
         <Tooltip label={branchUnavailable ? t('message.branchUnavailable') : t('message.branch')} side="bottom">
           {/* Native disabled buttons do not deliver the hover/focus events Tooltip needs. */}

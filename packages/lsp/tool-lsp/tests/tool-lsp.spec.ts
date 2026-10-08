@@ -82,10 +82,10 @@ describe('tool-lsp registration', () => {
     expect(ctx.tools.get('lsp')?.timeoutMs).toBe(5000)
   })
 
-  it('exposes exactly the four operations in the schema enum', async () => {
+  it('exposes exactly the operations in the schema enum', async () => {
     const { ctx } = await mount(stubProvider(() => okLocations))
     const schema = ctx.tools.get('lsp')?.parameters as { properties: { operation: { enum: string[] } } }
-    expect(schema.properties.operation.enum).toEqual(['goToDefinition', 'findReferences', 'goToImplementation', 'hover'])
+    expect(schema.properties.operation.enum).toEqual(['goToDefinition', 'findReferences', 'goToImplementation', 'hover', 'diagnostics'])
   })
 
   it('has no default export (namespace plugin shape)', () => {
@@ -171,6 +171,34 @@ describe('tool-lsp execution', () => {
     const result = await call(ctx, { operation: 'hover', file_path: 'a.ts', line: 1, character: 1 }, workspaceRoot)
     expect(result.content[0]).toEqual({ type: 'text', text: 'number' })
     expect(result).toMatchObject({ isError: false, value: { kind: 'hover', hover: { contents: 'number' } } })
+  })
+
+  it('executes file-level diagnostics without a cursor and renders each problem', async () => {
+    const provider = stubProvider(() => ({
+      kind: 'diagnostics',
+      diagnostics: [{ range: { start: { line: 4, character: 2 }, end: { line: 4, character: 8 } }, severity: 'error' as const, message: 'boom', source: 'ts', code: '2345' }],
+      resolvedWorkspaceUri: pathToFileURL(workspaceRoot).href,
+    }))
+    const { ctx } = await mount(provider)
+    const result = await call(ctx, { operation: 'diagnostics', file_path: 'src/a.ts' }, workspaceRoot)
+    expect(result.isError).toBe(false)
+    // Diagnostics is file-level: the seam request carries no position.
+    expect(provider.seen[0]).not.toHaveProperty('position')
+    expect(result.content[0]).toEqual({ type: 'text', text: 'src/a.ts:5:3 error: [ts(2345)] boom' })
+  })
+
+  it('maps a diagnostic without source or code through the optional-key branches', async () => {
+    const range = { start: { line: 0, character: 0 }, end: { line: 0, character: 4 } }
+    const { ctx } = await mount(stubProvider(() => ({
+      kind: 'diagnostics',
+      diagnostics: [{ range, severity: 'warning' as const, message: 'plain' }],
+      resolvedWorkspaceUri: pathToFileURL(workspaceRoot).href,
+    })))
+    const result = await call(ctx, { operation: 'diagnostics', file_path: 'a.ts' }, workspaceRoot)
+    expect(result.isError).toBe(false)
+    expect(result.content[0]).toEqual({ type: 'text', text: 'a.ts:1:1 warning: plain' })
+    const value = result.value as { diagnostics: unknown[] }
+    expect(value.diagnostics).toStrictEqual([{ range, severity: 'warning', message: 'plain' }])
   })
 
   it('preserves an optional hover range in the canonical value', async () => {

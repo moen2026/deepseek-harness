@@ -1,9 +1,10 @@
 import type { ReactNode } from 'react'
 import {
-  IconApiOutlineRegular, IconBrowseOutlineRegular, IconCodeOutlineRegular, IconEditOutlineRegular, IconSearchOutlineRegular,
-  IconSparkleRegular,
+  IconApiOutlineRegular, IconBrowseOutlineRegular, IconCodeOutlineRegular, IconEditOutlineRegular, IconFullscreenOutlineRegular,
+  IconSearchOutlineRegular, IconSparkleRegular,
 } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { ToolCallOwnerProps, ToolTreeProps } from '../../contract/slots.ts'
+import { devServerPreview } from '../models/dev-server-model.ts'
 import { readCardModel } from '../models/read-card-model.ts'
 import { diffCardModel } from '../models/diff-card-model.ts'
 import { searchCardModel } from '../models/search-card-model.ts'
@@ -21,8 +22,16 @@ const VARIANT_ICONS: Record<ToolRowVariant, ReactNode> = {
   write: <IconEditOutlineRegular size={14} />,
   edit: <IconEditOutlineRegular size={14} />,
   code: <IconCodeOutlineRegular size={14} />,
+  // The closest existing glyph to a governed desktop screen; a dedicated
+  // cursor glyph needs designer approval before it lands.
+  'computer-use': <IconFullscreenOutlineRegular size={14} />,
   others: <IconSparkleRegular size={14} />,
 }
+
+/** The tools whose flattened output carries live process output: the places a dev-server banner can appear. */
+const PROCESS_OUTPUT_TOOLS = new Set([
+  'bash', 'pwsh', 'job_output', 'terminal_open', 'terminal_send', 'terminal_read', 'terminal_list',
+])
 
 /** Card props: the owner payload plus the render site's locale seat (plain prop). */
 export type GenericToolCardProps = ToolCallOwnerProps & {
@@ -45,6 +54,11 @@ export function GenericToolCard({ toolName, block, cwd, home, openFile, inspect,
   const state = model.state === 'ok' && terminal !== null && terminalFailed(terminal)
     ? 'error'
     : model.state
+  // A settled process-output call whose result names a loopback dev server
+  // offers one preview link; error and stopped rows keep their failure cue.
+  const preview = state === 'ok' && PROCESS_OUTPUT_TOOLS.has(toolName)
+    ? devServerPreview(model.output ?? '')
+    : undefined
   const singleFile = model.filePath !== undefined
   return (
     <ToolRow
@@ -67,6 +81,8 @@ export function GenericToolCard({ toolName, block, cwd, home, openFile, inspect,
       search={search}
       web={web}
       state={state}
+      previewUrl={preview?.url}
+      previewHost={preview?.host}
       filePath={model.filePath}
       onOpenFile={singleFile ? openFile : undefined}
       inspect={inspect}

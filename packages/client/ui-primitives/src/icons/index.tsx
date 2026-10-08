@@ -1656,3 +1656,21 @@ export const IconMicrophoneOutlineRegular = (props: IconProps) => (
 export const IconMicrophoneOutlineMedium = (props: IconProps) => (
   <IconMicrophoneOutlineArtwork {...props} strokeWidth={ICON_MEDIUM_STROKE} />
 )
+
+const IconSpeakerOutlineArtwork = ({ size = 16, className, strokeWidth }: WeightedIconProps) => (
+  <svg width={size} height={size} viewBox="0 0 16 16" className={className} fill="none" stroke="currentColor" strokeWidth={strokeWidth} aria-hidden="true">
+    <path d="M8.5 2.5L5 5.5H2.5V10.5H5L8.5 13.5V2.5Z" strokeLinejoin="round" />
+    <path d="M10.8 5.6C11.9 6.9 11.9 9.1 10.8 10.4" strokeLinecap="round" />
+    <path d="M12.9 3.9C14.6 6.1 14.6 9.9 12.9 12.1" strokeLinecap="round" />
+  </svg>
+)
+
+/** Speaker with uniform one-pixel strokes. */
+export const IconSpeakerOutlineRegular = (props: IconProps) => (
+  <IconSpeakerOutlineArtwork {...props} strokeWidth={ICON_REGULAR_STROKE} />
+)
+
+/** Speaker with uniform 1.3px strokes. */
+export const IconSpeakerOutlineMedium = (props: IconProps) => (
+  <IconSpeakerOutlineArtwork {...props} strokeWidth={ICON_MEDIUM_STROKE} />
+)

@@ -1,0 +1,28 @@
+# Bilingual-pair consistency record for 2026-09-27-repo-wiki-generator-source-kind.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write docs/persistence-changes/2026-09-27-repo-wiki-generator-source-kind.md
+/:
+  en: 3d5a424ae7d7e46b
+  zh: c22a8e4a62d8cc1a
+/2026-09-27-repo-wiki-generator-source-kind:
+  en: 5cdcd6dd0f5c247a
+  zh: d4e916904ea86516
+/2026-09-27-repo-wiki-generator-source-kind/summary:
+  en: 91fe9b42f635d2ca
+  zh: c917976606aadaa4
+/2026-09-27-repo-wiki-generator-source-kind/table-of-contents:
+  en: 6cf314a069ceb451
+  zh: 9adff678e9ecab3b
+/2026-09-27-repo-wiki-generator-source-kind/declaration:
+  en: 6907136f28e48c90
+  zh: 02f8298485f3d8e7
+/2026-09-27-repo-wiki-generator-source-kind/compatibility:
+  en: 7fbf987205c9e55a
+  zh: 03cbbf40ea2da5e6
+/2026-09-27-repo-wiki-generator-source-kind/verification:
+  en: ec3e51052ebaa110
+  zh: cca0d9ecb6ff2ac7
+/2026-09-27-repo-wiki-generator-source-kind/dev-note:
+  en: b75c8458928b72b9
+  zh: 003ba4e17b4b5269

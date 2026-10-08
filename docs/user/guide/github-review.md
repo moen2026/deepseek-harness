@@ -2,13 +2,14 @@
 
 English | [中文](github-review.zh.md)
 
-This opt-in overlay adds a signed GitHub endpoint to `dsh web`. When a pull request in the configured repository changes from draft to ready for review, the rule creates a titled root Session under the repository's Web Workspace and starts a read-only review prompt.
+This opt-in overlay adds a signed GitHub endpoint to `dsh web`. When a pull request in the configured repository changes from draft to ready for review, the rule creates a titled root Session under the repository's Web Workspace and starts a read-only review prompt; the overlay also mounts the `github_comment` tool so the review can publish its findings back as one pull request comment.
 
 ## Prerequisites
 
 - A local checkout that DSH may register as a Web Workspace.
 - A high-entropy GitHub webhook secret available through the `DSH_GITHUB_WEBHOOK_SECRET` credential reference.
 - A TLS reverse proxy or tunnel that can forward one public URL to the loopback listener.
+- A GitHub token with pull request write access available through the `DSH_GITHUB_REVIEW_TOKEN` credential reference; without it the review Session reports commenting as unavailable instead of posting.
 - GitHub webhook subscription to the Pull requests event with content type `application/json`.
 
 The overlay defaults the Workspace to the launch directory and the listener to `127.0.0.1:3081`. Override them with `DSH_GITHUB_REVIEW_WORKSPACE` and `DSH_GITHUB_WEBHOOK_PORT`.
@@ -65,7 +66,7 @@ Active:       yes
 
 ## Rule behavior
 
-The rule accepts only source `primary-github`, repository `deepseek-harness/deepseek-harness`, event `pull_request`, and action `ready_for_review`. It passes the exact head SHA plus selected PR fields to the review prompt, labeling the JSON as untrusted metadata and forbidding file, branch, PR, or GitHub mutation.
+The rule accepts only source `primary-github`, repository `deepseek-harness/deepseek-harness`, event `pull_request`, and action `ready_for_review`. It passes the exact head SHA plus selected PR fields to the review prompt, labels the JSON as untrusted metadata, forbids file, branch, and repository mutation, and limits GitHub interaction to one `github_comment` post.
 
 The Session request selects the `standard` agent preset and `read-only` permission preset. `workspacePath` is canonicalized through `WorkspaceRegistry.create()`, so the first matching delivery creates the Web Workspace when absent and later deliveries reuse it.
 
@@ -99,4 +100,4 @@ if (workspacePath === undefined) return null
 
 The webhook runtime stores no delivery or execution state. Repeated delivery runs the rule and may create another Session. A crash loses rule calls that have not admitted their prompt. After prompt admission, the ordinary Session log, persistence, Workspace, and Agent lifecycle own the work.
 
-The webhook secret authenticates inbound GitHub data only. It grants neither rule code nor the created Agent outbound GitHub access; configure that authority separately when a rule or Agent needs it.
+The webhook secret authenticates inbound GitHub data only. Outbound authority is separate: the overlay mounts `@deepseek-ai/dsh-tool-github` with the `DSH_GITHUB_REVIEW_TOKEN` credential reference, and a review Session can publish its findings as one pull request comment only while that credential resolves. Deployments that want no outbound access omit that mount.

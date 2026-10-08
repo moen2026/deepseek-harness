@@ -1,0 +1,49 @@
+# Your patch layer for this dsh profile, applied after every bundle layer:
+# a top-level YAML array of loader patch entries (id-targeted config
+# overrides, disables, and insert lists; `!!js` expressions allowed).
+- id: ui-settings-general
+  name: "@deepseek-ai/dsh-client-ui-settings-general"
+  config:
+    welcomeNoticeVersion: 2026-08-13.1
+
+# Qoder-equivalent capability tier. The repository ships `presets/full.patch.yml`
+# (persistent terminals, str_replace_editor, LSP symbol queries, cross-session
+# history search) but keeps `standard` as the shipped default, so the choice to
+# run the wider tool set lives here.
+- id: agent-preset-registry
+  config:
+    default: full
+
+# Durable cross-session search index. Both bundle layers ship this row on an
+# ephemeral in-memory index with `openAt: never`; `first-search` keeps Node's
+# experimental SQLite warning out of startup until a search actually runs.
+- id: session-query-sqlite
+  config:
+    path: !!js dshHomePath('session-query.sqlite')
+    openAt: first-search
+
+# Reminders and relative-date understanding. The web layer ships these three
+# rows disabled; `schedule` also publishes the model-facing `schedule_*` tools.
+- id: time-context
+  disabled: false
+
+- id: schedule
+  disabled: false
+
+- id: ui-schedule
+  disabled: false
+
+# LSP provider gate. `dsh-lsp-stdio` resolves every configured server executable
+# when it mounts and rejects the plugin when one is missing, so the `full`
+# preset keeps the row disabled until this variable names a real binary.
+# Start the harness with:
+#   $env:DSH_LSP_TYPESCRIPT_COMMAND =
+#     'E:\DSHqoder\packages\lsp\lsp-stdio\node_modules\.bin\typescript-language-server.CMD'
+# A memory or other MCP server is added per connection here, one row each:
+#   - id: mcp-memory
+#     name: '@deepseek-ai/dsh-mcp-client'
+#     config:
+#       serverName: memory
+#       transport: stdio
+#       command: npx
+#       args: ['-y', '<package>']

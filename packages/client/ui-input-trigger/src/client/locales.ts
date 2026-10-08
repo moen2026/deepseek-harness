@@ -1,7 +1,7 @@
 /**
  * `slash.menu` namespace dictionaries: group titles keyed by source name
  * (the lookup chain returns the key itself, so an unknown source shows its
- * raw name), the pending row, and the listbox and header aria labels.
+ * raw name), the pending row, the failed row, and the listbox and header aria labels.
  */
 
 /** Simplified Chinese dictionary (the key-set source of truth). */
@@ -10,6 +10,7 @@ export const zh = {
   'skill': '技能',
   'subagent': '子智能体',
   'loading': '正在加载…',
+  'load.failed': '建议加载失败',
   'drill.aria': '进入目录',
   'drill.hint': '进入目录',
   'drill.key': 'Tab',
@@ -26,6 +27,7 @@ export const en = {
   'skill': 'Skills',
   'subagent': 'Subagents',
   'loading': 'Loading…',
+  'load.failed': 'Suggestions failed to load',
   'drill.aria': 'Browse folder',
   'drill.hint': 'Browse folder',
   'drill.key': 'Tab',

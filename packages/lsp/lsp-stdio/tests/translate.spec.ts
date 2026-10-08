@@ -1,10 +1,13 @@
 import { describe, expect, it } from 'vitest'
 import {
+  diagnosticReportItems,
   negotiatePositionEncoding,
+  normalizeDiagnostics,
   normalizeHover,
   normalizeLocations,
   requestMethod,
   supportsOperation,
+  supportsPullDiagnostics,
   supportsTransientOpen,
 } from '@deepseek-ai/dsh-lsp-stdio'
 import type { WireServerCapabilities } from '@deepseek-ai/dsh-lsp-stdio/src/protocol.ts'
@@ -17,6 +20,7 @@ describe('requestMethod', () => {
     expect(requestMethod('findReferences')).toBe('textDocument/references')
     expect(requestMethod('goToImplementation')).toBe('textDocument/implementation')
     expect(requestMethod('hover')).toBe('textDocument/hover')
+    expect(requestMethod('diagnostics')).toBe('textDocument/diagnostic')
   })
 })
 
@@ -169,5 +173,57 @@ describe('normalizeHover', () => {
   it('rejects a malformed range instead of silently dropping it', () => {
     expect(() => normalizeHover({ contents: 'x', range: { start: { line: 1 } } }))
       .toThrow(expect.objectContaining({ code: 'LSP_MALFORMED_RESPONSE' }))
+  })
+})
+
+describe('supportsOperation diagnostics', () => {
+  it('accepts diagnostics when a pull provider is advertised', () => {
+    expect(supportsOperation({ diagnosticProvider: true }, 'diagnostics')).toBe(true)
+    expect(supportsPullDiagnostics({ diagnosticProvider: true })).toBe(true)
+    expect(supportsPullDiagnostics({})).toBe(false)
+  })
+
+  it('accepts a push-only server that supports transient open', () => {
+    // No diagnosticProvider, but `textDocumentSync: 2` means it tracks documents and may publish.
+    expect(supportsOperation({ textDocumentSync: 2 }, 'diagnostics')).toBe(true)
+    expect(supportsOperation({}, 'diagnostics')).toBe(false)
+  })
+})
+
+describe('diagnosticReportItems', () => {
+  it('extracts items from a full report and returns none for unchanged or missing', () => {
+    const items = [{ range: RANGE, message: 'x' }]
+    expect(diagnosticReportItems({ kind: 'full', items })).toEqual(items)
+    expect(diagnosticReportItems({ kind: 'unchanged' })).toEqual([])
+    expect(diagnosticReportItems(null)).toEqual([])
+    expect(diagnosticReportItems(items)).toEqual(items)
+  })
+
+  it('returns none for a full report whose items are not an array', () => {
+    expect(diagnosticReportItems({ kind: 'full', items: 'x' })).toEqual([])
+  })
+})
+
+describe('normalizeDiagnostics', () => {
+  it('maps severity codes and carries optional source/code through', () => {
+    const [first] = normalizeDiagnostics([
+      { range: RANGE, severity: 2, message: 'warn', source: 'ts', code: 2345 },
+      { range: RANGE, severity: 3, message: 'info' },
+      { range: RANGE, severity: 4, message: 'hint' },
+      { range: RANGE, message: 'default-is-error' },
+    ])
+    expect(first).toEqual({ range: { start: { line: 1, character: 2 }, end: { line: 1, character: 5 } }, severity: 'warning', message: 'warn', source: 'ts', code: '2345' })
+    expect(normalizeDiagnostics([{ range: RANGE, message: 'x' }])[0]?.severity).toBe('error')
+  })
+
+  it('rejects a diagnostic with a malformed range', () => {
+    expect(() => normalizeDiagnostics([{ range: { start: { line: 1 } }, message: 'x' } as never]))
+      .toThrow(expect.objectContaining({ code: 'LSP_MALFORMED_RESPONSE' }))
+  })
+
+  it('defaults a non-string message to empty', () => {
+    expect(normalizeDiagnostics([{ range: RANGE, message: 123 } as never])).toEqual([
+      { range: { start: { line: 1, character: 2 }, end: { line: 1, character: 5 } }, severity: 'error', message: '' },
+    ])
   })
 })

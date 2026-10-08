@@ -6,6 +6,8 @@
  */
 
 import type {
+  LspDiagnostic,
+  LspDiagnosticSeverity,
   LspHover,
   LspLocation,
   LspOperation,
@@ -14,6 +16,8 @@ import type {
 import { LspError } from '@deepseek-ai/dsh-lsp'
 import { assertNever } from '@deepseek-ai/dsh-util-values'
 import type {
+  WireDiagnostic,
+  WireDocumentDiagnosticReport,
   WireHover,
   WireLocation,
   WireLocationLink,
@@ -35,6 +39,9 @@ export function requestMethod(operation: LspOperation): string {
     case 'findReferences': return 'textDocument/references'
     case 'goToImplementation': return 'textDocument/implementation'
     case 'hover': return 'textDocument/hover'
+    // Only the pull-diagnostic path issues this request; a push-only server never calls requestMethod
+    // for `diagnostics`.
+    case 'diagnostics': return 'textDocument/diagnostic'
     /* v8 ignore next -- exhaustive over the closed LspOperation union; unreachable. */
     default: return assertNever(operation, 'requestMethod')
   }
@@ -47,6 +54,7 @@ function capabilityValue(capabilities: WireServerCapabilities, operation: LspOpe
     case 'findReferences': return capabilities.referencesProvider
     case 'goToImplementation': return capabilities.implementationProvider
     case 'hover': return capabilities.hoverProvider
+    case 'diagnostics': return capabilities.diagnosticProvider
     /* v8 ignore next -- exhaustive over the closed LspOperation union; unreachable. */
     default: return assertNever(operation, 'capabilityValue')
   }
@@ -66,7 +74,24 @@ function supportsCapability(value: WireProviderCapability): boolean {
  * @returns true when the corresponding provider capability is present.
  */
 export function supportsOperation(capabilities: WireServerCapabilities, operation: LspOperation): boolean {
+  // Diagnostics has no single capability gate: a server may pull (`diagnosticProvider`) or push
+  // (`publishDiagnostics`, advertised by no capability). A push-only server that tracks documents is
+  // reachable, so accept diagnostics whenever either path exists; the transient-open gate below still
+  // applies to both.
+  if (operation === 'diagnostics') {
+    return supportsPullDiagnostics(capabilities) || supportsTransientOpen(capabilities.textDocumentSync)
+  }
   return supportsCapability(capabilityValue(capabilities, operation))
+}
+
+/**
+ * Whether the server advertises the pull `textDocument/diagnostic` provider (as opposed to relying on
+ * pushed `publishDiagnostics`).
+ * @param capabilities - the server's `initialize` capabilities.
+ * @returns true when a `diagnosticProvider` capability is present.
+ */
+export function supportsPullDiagnostics(capabilities: WireServerCapabilities): boolean {
+  return supportsCapability(capabilityValue(capabilities, 'diagnostics'))
 }
 
 /**
@@ -232,4 +257,57 @@ function isMarkedString(value: unknown): value is WireMarkedString {
 /** Create the stable structured error used for malformed server result payloads. */
 function malformedResponse(message: string): LspError {
   return new LspError(message, 'LSP_MALFORMED_RESPONSE')
+}
+
+/**
+ * Extract the diagnostic items from a pull `DocumentDiagnosticReport` (or a bare array from a
+ * non-conforming server). `unchanged` and a missing/failed report yield no items; the caller renders
+ * them as "no diagnostics", which the instance only reaches after a fresh open (no prior result).
+ * @param report - the raw `textDocument/diagnostic` result.
+ * @returns the wire diagnostics to normalize (possibly empty).
+ */
+export function diagnosticReportItems(report: unknown): readonly WireDiagnostic[] {
+  if (report === null || report === undefined) return []
+  if (Array.isArray(report)) return report as readonly WireDiagnostic[]
+  const record = report as WireDocumentDiagnosticReport
+  if (record.kind === 'unchanged') return []
+  if (!Array.isArray(record.items)) return []
+  return record.items as readonly WireDiagnostic[]
+}
+
+/**
+ * Normalize wire diagnostics into the seam's closed diagnostic shape. An absent or unknown severity
+ * becomes `error` (a diagnostic with no severity is almost always an error the server under-reported);
+ * `source` and `code` are carried through only when present.
+ * @param items - the wire diagnostics from a push or pull report.
+ * @returns the normalized diagnostics (empty for no items).
+ */
+export function normalizeDiagnostics(items: readonly WireDiagnostic[]): LspDiagnostic[] {
+  const diagnostics: LspDiagnostic[] = []
+  for (const item of items) {
+    // oxlint-disable-next-line typescript/no-unnecessary-condition -- a non-conforming server can deliver malformed items here.
+    if (item === null || typeof item !== 'object' || !isRange(item.range)) {
+      throw malformedResponse('LSP diagnostic contained a malformed range')
+    }
+    const message = typeof item.message === 'string' ? item.message : ''
+    const diagnostic: LspDiagnostic = {
+      range: toRange(item.range),
+      severity: normalizeSeverity(item.severity),
+      message,
+      ...(typeof item.source === 'string' && item.source.length > 0 ? { source: item.source } : {}),
+      ...(item.code !== undefined && item.code !== null ? { code: String(item.code) } : {}),
+    }
+    diagnostics.push(diagnostic)
+  }
+  return diagnostics
+}
+
+/** Map the protocol's numeric `DiagnosticSeverity` (`1`–`4`) to the seam's names; anything else is `error`. */
+function normalizeSeverity(severity: number | undefined): LspDiagnosticSeverity {
+  switch (severity) {
+    case 2: return 'warning'
+    case 3: return 'information'
+    case 4: return 'hint'
+    default: return 'error'
+  }
 }

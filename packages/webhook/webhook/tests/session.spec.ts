@@ -1,5 +1,8 @@
 import type { Context } from '@deepseek-ai/cordis'
+import type { AttachmentId } from '@deepseek-ai/dsh-attachment'
+import { brandString } from '@deepseek-ai/dsh-brand'
 import { ReasoningEffortId, type LlmCallConfig } from '@deepseek-ai/dsh-llm'
+import type { SessionId } from '@deepseek-ai/dsh-session'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   WebhookDeliveryId,
@@ -21,6 +24,7 @@ interface SessionHarness {
   readonly ctx: Context
   readonly calls: string[]
   readonly messages: unknown[]
+  readonly createdSessionIds: string[]
   readonly modelListeners: Map<string, unknown>
   readonly agent: unknown
   markRequestHeader(): void
@@ -38,6 +42,7 @@ afterEach(() => {
 function harness(options: HarnessOptions = {}): SessionHarness {
   const calls: string[] = []
   const messages: unknown[] = []
+  const createdSessionIds: string[] = []
   const modelListeners = new Map<string, unknown>()
   const controller = new AbortController()
   let requestHeader: object | undefined
@@ -117,8 +122,9 @@ function harness(options: HarnessOptions = {}): SessionHarness {
       },
     },
     agents: {
-      async create(createOptions: { setup?: (ctx: unknown, agent: unknown) => Promise<void> }) {
+      async create(createOptions: { sessionId?: string; setup?: (ctx: unknown, agent: unknown) => Promise<void> }) {
         calls.push('agent-create')
+        createdSessionIds.push(createOptions.sessionId ?? '')
         if (options.failAt === 'agent') throw new Error('agent failed')
         await createOptions.setup?.({
           on(event: string, listener: unknown) {
@@ -142,6 +148,7 @@ function harness(options: HarnessOptions = {}): SessionHarness {
     ctx: fake as unknown as Context,
     calls,
     messages,
+    createdSessionIds,
     modelListeners,
     agent,
     markRequestHeader() { requestHeader = {} },
@@ -166,8 +173,8 @@ const delivery: VerifiedWebhookDelivery = {
   receivedAt: 1,
 }
 
-async function create(test: SessionHarness, request = test.request): Promise<void> {
-  await createWebhookSession(
+function create(test: SessionHarness, request = test.request): Promise<SessionId> {
+  return createWebhookSession(
     test.ctx,
     delivery,
     WebhookRuleId('review'),
@@ -217,6 +224,57 @@ describe('webhook Session creation', () => {
         kind: 'webhook', provider: 'github', source: 'primary', deliveryId: 'delivery', ruleId: 'review',
       },
     })
+  })
+
+  it('creates the Session under a caller-supplied id', async () => {
+    const test = harness()
+    const sessionId = await create(test, {
+      ...test.request,
+      sessionId: brandString<SessionId>('connector-chat'),
+    })
+    expect(sessionId).toBe('connector-chat')
+    expect(test.createdSessionIds).toEqual(['connector-chat'])
+  })
+
+  it('appends admitted attachment blocks after the prompt text', async () => {
+    const test = harness()
+    await create(test, {
+      ...test.request,
+      attachments: [
+        {
+          type: 'image',
+          attachment: {
+            attachmentId: brandString<AttachmentId>('att-1'),
+            mediaType: 'image/png',
+            bytes: 7,
+            width: 2,
+            height: 3,
+            name: 'shot.png',
+          },
+        },
+        {
+          type: 'file',
+          attachment: { attachmentId: brandString<AttachmentId>('att-2'), name: 'notes.txt', bytes: 0 },
+        },
+      ],
+    })
+    expect(test.messages[0]).toMatchObject({
+      role: 'user',
+      content: [
+        { type: 'text', text: 'Review it' },
+        { type: 'image', attachment: {
+          attachmentId: 'att-1', mediaType: 'image/png', bytes: 7, width: 2, height: 3, name: 'shot.png',
+        } },
+        { type: 'file', attachment: { attachmentId: 'att-2', name: 'notes.txt', bytes: 0 } },
+      ],
+    })
+  })
+
+  it('generates a webhook-prefixed id when the request omits one', async () => {
+    const test = harness()
+    const sessionId = await create(test)
+    expect(sessionId).toMatch(/^webhook-/)
+    expect(test.createdSessionIds).toEqual([sessionId])
   })
 
   it('uses a complete explicit model without consulting the default', async () => {
@@ -278,9 +336,19 @@ describe('webhook Session creation', () => {
     [{ workspacePath: '/w', title: 't', prompt: '', agentPreset: 'a', permissionPreset: 'x' }, /prompt/],
     [{ workspacePath: '/w', title: 't', prompt: 'p', agentPreset: '', permissionPreset: 'x' }, /agentPreset/],
     [{ workspacePath: '/w', title: 't', prompt: 'p', agentPreset: 'a', permissionPreset: '' }, /permissionPreset/],
+    [{ workspacePath: '/w', title: 't', prompt: 'p', agentPreset: 'a', permissionPreset: 'x', sessionId: '' }, /sessionId/],
+    [{ workspacePath: '/w', title: 't', prompt: 'p', agentPreset: 'a', permissionPreset: 'x', sessionId: 7 }, /sessionId/],
     [{ workspacePath: '/w', title: 't', prompt: 'p', agentPreset: 'a', permissionPreset: 'x', model: null }, /model must be an object/],
     [{ workspacePath: '/w', title: 't', prompt: 'p', agentPreset: 'a', permissionPreset: 'x', model: {} }, /provider/],
     [{ workspacePath: '/w', title: 't', prompt: 'p', agentPreset: 'a', permissionPreset: 'x', model: { provider: 'p', model: 'm', maxTokens: 0 } }, /maxTokens/],
+    [{ workspacePath: '/w', title: 't', prompt: 'p', agentPreset: 'a', permissionPreset: 'x', attachments: 'x' }, /attachments must be an array/],
+    [{ workspacePath: '/w', title: 't', prompt: 'p', agentPreset: 'a', permissionPreset: 'x', attachments: ['x'] }, /attachments entries must be JSON objects/],
+    [{ workspacePath: '/w', title: 't', prompt: 'p', agentPreset: 'a', permissionPreset: 'x', attachments: [{ type: 'sticker' }] }, /entry type must be 'image' or 'file'/],
+    [{ workspacePath: '/w', title: 't', prompt: 'p', agentPreset: 'a', permissionPreset: 'x', attachments: [{ type: 'image' }] }, /attachment reference object/],
+    [{ workspacePath: '/w', title: 't', prompt: 'p', agentPreset: 'a', permissionPreset: 'x', attachments: [{ type: 'image', attachment: {} }] }, /attachmentId/],
+    [{ workspacePath: '/w', title: 't', prompt: 'p', agentPreset: 'a', permissionPreset: 'x', attachments: [{ type: 'image', attachment: { attachmentId: 'a', bytes: 1, mediaType: 'image/svg+xml', width: 1, height: 1 } }] }, /mediaType/],
+    [{ workspacePath: '/w', title: 't', prompt: 'p', agentPreset: 'a', permissionPreset: 'x', attachments: [{ type: 'image', attachment: { attachmentId: 'a', bytes: 1, mediaType: 'image/png', width: 0, height: 1 } }] }, /width/],
+    [{ workspacePath: '/w', title: 't', prompt: 'p', agentPreset: 'a', permissionPreset: 'x', attachments: [{ type: 'file', attachment: { attachmentId: 'a', bytes: 1 } }] }, /file attachment reference name/],
   ] as const)('rejects malformed rule result %# before side effects', async (request, message) => {
     const test = harness()
     await expect(create(test, request as never)).rejects.toThrow(message)

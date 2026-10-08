@@ -341,6 +341,8 @@ Remote 方法 `schedule.list({ sessionId })`、模型 `schedule_list` 和 Sessio
 
 Web bundle 将 `ui-schedule` 与宿主能力一起挂载。[客户端包](../../packages/client/ui-schedule/README.zh.md) 负责目录、空状态与删除控件。页面单独筛选全部、活动和未运行任务，保留未运行任务详情及详情页签条内的原 Session 入口，并要求显式确认删除。“规则”和“发送记录”将任务设置与按需分页加载的已保存回执分开。回执与未运行状态均不确认模型执行。
 
+心跳巡逻乘用同一投递机制。[heartbeat 包](../../packages/schedule/heartbeat/README.zh.md) 注册 `heartbeat_enable` 与 `heartbeat_disable`，为每个会话管理一条周期任务，其 prompt 携带完整巡逻语义——读取工作区心跳文件，处理其待办项，更新文件，没有待办项时回答 `HEARTBEAT_OK`。
+
 ## 修改时间
 
 `schedule.update({ sessionId, id, expected, change })` 修改活动任务，不激活其 Session。`expected` 是完整的已观察 `ScheduleRecord`，不是附带额外元数据的目录条目。Host 在投递和删除共用的 FIFO 内将它与当前记录比较。正常投递可能在编辑期间推进目标；此时旧快照返回 `schedule_conflict`，不会覆盖当前规则。任务不存在或绑定不匹配时返回 `schedule_not_found`，未运行任务返回 `schedule_ended`。
@@ -537,6 +539,24 @@ Durable task set changed; clients refetch global task and Session-active catalog
  * @mode emit
  */
 'schedule/changed'(): void
+```
+
+Source: [`packages/schedule/schedule/src/types.ts`](../../packages/schedule/schedule/src/types.ts)
+
+<a id="scheduledelivered--emit"></a>
+
+#### `schedule/delivered` — emit
+
+One admitted reminder reached its Session and its commit landed; surface consumers may alert the operator. Raised once per committed member.
+
+```ts cordis-catalog
+/**
+ * One admitted reminder reached its Session and its commit landed; surface
+ * consumers may alert the operator. Raised once per committed member.
+ * @mode emit
+ * @param payload - delivered task identity, its Session, and the delivery instant.
+ */
+'schedule/delivered'(payload: ScheduleDelivered): void
 ```
 
 Source: [`packages/schedule/schedule/src/types.ts`](../../packages/schedule/schedule/src/types.ts)

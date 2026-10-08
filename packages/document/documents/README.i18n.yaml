@@ -1,0 +1,58 @@
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write packages/document/documents/README.md
+/:
+  en: 13207f5139dc197b
+  zh: c7abf9abf9bc91e9
+/deepseek-ai-dsh-documents:
+  en: da9924bbc35a6e51
+  zh: d5e8dfecb56269b3
+/deepseek-ai-dsh-documents/summary:
+  en: 424bc83371e7a0ab
+  zh: 7be77b5261e305ca
+/deepseek-ai-dsh-documents/table-of-contents:
+  en: d152484eb41ac6b4
+  zh: ffab54373e9e61f0
+/deepseek-ai-dsh-documents/use-this-package:
+  en: 3940c45949dad105
+  zh: 9154212268c75e3c
+/deepseek-ai-dsh-documents/use-this-package/when-to-choose-it:
+  en: cfd362b660a3d17b
+  zh: 9419372ed82f6952
+/deepseek-ai-dsh-documents/use-this-package/composing-a-documents-stack:
+  en: c99a5ba9ed1f0312
+  zh: 5fb30bd52e1ec74d
+/deepseek-ai-dsh-documents/use-this-package/the-operation:
+  en: 2329995ded94f564
+  zh: 472e6fef90f808f8
+/deepseek-ai-dsh-documents/use-this-package/failures-and-recovery:
+  en: 0a27a8b21e318805
+  zh: a395f589b72831f2
+/deepseek-ai-dsh-documents/understand-the-implementation:
+  en: 1e0acac55fc6c314
+  zh: 598a10baf8259d8e
+/deepseek-ai-dsh-documents/understand-the-implementation/design-philosophy:
+  en: c3e922d128fae031
+  zh: 88112a82a9a8c1ac
+/deepseek-ai-dsh-documents/understand-the-implementation/source-map:
+  en: 6856d7e0ac6d836c
+  zh: 9ad0eb4be74f41a2
+/deepseek-ai-dsh-documents/understand-the-implementation/registration-and-disposal-lifecycle:
+  en: 180a576e566bf4ef
+  zh: bf81024c78fb4e91
+/deepseek-ai-dsh-documents/further-exploration:
+  en: 1eb103083d3cf129
+  zh: 1ff95b29a5ed69bb
+/deepseek-ai-dsh-documents/model-experience:
+  en: c5f6e39c49d1938e
+  zh: 6ca3965b94ab5225
+/deepseek-ai-dsh-documents/model-experience/kv-cache-effect:
+  en: d408576bc7d0c489
+  zh: 945aa89c3c0d3b6b
+/deepseek-ai-dsh-documents/known-limitations-and-deferred-work:
+  en: 3f6b411b4eb48927
+  zh: 2f65048be68e4eb9
+/deepseek-ai-dsh-documents/known-limitations-and-deferred-work/dev-note:
+  en: e67f633dc6fe7773
+  zh: cdd2a143b725accd

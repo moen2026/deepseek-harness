@@ -130,6 +130,7 @@ export class ScheduleRuntime {
             ...appendDelivery(task, { scheduledAt: task.record.scheduledAt, deliveredAt, messageId: message.id }, this.retention),
           })
           committed.add(task.record.id)
+          this.emitDelivered(task, deliveredAt)
         }
         for (const { task: member, occurrence } of occurrences) {
           await this.commit({
@@ -139,6 +140,7 @@ export class ScheduleRuntime {
             ...appendDelivery(member, { scheduledAt: occurrence.occurrenceAt, deliveredAt, messageId: message.id }, this.retention),
           })
           committed.add(member.record.id)
+          this.emitDelivered(member, deliveredAt)
         }
       } catch (error: unknown) {
         // Successful commits and targets made future by clock rollback keep their timer obligation.
@@ -161,6 +163,29 @@ export class ScheduleRuntime {
       this.timer = setTimeout(() => { this.timer = undefined; this.requestDrive() },
         Math.max(0, Math.min(next - Date.now(), MAX_TIMER_DELAY_MS)))
       this.timer.unref()
+    }
+  }
+
+  /**
+   * Publish one post-commit `schedule/delivered` receipt, containing synchronous
+   * listener failures: the delivery already landed durably, so an observer must
+   * not reject or fail the delivery loop.
+   * @param task - the delivered task, whose commit already landed.
+   * @param deliveredAt - canonical instant shared by the whole admitted batch.
+   */
+  private emitDelivered(task: ScheduleTask, deliveredAt: string): void {
+    try {
+      this.ctx.emit('schedule/delivered', {
+        sessionId: task.sessionId,
+        id: task.record.id,
+        title: task.record.title,
+        deliveredAt,
+      })
+    } catch (error: unknown) {
+      // Swallows synchronous observer exceptions only: emit dispatches listeners
+      // inline and nothing else runs in the try. The receipt is a notification,
+      // not a transaction participant.
+      this.ctx.logger.warn(`schedule: schedule/delivered listener failed: ${String(error)}`)
     }
   }
 }

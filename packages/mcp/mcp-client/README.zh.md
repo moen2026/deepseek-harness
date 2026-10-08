@@ -58,6 +58,7 @@ kind: "package-reference"
 | `serverName` | 必填 | 服务器工具名称的 namespace；`[A-Za-z0-9_-]{1,32}`，在一个注册作用域内唯一 |
 | `command` / `args` / `env` / `cwd` | — | stdio：可执行文件、参数、合并到清洗过的环境之上的额外环境变量、工作目录 |
 | `url` / `headers` | — | streamable-http：端点 URL 与额外请求标头 |
+| `oauth` | — | streamable-http：交互式 OAuth 2.0 授权；见 [OAuth](#oauth) |
 | `toolCallTimeoutMs` | `60,000` | 每次 `tools/call` 或资源请求的超时 |
 | `maxInstructionBytes` | `32,768` | 包括服务器归属信息在内的服务器指令 UTF-8 字节上限；超出时连接失败 |
 | `failOnStartupError` | `false` | 初始连接或工具同步失败时拒绝插件激活 |
@@ -69,6 +70,10 @@ kind: "package-reference"
 生成的[配置目录](../../../docs/config-catalog.zh.md#deepseek-aidsh-mcp-client)是每个受支持字段的穷尽式真源。
 
 启动后，服务器的工具会以 `mcp__<serverName>__<tool>` 形式出现——试着用一条提示词调用其中一个。如果初始连接失败，harness 仍会启动，但该服务器的工具不会出现，并会记录一条错误。设置 `failOnStartupError: true` 会拒绝插件激活；[app-boot 的启动策略](../../boot/app-boot/README.zh.md)仍允许可选 MCP 配置项失败，而不中止 harness。
+
+### OAuth
+
+需要 OAuth 的服务器接受 `transport: streamable-http` 配置项中的 `oauth` 块。首次加载时，插件会打开浏览器并通过 loopback 回调完成带 PKCE 的授权码流程，然后把令牌存入 credential seam 的 grant 记录（`mcp-client/<server-name>`）；后续加载复用已存令牌，不再重复浏览器授权，过期的访问令牌通过已存的刷新令牌自动刷新。字段：`scopes`（默认 `[]`；服务器需要显式开启刷新令牌时加入 `offline_access`）、`redirectUri`（默认使用操作系统分配的 loopback 端口）、`clientId` / `clientSecret`（用于在 Harness 之外注册的客户端；省略时动态注册），以及 `callbackTimeoutMs`（默认 `300000`）。该流程要求 [credential-local provider](../../credentials/credentials-local/README.zh.md) 先于本插件加载；没有它时配置 `oauth` 会在加载时使插件失败。
 
 ### 工具命名与共存
 

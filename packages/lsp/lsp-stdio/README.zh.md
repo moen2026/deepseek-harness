@@ -9,7 +9,7 @@ kind: "package-reference"
 
 ## 概述
 
-使用 `dsh-lsp-stdio` 可让 agent（智能体）从显式配置的本地语言服务器获得定义、引用、实现与悬停信息。它把文件扩展名映射为语言标识符，按需为每个工作区启动一台服务器，并在每次查询时重新读取文件，不在查询之间保留文档状态。语言服务器进程与源文件读取共享已挂载的文件系统和子进程环境。本包不安装服务器，也不提供沙箱；部署方必须提供命令、映射和所需的隔离措施。同一服务器与工作区的查询串行执行，不同工作区可并行运行。
+使用 `dsh-lsp-stdio` 可让 agent（智能体）从显式配置的本地语言服务器获得定义、引用、实现、悬停信息与文件当前的诊断。它把文件扩展名映射为语言标识符，按需为每个工作区启动一台服务器，并在每次查询时重新读取文件，不在查询之间保留文档状态。语言服务器进程与源文件读取共享已挂载的文件系统和子进程环境。本包不安装服务器，也不提供沙箱；部署方必须提供命令、映射和所需的隔离措施。同一服务器与工作区的查询串行执行，不同工作区可并行运行。
 
 ## 目录
 
@@ -68,7 +68,7 @@ kind: "package-reference"
 
 ### 可观察的成功与失败
 
-成功的导航返回规范化位置，悬停返回规范化文本或无可悬停提示；空结果是成功的无结果响应。当服务器不支持该操作或临时打开／关闭同步（`LSP_UNSUPPORTED_OPERATION`）、源文件缺失、非普通文件、非 UTF-8、过大或位于规范工作区之外（在服务器启动前被拒绝），或服务器返回格式错误的载荷（`LSP_MALFORMED_RESPONSE`）时，查询会失败。被强制杀死的 harness 会让服务器继续运行直到自行退出——优雅关闭只发生在服务释放时。
+成功的导航返回规范化位置，悬停返回规范化文本或无可悬停提示，诊断返回文档当前的疑难（规范化的严重度、范围与消息）或空列表；空结果是成功的无结果响应。诊断查询会临时打开文件，然要么拉取（服务器声明 `diagnosticProvider` 时发 `textDocument/diagnostic`），要么在有限窗口内等待服务器 `publishDiagnostics`。当服务器不支持该操作或临时打开／关闭同步（`LSP_UNSUPPORTED_OPERATION`）、源文件缺失、非普通文件、非 UTF-8、过大或位于规范工作区之外（在服务器启动前被拒绝），或服务器返回格式错误的载荷（`LSP_MALFORMED_RESPONSE`）时，查询会失败。被强制杀死的 harness 会让服务器继续运行直到自行退出——优雅关闭只发生在服务释放时。
 
 ### 安全边界
 
@@ -103,14 +103,14 @@ kind: "package-reference"
 | [`src/instance.ts`](src/instance.ts) | 单个服务器进程：initialize 握手、串行化临时打开查询、有边界的释放 |
 | [`src/connection.ts`](src/connection.ts) | JSON-RPC 端点：id 关联、出站请求、入站服务器请求、stderr 上限 |
 | [`src/framing.ts`](src/framing.ts) | `Content-Length` 分帧与有边界的解码器 |
-| [`src/protocol.ts`](src/protocol.ts) | 协议类型子集：能力、位置、悬停、文本文档同步 |
-| [`src/translate.ts`](src/translate.ts) | 能力检查、UTF-16 协商、`Location`／`LocationLink`／hover 规范化 |
+| [`src/protocol.ts`](src/protocol.ts) | 协议类型子集：能力、位置、悬停、诊断、文本文档同步 |
+| [`src/translate.ts`](src/translate.ts) | 能力检查、UTF-16 协商、`Location`／`LocationLink`／hover／诊断规范化 |
 | [`src/abort.ts`](src/abort.ts) | 融合调用方与释放信号的取消辅助 |
 | — | 不发布运行时不变式伴生入口；进程池与队列是私有状态，本提供方也不发布独立的生命周期事件流或可枚举快照。 |
 
 ### 协议行为
 
-初始化会声明 UTF-16 位置、工作区文件夹与配置、markdown／plaintext hover，以及定义与实现使用的 link 支持，且不进行动态注册；服务器返回的能力具有最终决定权。服务器省略 `positionEncoding` 时默认为 `utf-16`；其他任何值都会使查询失败。客户端通过静态配置回答 `workspace/configuration`，接受生命周期记账请求，并拒绝 `workspace/applyEdit`——它绝不应用编辑或运行命令。导航直接映射 `Location`，并从 `LocationLink` 的 `targetUri` + `targetSelectionRange` 映射；hover 规范化接受 `MarkupContent` 与 `MarkedString` 形状，保留字符串值，把带 language tag 的值渲染为围栏代码，并用一个空行连接数组。缺失结果、格式错误的范围或位置，以及格式错误的 hover 编码，都会以结构化 `LSP_MALFORMED_RESPONSE` 错误失败。
+初始化会声明 UTF-16 位置、工作区文件夹与配置、markdown／plaintext hover、定义与实现使用的 link 支持，以及拉取（`diagnostic`）与推送（`publishDiagnostics`）两种诊断，且不进行动态注册；服务器返回的能力具有最终决定权。服务器省略 `positionEncoding` 时默认为 `utf-16`；其他任何值都会使查询失败。客户端通过静态配置回答 `workspace/configuration`，接受生命周期记账请求，为文件级诊断等待捕获 `textDocument/publishDiagnostics` 通知，并拒绝 `workspace/applyEdit`——它绝不应用编辑或运行命令。导航直接映射 `Location`，并从 `LocationLink` 的 `targetUri` + `targetSelectionRange` 映射；hover 规范化接受 `MarkupContent` 与 `MarkedString` 形状，保留字符串值，把带 language tag 的值渲染为围栏代码，并用一个空行连接数组；诊断规范化将数字严重度映射（缺省为 `error`），从拉取报告中提取不含 `relatedInformation` 的报告条目，并把 `unchanged` 视为空。缺失结果、格式错误的范围或位置，以及格式错误的 hover 编码，都会以结构化 `LSP_MALFORMED_RESPONSE` 错误失败。
 
 </details>
 

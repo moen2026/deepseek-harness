@@ -35,6 +35,7 @@
   "dependencies": {
     "@deepseek-ai/schemastery": "workspace:~",
     "@deepseek-ai/dsh-timeout": "workspace:*",
+    "@deepseek-ai/dsh-experimental-local-speech-runtime": "workspace:*",
     "zod": "^4.4.3",
     "sherpa-onnx-node": "1.13.8"
   },

@@ -1,7 +1,7 @@
 /**
- * Model-facing `lsp` tool over `ctx.lsp`. One read-only tool with four operations
- * (`goToDefinition`/`findReferences`/`goToImplementation`/`hover`); it converts one-based UTF-16
- * cursor coordinates to the seam's zero-based positions, requires the session workspace with no
+ * Model-facing `lsp` tool over `ctx.lsp`. One read-only tool with five operations
+ * (`goToDefinition`/`findReferences`/`goToImplementation`/`hover`/`diagnostics`); it converts one-based UTF-16
+ * cursor coordinates to the seam's zero-based positions (diagnostics is file-level and takes none), requires the session workspace with no
  * fallback, caps and renders results, and attaches a configurable timeout budget for
  * `dsh-tool-call-timeout-policy` to enforce. It runtime-injects only `tools`, `lsp`, and `systemPrompt` and
  * imports no provider.
@@ -20,6 +20,7 @@ import { assertNever } from '@deepseek-ai/dsh-util-values'
 import {
   DEFAULT_MAX_LOCATIONS,
   DEFAULT_MAX_RESULT_CHARS,
+  formatDiagnostics,
   formatHover,
   formatLocations,
   LSP_OPERATIONS,
@@ -31,6 +32,7 @@ import { sessionCwd } from './session-cwd.ts'
 export {
   DEFAULT_MAX_LOCATIONS,
   DEFAULT_MAX_RESULT_CHARS,
+  formatDiagnostics,
   formatHover,
   formatLocations,
   LSP_OPERATIONS,
@@ -51,7 +53,7 @@ export const DEFAULT_LSP_TOOL_TIMEOUT_MS = 60_000
 
 /** The stable system-prompt guidance positioning LSP as a precision aid. */
 export const LSP_PROMPT_TEXT =
-  'Use search/read for ordinary navigation. Use lsp when textual matches are ambiguous or before a change requires precise definitions, implementations, or references. Positions are one-based line and character (UTF-16) at the cursor; an off-symbol position may return no results. findReferences always includes the declaration.'
+  'Use search/read for ordinary navigation. Use lsp when textual matches are ambiguous or before a change requires precise definitions, implementations, or references, and use lsp diagnostics to read a file\'s current compiler/language-server problems. Navigation and hover positions are one-based line and character (UTF-16) at the cursor; an off-symbol position may return no results. diagnostics is file-level and needs no cursor. findReferences always includes the declaration.'
 
 /** Plugin configuration: result caps and the timeout budget. */
 export interface Config {
@@ -109,17 +111,17 @@ export function apply(ctx: Context, config: Config): void {
   ctx.tools.register(defineTool({
     name: 'lsp',
     description:
-      'Query a language server for precise code navigation. operation is one of goToDefinition, findReferences, goToImplementation, hover. line and character are one-based UTF-16 cursor coordinates. findReferences includes the declaration.',
+      'Query a language server for precise code intelligence. operation is one of goToDefinition, findReferences, goToImplementation, hover, or diagnostics. line and character are one-based UTF-16 cursor coordinates and are required except for diagnostics, which is file-level (it reports the file\'s current problems and needs no cursor). findReferences includes the declaration.',
     parameters: {
       operation: {
         type: 'string',
         required: true,
         enum: [...LSP_OPERATIONS],
-        description: 'goToDefinition, findReferences, goToImplementation, or hover.',
+        description: 'goToDefinition, findReferences, goToImplementation, hover, or diagnostics.',
       },
       file_path: { type: 'string', required: true, description: 'The source file to query, relative to the workspace or absolute.' },
-      line: { type: 'number', required: true, description: 'One-based line of the cursor.' },
-      character: { type: 'number', required: true, description: 'One-based UTF-16 column of the cursor.' },
+      line: { type: 'number', description: 'One-based line of the cursor. Required except for diagnostics.' },
+      character: { type: 'number', description: 'One-based UTF-16 column of the cursor. Required except for diagnostics.' },
     },
     output: {
       schema: {
@@ -165,6 +167,29 @@ export function apply(ctx: Context, config: Config): void {
               },
             },
           },
+          {
+            type: 'object',
+            additionalProperties: false,
+            properties: {
+              kind: { type: 'string', required: true, const: 'diagnostics' },
+              diagnostics: {
+                type: 'array',
+                required: true,
+                items: {
+                  type: 'object',
+                  additionalProperties: false,
+                  properties: {
+                    range: { ...LSP_RANGE_OUTPUT_SCHEMA, required: true },
+                    severity: { type: 'string', required: true, enum: ['error', 'warning', 'information', 'hint'] },
+                    message: { type: 'string', required: true },
+                    source: { type: 'string' },
+                    code: { type: 'string' },
+                  },
+                },
+              },
+              resolvedWorkspaceUri: { type: 'string', required: true },
+            },
+          },
         ],
       },
       render: (_args, value) => {
@@ -173,6 +198,8 @@ export function apply(ctx: Context, config: Config): void {
             return [{ type: 'text', text: formatLocations(value.locations, value.resolvedWorkspaceUri, resolved.maxLocations, resolved.maxResultChars) }]
           case 'hover':
             return [{ type: 'text', text: formatHover(value.hover, resolved.maxResultChars) }]
+          case 'diagnostics':
+            return [{ type: 'text', text: formatDiagnostics(value.diagnostics, _args.file_path, resolved.maxLocations, resolved.maxResultChars) }]
           /* v8 ignore next -- exhaustive over the output schema's closed union; unreachable. */
           default:
             return assertNever(value, 'tool-lsp output')
@@ -189,7 +216,8 @@ export function apply(ctx: Context, config: Config): void {
       const result = await ctx.lsp.query({
         operation: input.operation,
         filePath: input.filePath,
-        position: input.position,
+        // Only cursor operations carry a position; the file-level diagnostics query omits the key.
+        ...input.position === undefined ? {} : { position: input.position },
         workspaceRoot,
       }, exec.signal)
       switch (result.kind) {
@@ -221,6 +249,21 @@ export function apply(ctx: Context, config: Config): void {
                     },
                   },
               },
+          }
+        case 'diagnostics':
+          return {
+            kind: 'diagnostics' as const,
+            diagnostics: result.diagnostics.map(diagnostic => ({
+              range: {
+                start: { line: diagnostic.range.start.line, character: diagnostic.range.start.character },
+                end: { line: diagnostic.range.end.line, character: diagnostic.range.end.character },
+              },
+              severity: diagnostic.severity,
+              message: diagnostic.message,
+              ...diagnostic.source === undefined ? {} : { source: diagnostic.source },
+              ...diagnostic.code === undefined ? {} : { code: diagnostic.code },
+            })),
+            resolvedWorkspaceUri: result.resolvedWorkspaceUri,
           }
         /* v8 ignore next -- exhaustive over the closed LspQueryResult union; unreachable. */
         default:

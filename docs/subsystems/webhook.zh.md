@@ -30,6 +30,12 @@ follow-up 是普通持久 user-role 消息，使用 `source.kind: "webhook"`，�
 
 附加失败会在提示词出现前释放新 Agent。附加之后、提示词接纳之前的失败会尝试脱离 Workspace 并释放 Agent，且不会取代原始错误。预检期间自动创建的 Workspace 会保留，因为另一个并发调用者可能已经使用它。
 
+## 持久化 outbox
+
+`@deepseek-ai/dsh-webhook-outbox` 在已验证投递与 runtime 之间增加一个 opt-in 的持久化 at-least-once 队列：`deliver()` 在任何规则运行前持久化一份冻结快照，并返回 `'queued'` 或 `'duplicate'`；未被确认的调度按配置的退避对 `dispatchAcknowledged()` 重试，`pending` 记录在下次打开时按接收顺序重放。终态记录在超过保留窗口后被清理。
+
+当投递必须扛住崩溃或规则运行失败时选择它。[outbox 包](../../packages/webhook/webhook-outbox/README.zh.md)拥有面向部署的配置，[outbox 决策](../../.agents/notes/implemented/feature/2026-09-28-durable-webhook-delivery-outbox.zh.md)记录了约定；`dispatch()` 本身保持 fire-and-forget。
+
 ## GitHub 适配器
 
 `@deepseek-ai/dsh-webhook-github` 在注入的 WebServer 上注册精确路由，为每次请求解析凭据引用，在解析前验证未改动的 `application/json` body，并在内存分发后立即返回 `202`。它的规范化事件保证为已签名的无损 JSON 对象；规则负责验证自己消费的事件特定字段。
@@ -43,6 +49,25 @@ follow-up 是普通持久 user-role 消息，使用 `source.kind: "webhook"`，�
 ## Cordis API
 
 Generated from source by `scripts/gen-cordis-catalog.ts` (verified fresh by `pnpm run verify-cordis-catalog` in doc-sync; regenerate with `pnpm run gen-cordis-catalog`) — the language sides differ only in locale-specific paired document paths. Signature blocks use a `ts cordis-catalog` fence and keep the original source JSDoc; dispatch modes are defined in the [primer](../cordis-primer.zh.md#dispatch-modes), and the framework-inherited `ctx` API lives in [cordis-api/inherited.md](../cordis-api/inherited.md).
+
+<a id="ctxwebhookoutbox--webhookoutbox"></a>
+
+### `ctx.webhookOutbox` — `WebhookOutbox`
+
+Durable at-least-once queue: `deliver` persists one verified delivery before any rule runs, and every dispatch the runtime does not acknowledge is retried with the configured backoff and replayed on the next open.
+
+```ts cordis-catalog
+/**
+ * Persist one verified delivery and start its dispatch.
+ * @param delivery - authenticated provider data; validated and snapshotted synchronously.
+ * @returns `'queued'` once the durable record landed and dispatch was started; `'duplicate'`
+ * when an equivalent record is pending or retained as `delivered`.
+ * @throws synchronously when the outbox is closing or the delivery is malformed.
+ */
+deliver<K extends string>(delivery: VerifiedWebhookDelivery<K>): Promise<'queued' | 'duplicate'>
+```
+
+Source: [`packages/webhook/webhook-outbox/src/index.ts`](../../packages/webhook/webhook-outbox/src/index.ts)
 
 <a id="ctxwebhookruntime--webhookruntime"></a>
 
@@ -64,6 +89,15 @@ register<K extends string>(rule: WebhookRule<K>): () => Promise<void>
  * @throws synchronously when the runtime is closing or the delivery is malformed.
  */
 dispatch<K extends string>(delivery: VerifiedWebhookDelivery<K>): void
+
+/**
+ * Dispatch a delivery and await what became of it.
+ * @param delivery - authenticated provider data; snapshotted before dispatch.
+ * @returns `true` only when at least one rule matched and every invocation this call
+ * started settled successfully; `false` when no rule matched or any invocation failed.
+ * @throws synchronously when the runtime is closing or the delivery is malformed.
+ */
+dispatchAcknowledged<K extends string>(delivery: VerifiedWebhookDelivery<K>): Promise<boolean>
 ```
 
 Source: [`packages/webhook/webhook/src/index.ts`](../../packages/webhook/webhook/src/index.ts)

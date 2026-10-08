@@ -1,5 +1,5 @@
 ---
-description: "LLM（大语言模型）能力包组：一个提供方无关的模型调用服务、DeepSeek 与 pi-ai 提供方适配器、请求重试执行，以及具备回放感知的 token 计量。"
+description: "LLM（大语言模型）能力包组：一个提供方无关的模型调用服务、DeepSeek 与 pi-ai 提供方适配器、请求重试执行、信号驱动的请求路由，以及具备回放感知的 token 计量。"
 kind: "package-group"
 ---
 
@@ -9,7 +9,7 @@ kind: "package-group"
 
 ## 概述
 
-llm 组提供 harness 的模型调用能力：一个提供方无关的服务，任何组合都可以通过它向模型提供方发起流式请求，外加适配器、提供方专用请求元数据、重试执行与计量。核心 `llm` 包定义所有插件与会话日志使用的消息、内容块与流式分片词汇；提供方适配器把某个提供方的协议格式（wire format）翻译为该词汇；DeepSeek 请求扩展插件在模型输入之外贡献具有生命周期归属的元数据；`llm-retry` 在持久化的 agent（智能体）步骤边界上重跑失败的请求；`token-meter` 从持久化日志测量请求与上下文压力。本页列出该包组的组成；每个包 README 负责各自的包级约定。
+llm 组提供 harness 的模型调用能力：一个提供方无关的服务，向模型提供方发起流式请求，外加适配器、提供方专用请求元数据、重试执行与计量。核心 `llm` 包定义所有插件与会话日志使用的消息、块与分片词汇；适配器把某个提供方的协议格式（wire format）翻译为该词汇；DeepSeek 请求扩展插件在模型输入之外贡献具有生命周期归属的元数据；`llm-retry` 在持久化的 agent（智能体）步骤边界上重跑失败的请求；`llm-router` 通过有序规则与 auto 分支为请求选择路由；`token-meter` 从持久化日志测量请求与上下文压力。本页列出该包组的组成；每个包 README 负责各自约定。
 
 ## 目录
 
@@ -33,6 +33,7 @@ llm 组提供 harness 的模型调用能力：一个提供方无关的服务，�
 | [`plugin-package-inventory-deepseek/`](plugin-package-inventory-deepseek/README.zh.md) | 为官方 DeepSeek 请求贡献当前启用的 Loader 包清单 | 贡献 `dsh_plugin_packages` |
 | [`llm-retry/`](llm-retry/README.zh.md) | 在持久 agent 步骤边界上按各提供方策略重试失败的模型请求 | 监听 `agent/request-error` |
 | [`token-meter/`](token-meter/README.zh.md) | 用固定启发式规则从持久会话日志测量请求与上下文压力 | `ctx.tokenMeter` |
+| [`llm-router/`](llm-router/README.zh.md) | 通过有序规则与基于上下文压力和工具密度的信号驱动 auto 分支为模型请求选择路由 | 监听 `agent/request` |
 
 -----
 
@@ -43,6 +44,7 @@ llm 组提供 harness 的模型调用能力：一个提供方无关的服务，�
 - [Token 计量子系统](../../docs/subsystems/token-meter.zh.md)——`ctx.tokenMeter` 背后的测量语义。
 - [孪生 LLM 适配器](../../.agents/notes/implemented/architecture/2026-06-13-twin-llm-adapters.zh.md)——为什么 DeepSeek 路由交付两个结构不同的适配器。
 - [按路由的模型上下文](../../.agents/notes/implemented/architecture/2026-07-20-routed-model-context-and-compaction-policy.zh.md)——loop 如何路由模型请求并压缩上下文。
+- [信号驱动的模型路由](../../.agents/notes/implemented/feature/2026-09-28-signal-driven-model-routing.zh.md)——`agent/request` waterfall（瀑布式事件）上的显式规则与 auto 分支设计。
 
 <a id="dev-note"></a>
 ## 开发备注

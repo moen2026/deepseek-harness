@@ -1,0 +1,10 @@
+# Bilingual-pair consistency record for code-index.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write docs/subsystems/code-index.md
+/code-index-search:
+  en: c529332d6d7a6b65
+  zh: e041515d931d873d
+/code-index-search/request-and-result:
+  en: 65e63a0891c8810f
+  zh: 54fe36521db77f5a

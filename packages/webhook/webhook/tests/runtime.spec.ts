@@ -190,6 +190,64 @@ describe('WebhookRuntime', () => {
     expect(calls).toBe(2)
   })
 
+  it('acknowledges only after every matching rule settles successfully', async () => {
+    const { runtime } = harness()
+    const started: string[] = []
+    runtime.register({
+      id: WebhookRuleId('acknowledged'),
+      kind: 'fixture',
+      run() {
+        started.push('acknowledged')
+        return null
+      },
+    })
+    runtime.register({
+      id: WebhookRuleId('acknowledged-other-kind'),
+      kind: 'other',
+      run: vi.fn(() => null),
+    })
+    await expect(runtime.dispatchAcknowledged(delivery())).resolves.toBe(true)
+    expect(started).toEqual(['acknowledged'])
+  })
+
+  it('reports an unmatched delivery as unacknowledged', async () => {
+    const { runtime } = harness()
+    await expect(runtime.dispatchAcknowledged(delivery())).resolves.toBe(false)
+  })
+
+  it('reports a contained sibling failure as unacknowledged', async () => {
+    const { ctx, runtime } = harness()
+    const warnings = vi.spyOn(ctx.logger, 'warn')
+    const started: string[] = []
+    runtime.register({
+      id: WebhookRuleId('acknowledged-ok'),
+      kind: 'fixture',
+      run() {
+        started.push('ok')
+        return null
+      },
+    })
+    runtime.register({
+      id: WebhookRuleId('acknowledged-failure'),
+      kind: 'fixture',
+      run() {
+        started.push('failure')
+        throw new Error('fixture failure')
+      },
+    })
+    await expect(runtime.dispatchAcknowledged(delivery())).resolves.toBe(false)
+    expect(started).toEqual(['ok', 'failure'])
+    expect(warnings).toHaveBeenCalledTimes(1)
+  })
+
+  it('refuses acknowledgements for malformed deliveries and after disposal', async () => {
+    const { ctx, runtime } = harness()
+    expect(() => runtime.dispatchAcknowledged({ ...delivery(), source: WebhookSourceId('') }))
+      .toThrow(/source/)
+    await ctx.fiber.dispose()
+    expect(() => runtime.dispatchAcknowledged(delivery())).toThrow(/closing/)
+  })
+
   it('keeps execution-state, retry, dedupe, and completion machinery out of the runtime', () => {
     const production = [
       '../src/brand.ts',

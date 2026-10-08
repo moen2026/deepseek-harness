@@ -21,6 +21,9 @@
       "path": "../speech-to-text"
     },
     {
+      "path": "../local-speech-runtime"
+    },
+    {
       "path": "../../subprocess/subprocess"
     }
   ]

@@ -1,0 +1,10 @@
+# Bilingual-pair consistency record for audio.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write docs/subsystems/audio.md
+/audio-transcription:
+  en: fe787ed8461582b7
+  zh: a5289f13bcfc5df2
+/audio-transcription/operations-and-transcripts:
+  en: b9311053681aa2f7
+  zh: 597e38b8d1ccb328

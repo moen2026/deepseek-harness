@@ -1,0 +1,25 @@
+# Bilingual-pair consistency record for 2026-10-02-browser-extension-provider.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/proposed/feature/2026-10-02-browser-extension-provider.md
+/agent-note-browser-extension-provider:
+  en: 1326dc02dad66bc1
+  zh: 031d507d28a4b181
+/agent-note-browser-extension-provider/problem:
+  en: 6d2d6eddd296a53d
+  zh: b8b91db818a284d3
+/agent-note-browser-extension-provider/proposal:
+  en: de8f3d60ac5f6577
+  zh: 4109b4662a9a6e1d
+/agent-note-browser-extension-provider/proposal/pairing-and-trust:
+  en: 4c124602e048d1a4
+  zh: 6689386294ce0dc6
+/agent-note-browser-extension-provider/alternatives-considered:
+  en: 692d4dc358a79a5a
+  zh: 7e5fc9c65b61783c
+/agent-note-browser-extension-provider/acceptance-criteria:
+  en: 62b8eeb6b75248f2
+  zh: 4a37aeb16a56a00d
+/agent-note-browser-extension-provider/risks:
+  en: d2806431ff989582
+  zh: 8ef7d5b0c3b719e2

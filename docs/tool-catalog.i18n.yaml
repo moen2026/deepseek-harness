@@ -9,8 +9,8 @@
   en: 6cc2cd9ced70bb09
   zh: 1c0e6cb4ba2ed637
 /tool-schema-catalog/tool-package-map:
-  en: 72e2a375567f5850
-  zh: b51b8ea5b52814fd
+  en: c77c63e44711bc39
+  zh: 4da86c6c02fc233a
 /tool-schema-catalog/deepseek-ai-dsh-plugin-manager:
   en: e0143916bb634762
   zh: e0143916bb634762
@@ -181,16 +181,94 @@
   zh: 3d0063a1e529377f
 /tool-schema-catalog/deepseek-ai-dsh-schedule/schedule-list:
   en: d8543c8503d0947e
-  zh: 205e6c813ad2b37c
+  zh: 14ea17e2b009ebc0
 /tool-schema-catalog/deepseek-ai-dsh-schedule/schedule-update:
-  en: 3d5e2517b510238b
-  zh: d6e5c4c4465c9645
+  en: 3ab661ea80247dc3
+  zh: 2bcf56bf45bb3cc6
+/tool-schema-catalog/deepseek-ai-dsh-heartbeat:
+  en: 9c27beae5b5df233
+  zh: 9c27beae5b5df233
+/tool-schema-catalog/deepseek-ai-dsh-heartbeat/heartbeat-disable:
+  en: 486ae5dcdaa29a37
+  zh: d9337be992741baa
+/tool-schema-catalog/deepseek-ai-dsh-heartbeat/heartbeat-enable:
+  en: 208ac9f31dc063f1
+  zh: c91ee4f3b09319e5
+/tool-schema-catalog/deepseek-ai-dsh-session-rewind:
+  en: 81f7b67e073c1683
+  zh: 81f7b67e073c1683
+/tool-schema-catalog/deepseek-ai-dsh-session-rewind/workspace-rewind:
+  en: f2f3799f6932d646
+  zh: b982d2ac939a4cd9
+/tool-schema-catalog/deepseek-ai-dsh-tool-github:
+  en: d117cd7f942e8361
+  zh: d117cd7f942e8361
+/tool-schema-catalog/deepseek-ai-dsh-tool-github/github-comment:
+  en: 3334f00e40ea31f2
+  zh: 475ca3b424b2eef6
 /tool-schema-catalog/deepseek-ai-dsh-tool-lsp:
   en: 32982123b1f0e5bc
   zh: 32982123b1f0e5bc
 /tool-schema-catalog/deepseek-ai-dsh-tool-lsp/lsp:
-  en: 877f1dc0f69e2038
-  zh: 2fa570020f87919c
+  en: faed0d70d661e65f
+  zh: bce7afa1fd6b36fa
+/tool-schema-catalog/deepseek-ai-dsh-tool-code-index:
+  en: d3b4045846c79097
+  zh: d3b4045846c79097
+/tool-schema-catalog/deepseek-ai-dsh-tool-code-index/search-codebase:
+  en: 8481287d5ca3a70c
+  zh: 13db8ea83e550014
+/tool-schema-catalog/deepseek-ai-dsh-tool-memory:
+  en: b94bf14065439df0
+  zh: b94bf14065439df0
+/tool-schema-catalog/deepseek-ai-dsh-tool-memory/memory-forget:
+  en: 77d53d5ed124f289
+  zh: 29732a25e5b063f1
+/tool-schema-catalog/deepseek-ai-dsh-tool-memory/memory-search:
+  en: 1495103582a58e99
+  zh: 96c98a2271ad578c
+/tool-schema-catalog/deepseek-ai-dsh-tool-memory/memory-write:
+  en: 2cff3d132131a9ba
+  zh: 336f3b695ff11d43
+/tool-schema-catalog/deepseek-ai-dsh-tool-knowledge:
+  en: 787f7ec3b854b55a
+  zh: 787f7ec3b854b55a
+/tool-schema-catalog/deepseek-ai-dsh-tool-knowledge/knowledge-ingest:
+  en: 643c4f8cf3086452
+  zh: 1e0e0253cba44dc6
+/tool-schema-catalog/deepseek-ai-dsh-tool-knowledge/knowledge-list:
+  en: f9beb3712d0123b6
+  zh: 380cef8df60850cf
+/tool-schema-catalog/deepseek-ai-dsh-tool-knowledge/knowledge-remove:
+  en: b8e541495230d9fa
+  zh: cb94d6480297e839
+/tool-schema-catalog/deepseek-ai-dsh-tool-knowledge/knowledge-search:
+  en: e429d7a8ed8b250d
+  zh: 8c0a5726ed226f24
+/tool-schema-catalog/deepseek-ai-dsh-tool-audio:
+  en: 9664eef814bf98f1
+  zh: 9664eef814bf98f1
+/tool-schema-catalog/deepseek-ai-dsh-tool-audio/transcribe-audio:
+  en: bafbde4231b58782
+  zh: bb97f40b8f493663
+/tool-schema-catalog/deepseek-ai-dsh-tool-image:
+  en: 56e8705b90c03aa1
+  zh: 56e8705b90c03aa1
+/tool-schema-catalog/deepseek-ai-dsh-tool-image/generate-image:
+  en: 0966898b604f0fd0
+  zh: 8d0c3265d50b8ceb
+/tool-schema-catalog/deepseek-ai-dsh-tool-document:
+  en: aa478f8af83beda6
+  zh: aa478f8af83beda6
+/tool-schema-catalog/deepseek-ai-dsh-tool-document/create-document:
+  en: 00f17cbfc8443799
+  zh: 271770fc9f7e29f5
+/tool-schema-catalog/deepseek-ai-dsh-tool-repo-wiki:
+  en: d0e50685b722f3ab
+  zh: d0e50685b722f3ab
+/tool-schema-catalog/deepseek-ai-dsh-tool-repo-wiki/read-wiki:
+  en: 9c3f8f847b959300
+  zh: ffbd5f700178cbf5
 /tool-schema-catalog/deepseek-ai-dsh-tool-ralph:
   en: 45bd083870e2c92d
   zh: 45bd083870e2c92d
@@ -288,8 +366,17 @@
   en: dea62d26fb18ff68
   zh: dea62d26fb18ff68
 /tool-schema-catalog/deepseek-ai-dsh-tool-todo/todo-write:
-  en: 8c64fe5f2e58a890
-  zh: e3c780fc842aeb43
+  en: d8bfd40fb87a834d
+  zh: d3f5cc6abadff8ff
+/tool-schema-catalog/deepseek-ai-dsh-tool-git-track:
+  en: eadd871774fc3ee5
+  zh: eadd871774fc3ee5
+/tool-schema-catalog/deepseek-ai-dsh-tool-git-track/pull-request-track:
+  en: 407482a08d770d19
+  zh: 29ded26469a6d4fd
+/tool-schema-catalog/deepseek-ai-dsh-tool-git-track/worktree-track:
+  en: 334f1bb6427d5677
+  zh: e0e98461af3c28d6
 /tool-schema-catalog/deepseek-ai-dsh-tool-workflow:
   en: bb38a9d29f46563c
   zh: bb38a9d29f46563c

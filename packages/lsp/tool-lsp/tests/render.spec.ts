@@ -4,6 +4,7 @@ import { join, resolve } from 'node:path'
 import {
   DEFAULT_MAX_LOCATIONS,
   DEFAULT_MAX_RESULT_CHARS,
+  formatDiagnostics,
   formatHover,
   formatLocations,
   LSP_OPERATIONS,
@@ -11,7 +12,7 @@ import {
   presentLspCall,
   renderUri,
 } from '@deepseek-ai/dsh-tool-lsp'
-import type { LspLocation } from '@deepseek-ai/dsh-lsp'
+import type { LspDiagnostic, LspLocation } from '@deepseek-ai/dsh-lsp'
 
 const WS = resolve('/home/u/proj')
 const WS_URI = pathToFileURL(WS).href
@@ -21,12 +22,21 @@ function loc(uri: string, line: number, character = 0): LspLocation {
 }
 
 describe('parseLspArgs', () => {
-  it('accepts the four operations and converts one-based to zero-based', () => {
+  it('accepts the cursor operations and converts one-based to zero-based', () => {
     for (const operation of LSP_OPERATIONS) {
+      if (operation === 'diagnostics') continue
       const input = parseLspArgs({ operation, file_path: 'a.ts', line: 3, character: 5 })
       expect(input.operation).toBe(operation)
       expect(input.position).toEqual({ line: 2, character: 4 })
     }
+  })
+
+  it('treats diagnostics as file-level and drops any coordinates', () => {
+    const input = parseLspArgs({ operation: 'diagnostics', file_path: 'a.ts' })
+    expect(input.operation).toBe('diagnostics')
+    expect(input.position).toBeUndefined()
+    // Coordinates sent alongside diagnostics are ignored, not validated.
+    expect(parseLspArgs({ operation: 'diagnostics', file_path: 'a.ts', line: 0, character: -3 }).position).toBeUndefined()
   })
 
   it('rejects an unknown operation', () => {
@@ -160,13 +170,72 @@ describe('formatHover', () => {
   })
 })
 
+describe('formatDiagnostics', () => {
+  function diag(severity: LspDiagnostic['severity'], message: string, extra: Partial<LspDiagnostic> = {}): LspDiagnostic {
+    return { range: { start: { line: 4, character: 2 }, end: { line: 4, character: 8 } }, severity, message, ...extra }
+  }
+
+  it('renders a no-problems line for an empty list', () => {
+    expect(formatDiagnostics([], 'a.ts', DEFAULT_MAX_LOCATIONS, DEFAULT_MAX_RESULT_CHARS)).toBe('No problems reported.')
+  })
+
+  it('renders one-based coordinates, severity, source/code label, and message', () => {
+    const text = formatDiagnostics([diag('error', 'boom', { source: 'ts', code: '2345' })], 'src/a.ts', DEFAULT_MAX_LOCATIONS, DEFAULT_MAX_RESULT_CHARS)
+    expect(text).toBe('src/a.ts:5:3 error: [ts(2345)] boom')
+  })
+
+  it('omits the label when there is no source or code', () => {
+    const text = formatDiagnostics([diag('warning', 'hmm')], 'a.ts', DEFAULT_MAX_LOCATIONS, DEFAULT_MAX_RESULT_CHARS)
+    expect(text).toBe('a.ts:5:3 warning: hmm')
+  })
+
+  it('closes the label without a code when only a source is present', () => {
+    const text = formatDiagnostics([diag('error', 'x', { source: 'ts' })], 'a.ts', DEFAULT_MAX_LOCATIONS, DEFAULT_MAX_RESULT_CHARS)
+    expect(text).toBe('a.ts:5:3 error: [ts] x')
+  })
+
+  it('caps at maxDiagnostics and marks the omission', () => {
+    const many = [diag('error', 'a'), diag('error', 'b'), diag('error', 'c')]
+    const text = formatDiagnostics(many, 'a.ts', 2, DEFAULT_MAX_RESULT_CHARS)
+    expect(text).toContain('a.ts:5:3 error: a')
+    expect(text).toContain('a.ts:5:3 error: b')
+    expect(text).not.toContain(' error: c')
+    expect(text).toContain('1 more problem omitted (limit 2).')
+  })
+
+  it('pluralizes the omission marker when more than one problem is omitted', () => {
+    const many = [diag('error', 'a'), diag('error', 'b'), diag('error', 'c'), diag('error', 'd')]
+    const text = formatDiagnostics(many, 'a.ts', 2, DEFAULT_MAX_RESULT_CHARS)
+    expect(text).toContain('2 more problems omitted (limit 2).')
+  })
+})
+
 describe('presentLspCall', () => {
+  it('renders a diagnostics card without a cursor', () => {
+    expect(presentLspCall({ operation: 'diagnostics', file_path: 'a.ts' })).toEqual({
+      card: 'generic',
+      kind: 'search',
+      title: 'LSP diagnostics a.ts',
+      locations: [{ path: 'a.ts' }],
+    })
+  })
+
   it('is a generic search card with an operation/cursor title and a line location', () => {
     expect(presentLspCall({ operation: 'findReferences', file_path: 'a.ts', line: 3, character: 7 })).toEqual({
       card: 'generic',
       kind: 'search',
       title: 'LSP findReferences a.ts:3:7',
       locations: [{ path: 'a.ts', line: 3 }],
+    })
+  })
+
+  it('omits the line when a cursor operation carries no coordinates', () => {
+    // Cursor operations require coordinates by schema; the guard keeps the location exact-optional.
+    expect(presentLspCall({ operation: 'hover', file_path: 'a.ts' })).toEqual({
+      card: 'generic',
+      kind: 'search',
+      title: 'LSP hover a.ts:undefined:undefined',
+      locations: [{ path: 'a.ts' }],
     })
   })
 })

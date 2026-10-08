@@ -145,7 +145,7 @@ The stable system prompt remains byte-identical across mode changes. A changed f
 These limits define the policy surface this package provides. They are current package constraints, not a general sandbox comparison or a task backlog.
 
 - **One primary workspace root per session** — policy resolves `SessionHeader.cwd`; extra writable roots are not part of `SandboxExecutionPolicy`.
-- **File-effect modes only** — `SandboxMode` governs file effects; network and process policy are outside its vocabulary, so no knob here restricts them.
+- **Network carriage is deployment-level** — the `network` config field resolves into every confined execution; it has no session override or escalation ladder, and backends that cannot govern it report `networkEnforcement: 'partial'`.
 - **Temporary areas are deliberately summarized** — enforcing backends grant different platform temporary areas, which are selected after policy resolution and therefore cannot be enumerated truthfully in the current context.
 
 <a id="dev-note"></a>

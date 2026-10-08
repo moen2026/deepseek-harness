@@ -1,11 +1,11 @@
 /** SenseVoice language support and input failures that leave native inference untouched. */
 import { validateWave } from '@deepseek-ai/dsh-experimental-speech-to-text/wave'
+import { SpeechInputError } from '@deepseek-ai/dsh-experimental-local-speech-runtime'
 
 /** Language hints accepted by both provider metadata and native inference. */
 export const languages: readonly string[] = ['auto', 'zh', 'en', 'yue', 'ja', 'ko']
 
-/** A request rejected before native inference; the loaded worker remains reusable. */
-export class SpeechInputError extends Error {}
+export { SpeechInputError }
 
 /**
  * Validate a recording before touching the native recognizer.

@@ -114,6 +114,15 @@ describe('MenuView', () => {
     expect(status.children).toHaveLength(2)
   })
 
+  it('renders a failed group as one status row instead of closing', () => {
+    mount(openState({
+      groups: [{ source: 'command', status: 'failed', items: [] }],
+      highlight: null,
+    }))
+    expect(screen.getByRole('status', { name: '建议加载失败' })).toBeTruthy()
+    expect(screen.queryByRole('option')).toBeNull()
+  })
+
   it('renders a localized label as the title with the name as its alias, an icon component, and the description', () => {
     const Glyph = ({ size = 16 }: { size?: number | undefined }) => <svg data-glyph="plan" width={size} height={size} />
     mount(openState({

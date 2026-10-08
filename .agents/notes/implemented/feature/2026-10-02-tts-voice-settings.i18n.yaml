@@ -1,0 +1,22 @@
+# Bilingual-pair consistency record for 2026-10-02-tts-voice-settings.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-10-02-tts-voice-settings.md
+/agent-note-tts-voice-settings-page:
+  en: 2ab4ca6a53ebb54e
+  zh: e99a5575bd465fea
+/agent-note-tts-voice-settings-page/problem:
+  en: 4903a129d78fc130
+  zh: 29aef1b6ee4eb9c4
+/agent-note-tts-voice-settings-page/decision:
+  en: 1c56fe5c076703f1
+  zh: daf7ae479a6c6387
+/agent-note-tts-voice-settings-page/alternatives-considered:
+  en: ac94fc0d1d33d1a9
+  zh: 377197762b695ded
+/agent-note-tts-voice-settings-page/consequences:
+  en: 68125957bdcaf747
+  zh: c372faedc310b808
+/agent-note-tts-voice-settings-page/implementation-notes:
+  en: f93553ab9af1b034
+  zh: c0548a2480ff695f

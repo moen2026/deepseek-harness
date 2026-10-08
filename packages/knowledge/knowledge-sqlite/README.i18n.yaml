@@ -1,0 +1,49 @@
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write packages/knowledge/knowledge-sqlite/README.md
+/:
+  en: 31f706bd027e5a6a
+  zh: 6ddaf51f2a5efe3d
+/deepseek-ai-dsh-knowledge-sqlite:
+  en: df5ce099e68752dd
+  zh: dd76c9d442abc636
+/deepseek-ai-dsh-knowledge-sqlite/summary:
+  en: ebada90dc0cbf9c8
+  zh: ad4d1ffd81c2670b
+/deepseek-ai-dsh-knowledge-sqlite/table-of-contents:
+  en: d152484eb41ac6b4
+  zh: d152484eb41ac6b4
+/deepseek-ai-dsh-knowledge-sqlite/use-this-package:
+  en: 6bf6a1ae1a5ecfeb
+  zh: 69f0460a0ac92435
+/deepseek-ai-dsh-knowledge-sqlite/use-this-package/configuration:
+  en: 8dbb3bec4339b772
+  zh: 48a497fce91d31b3
+/deepseek-ai-dsh-knowledge-sqlite/use-this-package/failures-and-recovery:
+  en: a60f719e06e1ed5d
+  zh: 462356b49ad2cdd7
+/deepseek-ai-dsh-knowledge-sqlite/understand-the-implementation:
+  en: 8a5efa64f5b12f88
+  zh: 79f0a20646c17a88
+/deepseek-ai-dsh-knowledge-sqlite/understand-the-implementation/design-philosophy:
+  en: ecec3d0d02d95061
+  zh: 5428512c4efb1891
+/deepseek-ai-dsh-knowledge-sqlite/understand-the-implementation/source-map:
+  en: 5753b742a5467e36
+  zh: f80b4b68789327fc
+/deepseek-ai-dsh-knowledge-sqlite/further-exploration:
+  en: 02f59c050f43e0e0
+  zh: ddcfdeb28d88d27b
+/deepseek-ai-dsh-knowledge-sqlite/model-experience:
+  en: cdcb20f16258bbdc
+  zh: e465c3b250f21cf6
+/deepseek-ai-dsh-knowledge-sqlite/model-experience/kv-cache-effect:
+  en: fb3d013fed041fbf
+  zh: b21054809d7b3bb1
+/deepseek-ai-dsh-knowledge-sqlite/known-limitations-and-deferred-work:
+  en: fc764100b6a6f599
+  zh: 2ff3af907554fd6e
+/deepseek-ai-dsh-knowledge-sqlite/known-limitations-and-deferred-work/dev-note:
+  en: 0c469ca7eabbcb9c
+  zh: 2793a6341aa68169

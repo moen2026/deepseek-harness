@@ -67,7 +67,7 @@ export interface Config {
 
 /** Probe whether `bwrap` can create the profile; the provider caches the bounded result. */
 function defaultProbeBwrap(timeoutMs: number): boolean {
-  const probe = spawnSync('bwrap', [...bwrapProfileArgs({ mode: 'read-only', workspaceRoot: '/' }), '--', 'true'], {
+  const probe = spawnSync('bwrap', [...bwrapProfileArgs({ mode: 'read-only', network: 'allowed', workspaceRoot: '/' }), '--', 'true'], {
     timeout: timeoutMs,
     stdio: 'ignore',
   })
@@ -84,7 +84,7 @@ function defaultProbeBwrap(timeoutMs: number): boolean {
  * every macOS; if it ever disappears, this probe is what fails closed.
  */
 function defaultProbeSeatbelt(seatbeltExec: string, timeoutMs: number): boolean {
-  const probe = spawnSync(seatbeltExec, [...seatbeltProfileArgs({ mode: 'read-only', workspaceRoot: '/' }), '--', 'true'], {
+  const probe = spawnSync(seatbeltExec, [...seatbeltProfileArgs({ mode: 'read-only', network: 'allowed', workspaceRoot: '/' }), '--', 'true'], {
     timeout: timeoutMs,
     stdio: 'ignore',
   })
@@ -185,6 +185,20 @@ const STATIC_ENFORCEMENT: Record<SelectedRunner['runner'], SandboxEnforcement> =
   // stay unconfined, and an AppContainer-ACL'd tree is unreadable to the
   // child: the backend enforces the remaining ACL-addressable surface but
   // must not advertise the absolute promise.
+  'windows-acl': 'partial',
+}
+
+/**
+ * Network-carriage enforcement a rung claims when the policy blocks network.
+ * bwrap's `--unshare-net` and Seatbelt's `(deny network*)` govern the block;
+ * the Landlock ABI is file-effect-only, and the Windows restricted token
+ * carries no network authority, so those rungs report the gap as `partial`.
+ * A policy that allows network is `full` everywhere (nothing to enforce).
+ */
+const STATIC_NETWORK_ENFORCEMENT: Record<SelectedRunner['runner'], SandboxEnforcement> = {
+  bwrap: 'full',
+  landlock: 'partial',
+  seatbelt: 'full',
   'windows-acl': 'partial',
 }
 
@@ -323,6 +337,7 @@ export class LocalSandboxProvider extends SandboxProvider {
       return Promise.resolve<ConfinedArgv>({
         argv: [...this.runnerCommand, ...bwrapProfileArgs(policy), '--', ...argv],
         enforcement: 'full',
+        networkEnforcement: 'full',
         denialSignatures: DENIAL_SIGNATURES.runnerCommand,
         runnerFailureRules: [{ fatalSignatures: this.configuredRunnerFailureSignatures }],
       })
@@ -332,6 +347,7 @@ export class LocalSandboxProvider extends SandboxProvider {
     return Promise.resolve<ConfinedArgv>({
       argv: [...runnerArgv, '--', ...argv],
       enforcement: selected.enforcement,
+      networkEnforcement: policy.network === 'allowed' ? 'full' : STATIC_NETWORK_ENFORCEMENT[selected.runner],
       denialSignatures: DENIAL_SIGNATURES[selected.runner],
       runnerFailureRules: RUNNER_FAILURE_RULES[selected.runner],
     })

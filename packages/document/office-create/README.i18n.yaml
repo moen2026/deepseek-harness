@@ -1,0 +1,52 @@
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write packages/document/office-create/README.md
+/:
+  en: 469748bfe66b7cba
+  zh: 766a0962369f6e30
+/deepseek-ai-dsh-office-create:
+  en: a6233e1ed88e67b5
+  zh: 6e755adcfa658c68
+/deepseek-ai-dsh-office-create/summary:
+  en: 51069feb5757c2e1
+  zh: 7b2b75fff59554f7
+/deepseek-ai-dsh-office-create/table-of-contents:
+  en: d152484eb41ac6b4
+  zh: ffab54373e9e61f0
+/deepseek-ai-dsh-office-create/use-this-package:
+  en: bbff250eba0f1b89
+  zh: 0a618f05cc88ee2b
+/deepseek-ai-dsh-office-create/use-this-package/when-to-choose-it:
+  en: 614b5cc0c8888920
+  zh: 68d7271b831b7334
+/deepseek-ai-dsh-office-create/use-this-package/configuration:
+  en: 2128feb5af249bad
+  zh: 17f4204673e21313
+/deepseek-ai-dsh-office-create/use-this-package/failures-and-recovery:
+  en: 91db20b54150e988
+  zh: f276502ac404133e
+/deepseek-ai-dsh-office-create/understand-the-implementation:
+  en: 42b15ac6321706aa
+  zh: 8d8e9843515830f6
+/deepseek-ai-dsh-office-create/understand-the-implementation/design-philosophy:
+  en: 72a369f2964ff8c9
+  zh: 5f7dfd4c52a840ba
+/deepseek-ai-dsh-office-create/understand-the-implementation/source-map:
+  en: ac4a015284b0143d
+  zh: d040a527ea16729e
+/deepseek-ai-dsh-office-create/further-exploration:
+  en: 0bf965d3ba68234a
+  zh: 786856e8303b4451
+/deepseek-ai-dsh-office-create/model-experience:
+  en: 04f29937af9bf348
+  zh: 000b53020be0ff14
+/deepseek-ai-dsh-office-create/model-experience/kv-cache-effect:
+  en: 6947158f3e271b4a
+  zh: 4317e6f585d42d5c
+/deepseek-ai-dsh-office-create/known-limitations-and-deferred-work:
+  en: e898daa0ea5bdaae
+  zh: 9e650547faff9769
+/deepseek-ai-dsh-office-create/known-limitations-and-deferred-work/dev-note:
+  en: e67f633dc6fe7773
+  zh: cdd2a143b725accd

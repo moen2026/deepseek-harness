@@ -1,0 +1,49 @@
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write packages/connector/connector/README.md
+/:
+  en: c73057df318ddb87
+  zh: 19c26add1c31951d
+/deepseek-ai-dsh-connector:
+  en: 4beaf0066d4df858
+  zh: 993af5119472bfee
+/deepseek-ai-dsh-connector/summary:
+  en: e0ccd3caadc0156f
+  zh: 85b78ed0038f7166
+/deepseek-ai-dsh-connector/table-of-contents:
+  en: 9ab23db7903a89b5
+  zh: 61fc1b5bdf9280a5
+/deepseek-ai-dsh-connector/provider-registry:
+  en: a2165581bc5a1c73
+  zh: 05eba0495a84c0e8
+/deepseek-ai-dsh-connector/inbound-route:
+  en: 797d2ae21f5393b3
+  zh: 98c1cebefe75467b
+/deepseek-ai-dsh-connector/interactive-resolutions:
+  en: 00330013c683ec77
+  zh: 61d88918fe2c517b
+/deepseek-ai-dsh-connector/inbound-attachments:
+  en: 3e26b50a1a832491
+  zh: aec785c034cde3bb
+/deepseek-ai-dsh-connector/outbound-route:
+  en: 0fb1419fc2c0b7bb
+  zh: d07fe43bca831a6c
+/deepseek-ai-dsh-connector/channel-bindings:
+  en: 60d0e3aa99209b0f
+  zh: 80c961fab6dd04bb
+/deepseek-ai-dsh-connector/composition:
+  en: b3643318be4fd15f
+  zh: 6734d64256c6cb9f
+/deepseek-ai-dsh-connector/model-experience:
+  en: 80c4b372757dc8fd
+  zh: b0fc68c20d84347c
+/deepseek-ai-dsh-connector/model-experience/kv-cache-effect:
+  en: 75b98b878b4425e0
+  zh: 108dbf28575f0fdc
+/deepseek-ai-dsh-connector/known-limitations-and-deferred-work:
+  en: f59f31908e74fdb1
+  zh: 12d34b75c610095a
+/deepseek-ai-dsh-connector/known-limitations-and-deferred-work/dev-note:
+  en: e67f633dc6fe7773
+  zh: 8ec3e73528ddb1a6

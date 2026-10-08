@@ -1,0 +1,58 @@
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write packages/notification/notification/README.md
+/:
+  en: d741bcf86a08e26e
+  zh: b293dcd6a2c3ee51
+/deepseek-ai-dsh-notification:
+  en: 669a840d92d71a36
+  zh: bf2ee6eaba8277e3
+/deepseek-ai-dsh-notification/summary:
+  en: 8cc64bc793d0462c
+  zh: f30da36340ba5f20
+/deepseek-ai-dsh-notification/table-of-contents:
+  en: d152484eb41ac6b4
+  zh: 071ea728d1fb7ad6
+/deepseek-ai-dsh-notification/use-this-package:
+  en: 361399b2cad14995
+  zh: 7c9cdb258d52b46f
+/deepseek-ai-dsh-notification/use-this-package/when-to-choose-it:
+  en: ce8c1d6c65f48630
+  zh: 2e5f788525c85d60
+/deepseek-ai-dsh-notification/use-this-package/composing-a-notification-stack:
+  en: b6332c9f219374e4
+  zh: a1658be93d7eb379
+/deepseek-ai-dsh-notification/use-this-package/the-operation:
+  en: 32dad0f0724e97b6
+  zh: edd7ad2f6332ca6c
+/deepseek-ai-dsh-notification/use-this-package/failures-and-recovery:
+  en: d8cd37d5ca6bfc69
+  zh: e4f45d31f13b74e6
+/deepseek-ai-dsh-notification/understand-the-implementation:
+  en: 1e0acac55fc6c314
+  zh: 204efad68e3edcd4
+/deepseek-ai-dsh-notification/understand-the-implementation/design-philosophy:
+  en: 24cf5ee6cddb5c42
+  zh: 413f83671e3b4719
+/deepseek-ai-dsh-notification/understand-the-implementation/source-map:
+  en: 26552a60d2dfaf23
+  zh: 40cb5c7faf04d211
+/deepseek-ai-dsh-notification/understand-the-implementation/registration-and-disposal-lifecycle:
+  en: bf5d421319b925fe
+  zh: 91d93a2f5bcea30f
+/deepseek-ai-dsh-notification/further-exploration:
+  en: 63f02786ef64800d
+  zh: d6eafc23a8c849e7
+/deepseek-ai-dsh-notification/model-experience:
+  en: 45f2be6a5edb1b62
+  zh: a97f9c79bc817b6c
+/deepseek-ai-dsh-notification/model-experience/kv-cache-effect:
+  en: ca75c51c89c2c9b0
+  zh: b4bbe8239b60ddf0
+/deepseek-ai-dsh-notification/known-limitations-and-deferred-work:
+  en: 47d839df06f74de3
+  zh: addc790ad448fb60
+/deepseek-ai-dsh-notification/known-limitations-and-deferred-work/dev-note:
+  en: e67f633dc6fe7773
+  zh: 9c6918ce849f6c93

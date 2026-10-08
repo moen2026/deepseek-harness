@@ -1,0 +1,23 @@
+- insert:
+    - id: text-to-speech
+      name: '@deepseek-ai/dsh-experimental-text-to-speech'
+      config:
+        defaultProvider: openvoice-local
+    - id: text-to-speech-kokoro
+      name: '@deepseek-ai/dsh-experimental-text-to-speech-kokoro'
+      config:
+        dataRoot: !!js dshHomePath('text-to-speech', 'kokoro')
+    - id: text-to-speech-openvoice
+      name: '@deepseek-ai/dsh-experimental-text-to-speech-openvoice'
+    # A second instance of the same client fronts a local CosyVoice2 service;
+    # CPU zero-shot inference runs minutes per sentence, so this instance
+    # enlarges the request budget.
+    - id: text-to-speech-cosyvoice
+      name: '@deepseek-ai/dsh-experimental-text-to-speech-openvoice'
+      config:
+        providerId: cosyvoice-local
+        displayName: 'CosyVoice v2 (local)'
+        serviceOrigin: http://127.0.0.1:9093
+        requestTimeoutMs: 900000
+    - id: api-text-to-speech
+      name: '@deepseek-ai/dsh-experimental-api-text-to-speech'

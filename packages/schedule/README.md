@@ -27,6 +27,7 @@ Choose this package for persistent reminder management.
 | Package | Role |
 |---|---|
 | [`schedule/`](schedule/README.md) | Host-owned reminder persistence, scheduling, inspection, and explicit deletion |
+| [`heartbeat/`](heartbeat/README.md) | Per-session heartbeat patrol over Schedule: a recurring reminder that reads the workspace heartbeat file and acts on its pending items |
 
 -----
 

@@ -1,0 +1,40 @@
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write packages/connector/connector-slack/README.md
+/:
+  en: 91f95f190506925e
+  zh: 043cdec227e607c7
+/deepseek-ai-dsh-connector-slack:
+  en: dfbc54959c2be49c
+  zh: a22bd80e04f8e8ec
+/deepseek-ai-dsh-connector-slack/summary:
+  en: 366f134578a48ca0
+  zh: 1eec79aa829191fd
+/deepseek-ai-dsh-connector-slack/table-of-contents:
+  en: 13859eda50366405
+  zh: 009465af2fbdb355
+/deepseek-ai-dsh-connector-slack/configuration:
+  en: b04d8d8127a44b36
+  zh: b5a2734d25fd7e44
+/deepseek-ai-dsh-connector-slack/callback-contract:
+  en: 175f1349cf561e22
+  zh: 82f722ea59b824a2
+/deepseek-ai-dsh-connector-slack/inbound-messages:
+  en: 12761d59655dd2f3
+  zh: 89b02a2614f775b5
+/deepseek-ai-dsh-connector-slack/outbound-replies:
+  en: dc4439179d4cbf10
+  zh: 73bc15d0b40087e0
+/deepseek-ai-dsh-connector-slack/model-experience:
+  en: abe376e12952730f
+  zh: 9831db988f723c8f
+/deepseek-ai-dsh-connector-slack/model-experience/kv-cache-effect:
+  en: 8b60e6ea5583a29a
+  zh: d203070e360bb4c0
+/deepseek-ai-dsh-connector-slack/known-limitations-and-deferred-work:
+  en: 4802c88992439f60
+  zh: a2d0df482b778236
+/deepseek-ai-dsh-connector-slack/known-limitations-and-deferred-work/dev-note:
+  en: cd9dd4a041ca520e
+  zh: 9fd648221ae335c4

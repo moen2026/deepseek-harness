@@ -11,6 +11,9 @@ export const PLATFORM_MODULES = [
   '@deepseek-ai/dsh-client-ui-slots',
   '@deepseek-ai/dsh-client-ui-primitives',
   '@deepseek-ai/dsh-client-ui-dockkit',
+  // The Gateway client owns the `$stream` implementation and the carrier-error
+  // class plugins construct into `ended`; both need one shared runtime identity.
+  '@deepseek-ai/dsh-api-gateway/client',
 ] as const
 
 /** Client-bundle specifiers whose factories the parser preloads before the shell starts. */

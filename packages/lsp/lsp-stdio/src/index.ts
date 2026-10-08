@@ -30,11 +30,14 @@ import type { InstanceSpec } from './instance.ts'
 export { canonicalizeWorkspace, readHostSource } from './host.ts'
 export { encodeMessage, MessageDecoder } from './framing.ts'
 export {
+  diagnosticReportItems,
   negotiatePositionEncoding,
+  normalizeDiagnostics,
   normalizeHover,
   normalizeLocations,
   requestMethod,
   supportsOperation,
+  supportsPullDiagnostics,
   supportsTransientOpen,
 } from './translate.ts'
 export { LspInstance } from './instance.ts'

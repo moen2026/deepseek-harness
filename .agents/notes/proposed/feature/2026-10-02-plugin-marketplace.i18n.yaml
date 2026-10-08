@@ -1,0 +1,25 @@
+# Bilingual-pair consistency record for 2026-10-02-plugin-marketplace.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/proposed/feature/2026-10-02-plugin-marketplace.md
+/agent-note-plugin-marketplace-catalog:
+  en: 2d2bcfc4c66c91ac
+  zh: 9c4f6c8e45fb3867
+/agent-note-plugin-marketplace-catalog/problem:
+  en: 1b23d403a73668a2
+  zh: 1d3380ec8aaa903b
+/agent-note-plugin-marketplace-catalog/proposal:
+  en: 4e06c6e66ca4ba9a
+  zh: 6e03c1c21e2f6e51
+/agent-note-plugin-marketplace-catalog/proposal/trust-and-review:
+  en: 946ac887295c0c45
+  zh: c7f15efe4a25dd20
+/agent-note-plugin-marketplace-catalog/alternatives-considered:
+  en: d27ff7a07e9f8106
+  zh: abaaf48afaff0be6
+/agent-note-plugin-marketplace-catalog/acceptance-criteria:
+  en: 0f3dc5029b9183e0
+  zh: d64229e445e7f2d7
+/agent-note-plugin-marketplace-catalog/risks:
+  en: 23584619127a10a0
+  zh: 6994171879419085

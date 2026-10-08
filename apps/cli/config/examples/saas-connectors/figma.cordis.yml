@@ -1,0 +1,11 @@
+# Opt-in reference for Figma's Dev Mode MCP server served by the Figma
+# desktop app (enable "Enable Dev Mode MCP Server" in the desktop app's
+# preferences and keep the app running). The hosted remote endpoint needs
+# OAuth, which dsh-mcp-client does not negotiate.
+- insert:
+    - id: saas-figma
+      name: '@deepseek-ai/dsh-mcp-client'
+      config:
+        serverName: figma
+        transport: streamable-http
+        url: http://127.0.0.1:3845/mcp

@@ -9,7 +9,7 @@ kind: "package-group"
 
 ## 概述
 
-harness 由 `packages/` 下的 npm 包组装而成，按能力系列分组：会话与 agent loop（智能体循环）、面向模型的工具、shell 与文件系统执行、Web 访问、subagent 等等。把本页当作顶层地图使用：先找到拥有某能力的组，再打开其 README 查看包列表。每个包都以 `@deepseek-ai/dsh-*` 为作用域、只属于一个组；每个组的 README 都是该能力系列的权威包映射。
+harness 由 `packages/` 下的 npm 包组装而成，按能力系列分组：会话、工具、执行、Web 访问、subagent 等等。把本页当作顶层地图使用：先找到拥有某能力的组，再打开其 README。每个包都以 `@deepseek-ai/dsh-*` 为作用域、只属于一个组；每个组的 README 都是该能力系列的权威包映射。
 
 ## 目录
 
@@ -24,7 +24,7 @@ harness 由 `packages/` 下的 npm 包组装而成，按能力系列分组：会
 <a id="package-groups"></a>
 ## 包分组
 
-每个包只属于一个组；新包加入现有组，新组则更新其自身 README 与本表。
+每个包只属于一个组；新组则更新其自身 README 与本表。
 
 | 组 | 职责 |
 |---|---|
@@ -47,6 +47,9 @@ harness 由 `packages/` 下的 npm 包组装而成，按能力系列分组：会
 | [`deliverables/`](deliverables/README.zh.md) | 轮次交付物：显式文件交付与记录的工作区改动 |
 | [`fs/`](fs/README.zh.md) | 文件系统能力系列：seam、本地实现、面向模型的文件工具、发现工具 |
 | [`lsp/`](lsp/README.zh.md) | LSP 能力系列：seam、通用 stdio 提供方和 `lsp` 工具 |
+| [`code-index/`](code-index/README.zh.md) | code-index（代码索引）能力系列：seam、SQLite FTS5 提供方和 `search_codebase` 工具 |
+| [`memory/`](memory/README.zh.md) | memory（长期记忆）能力系列：seam、SQLite FTS5 提供方、`memory_write`／`memory_search`／`memory_forget` 工具、轮次结束反思与协作风格画像 |
+| [`knowledge/`](knowledge/README.zh.md) | knowledge（知识库）能力系列：seam、SQLite FTS5 提供方和 `knowledge_ingest`／`knowledge_search`／`knowledge_remove`／`knowledge_list` 工具 |
 | [`skill/`](skill/README.zh.md) | skill（技能）能力系列：提供方注册表、本地提供方、面向模型的目录／loader |
 | [`compaction/`](compaction/README.zh.md) | 压缩（compaction）能力系列：Service Definition + 基础提供方 + 命令 Consumer |
 | [`context/`](context/README.zh.md) | 模型可见请求上下文：workspace 指令、时间上下文、引用 |
@@ -59,6 +62,7 @@ harness 由 `packages/` 下的 npm 包组装而成，按能力系列分组：会
 | [`document/`](document/README.zh.md) | 共享宿主 Office 到 PDF 转换 |
 | [`attachment/`](attachment/README.zh.md) | 持久附件标识、校验、本地内容寻址存储 |
 | [`spill/`](spill/README.zh.md) | spill 能力系列：存储 seam、本地实现、工具结果 spill 策略 |
+| [`git/`](git/README.zh.md) | 面向模型的 worktree 与 pull request 跟踪工具 |
 | [`todo/`](todo/README.zh.md) | 面向模型的 `todo_write` 工具 |
 | [`plan/`](plan/README.zh.md) | Plan 协作状态，提供直接进入命令与经评审的退出 |
 | [`preset/`](preset/README.zh.md) | 由 preset `cordis.yml` 按会话组装 agent |

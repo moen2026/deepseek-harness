@@ -1,5 +1,5 @@
 ---
-description: "Package map for the loop-hygiene guard family: the advisory repeat-tool reminder and the per-tool-call timeout policy, for users and maintainers choosing or composing the guards."
+description: "Package map for the loop-hygiene guard family: the advisory repeat-tool reminder, the per-tool-call timeout policy, and the pinned-context checkpoint, for users and maintainers choosing or composing the guards."
 kind: "package-group"
 ---
 
@@ -9,7 +9,7 @@ English | [中文](README.zh.md)
 
 ## Summary
 
-The `guard/` group keeps the agent loop productive by watching for two common failure patterns. `repeat-tool-reminder` notices when the model repeats the exact same tool call and reminds it to change approach or finish, so a stuck loop stops burning time and tokens. `timeout-policy` puts a time limit on tool calls that declare one, so a hung call returns a clear timed-out error to the model instead of stalling the session. Both ship enabled in the `dsh` base bundle; a composition can tune or remove them.
+The `guard/` group keeps the agent loop productive by watching for three common failure patterns. `repeat-tool-reminder` notices when the model repeats the exact same tool call and reminds it to change approach or finish, so a stuck loop stops burning time and tokens. `timeout-policy` puts a time limit on tool calls that declare one, so a hung call returns a clear timed-out error to the model instead of stalling the session. `context-checkpoint` notices when pinned context the work depends on was removed by compaction and reminds the model to re-obtain it, so the loop stops acting on incomplete information. `repeat-tool-reminder` and `timeout-policy` ship enabled in the `dsh` base bundle; `context-checkpoint` is opt-in per composition; a composition can tune or remove any of them.
 
 ## Table of Contents
 
@@ -22,12 +22,13 @@ The `guard/` group keeps the agent loop productive by watching for two common fa
 <a id="packages"></a>
 ## Packages
 
-Two small plugins cover the two patterns; each README below explains when to keep, tune, or remove it.
+Three small plugins cover the three patterns; each README below explains when to keep, tune, or remove it.
 
 | Package | What it provides |
 |---|---|
 | [`repeat-tool-reminder/`](repeat-tool-reminder/README.md) | Reminds the model when it repeats the same tool call, so it changes approach or finishes |
 | [`timeout-policy/`](timeout-policy/README.md) | Times out tool calls that declare a limit, so the model gets a clear error instead of waiting forever |
+| [`context-checkpoint/`](context-checkpoint/README.md) | Reminds the model when pinned context was compacted away, so it re-obtains the source before acting on it |
 
 -----
 

@@ -505,6 +505,26 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
     ],
   },
   {
+    key: 'audio',
+    summary: 'The `ctx.audio` surface: a single-provider reservation registry plus the routed `transcribe` operation.',
+    description: 'The `ctx.audio` surface: a single-provider reservation registry plus the routed `transcribe` operation. The seam exposes no protocol escape hatch — endpoint shape, model, and credentials are the provider\'s private concern.',
+    methods: [
+      {
+        signature: 'registerProvider(provider: AudioProvider): () => void',
+        description: 'Reserve the seam for one provider. Validate and conflict-check everything before mutating: an invalid or conflicting registration publishes nothing, and its disposer releases the reservation.',
+        parameters: [{ name: 'provider', description: 'the backend claiming the seam.' }],
+        returns: 'a synchronous disposer releasing this provider\'s reservation.',
+      },
+      {
+        signature: 'transcribe(request: AudioTranscribeRequest, signal?: AbortSignal): Promise<AudioTranscript>',
+        description: 'Route one transcription to the registered provider.',
+        parameters: [{ name: 'request', description: 'the transcription request.' }, { name: 'signal', description: 'cancellation forwarded to the provider.' }],
+        returns: 'the transcript.',
+        throws: ['{@link AudioError} with `AUDIO_UNAVAILABLE` when no provider is registered.'],
+      },
+    ],
+  },
+  {
     key: 'authorization',
     summary: '`ctx.authorization`: a registry of credential-obtaining flows, one attempt at a time per key.',
     description: '`ctx.authorization`: a registry of credential-obtaining flows, one attempt at a time per key.',
@@ -601,6 +621,26 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
         description: 'Fires after any flush that recomposed the graph (row added/removed, or a rebuilt rev change). Pull model: listeners re-read graph.',
         parameters: [{ name: 'listener', description: 'notified with no payload.' }],
         returns: 'the unsubscriber.',
+      },
+    ],
+  },
+  {
+    key: 'codeIndex',
+    summary: 'The `ctx.codeIndex` surface: a single-provider reservation registry plus one read-only `search` that routes to the registered provider.',
+    description: 'The `ctx.codeIndex` surface: a single-provider reservation registry plus one read-only `search` that routes to the registered provider. The seam exposes exactly `search` and no index-building or protocol escape hatch — populating the corpus is the provider\'s private concern.',
+    methods: [
+      {
+        signature: 'registerProvider(provider: CodeIndexProvider): () => void',
+        description: 'Reserve the seam for one provider. Validate and conflict-check everything before mutating: an invalid or conflicting registration publishes nothing, and its disposer releases the reservation.',
+        parameters: [{ name: 'provider', description: 'the backend claiming the seam.' }],
+        returns: 'a synchronous disposer releasing this provider\'s reservation.',
+      },
+      {
+        signature: 'search(request: CodeSearchRequest, signal?: AbortSignal): Promise<CodeSearchPage>',
+        description: 'Route one lexical search to the registered provider.',
+        parameters: [{ name: 'request', description: 'the normalized query.' }, { name: 'signal', description: 'cancellation forwarded to the provider.' }],
+        returns: 'a ranked, total page of hits.',
+        throws: ['{@link CodeIndexError} with `CODE_INDEX_UNAVAILABLE` when no provider is registered.'],
       },
     ],
   },
@@ -755,6 +795,68 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
         description: 'Add the fresh process token to an ordinary Web application URL.',
         parameters: [{ name: 'baseUrl', description: 'clean application URL whose authority and mount are preserved.' }],
         returns: 'tokenized URL for initial login; a mount proxy strips its prefix before {@link authorizeIndex}.',
+      },
+    ],
+  },
+  {
+    key: 'connector',
+    summary: 'The `ctx.connector` surface: a multi-provider registry, the inbound route from verified platform messages into `ctx.webhookOutbox`, the outbound route from Session events to a provider, and the channel-to-Session binding table both routes share.',
+    description: 'The `ctx.connector` surface: a multi-provider registry, the inbound route from verified platform messages into `ctx.webhookOutbox`, the outbound route from Session events to a provider, and the channel-to-Session binding table both routes share. The seam exposes no protocol escape hatch — platform mechanics are the provider\'s private concern.',
+    methods: [
+      {
+        signature: 'registerProvider(provider: ConnectorProvider): () => void',
+        description: 'Reserve one platform id on the seam. Validate and conflict-check before mutating: an invalid or duplicate registration publishes nothing, and the disposer releases the reservation.',
+        parameters: [{ name: 'provider', description: 'the backend claiming the platform id.' }],
+        returns: 'a synchronous disposer releasing this provider\'s reservation.',
+      },
+      {
+        signature: 'deliver(message: ConnectorInboundMessage): Promise<\'queued\' | \'duplicate\'>',
+        description: 'Admit one verified platform message as a durable webhook delivery: `ctx.webhookOutbox` deduplicates it by message id and replays it into the webhook runtime, where the provider\'s inbound rule runs.',
+        parameters: [{ name: 'message', description: 'the translated inbound message.' }],
+        returns: '`\'queued\'` once the durable record landed; `\'duplicate\'` when an equivalent message is pending or retained as delivered.',
+        throws: ['TypeError when a field is not a non-empty string.', '{@link ConnectorError} with `CONNECTOR_UNKNOWN_PROVIDER` when no provider is registered under the id, or `CONNECTOR_INBOUND_UNAVAILABLE` when the provider has no inbound rule.'],
+      },
+      {
+        signature: 'push(channel: ConnectorChannel, message: ConnectorOutboundMessage, signal?: AbortSignal): Promise<void>',
+        description: 'Route one outbound message through the addressed provider.',
+        parameters: [{ name: 'channel', description: 'the destination channel.' }, { name: 'message', description: 'the message to deliver.' }, { name: 'signal', description: 'cancellation forwarded to the provider.' }],
+        throws: ['{@link ConnectorError} with `CONNECTOR_UNKNOWN_PROVIDER` when no provider is registered under `channel.provider`.'],
+      },
+      {
+        signature: 'inbound(options: ConnectorInboundOptions): () => Promise<void>',
+        description: 'Register the inbound rule for one provider: a webhook rule that runs on every message of that provider and either appends the prompt to the channel\'s existing Session (live or resumed) or creates it.',
+        parameters: [{ name: 'options', description: 'the provider and Session composition for its messages.' }],
+        returns: 'an awaitable disposer that removes the rule.',
+        throws: ['TypeError when an option is invalid.', '{@link ConnectorError} with `CONNECTOR_CONFLICT` when the provider already has an inbound rule.'],
+      },
+      {
+        signature: 'resolutions(provider: string, handler: ConnectorResolutionHandler): () => void',
+        description: 'Register the interactive-callback consumer for one provider: every inbound message of that provider carrying a ConnectorResolution is handed to the handler instead of being appended to the bound Session. A resolution that arrives while no handler is registered fails the delivery so the platform can retry — decisions are never dropped silently.',
+        parameters: [{ name: 'provider', description: 'the registered provider whose callbacks the handler consumes.' }, { name: 'handler', description: 'the consumer invoked per resolution.' }],
+        returns: 'a synchronous disposer removing this handler.',
+        throws: ['{@link ConnectorError} with `CONNECTOR_CONFLICT` when the provider already has a resolution handler, or `CONNECTOR_UNKNOWN_PROVIDER` when no provider is registered under the id.'],
+      },
+      {
+        signature: 'bind(channel: ConnectorChannel, sessionId: SessionId): void',
+        description: 'Record the 1:1 binding between one channel and one Session: the next inbound message continues the bound Session, and outbound consumers resolve a Session back to its channel. Re-binding either side releases the conflicting pair.',
+        parameters: [{ name: 'channel', description: 'the channel to bind.' }, { name: 'sessionId', description: 'the Session the channel now addresses.' }],
+      },
+      {
+        signature: 'unbind(channel: ConnectorChannel): void',
+        description: 'Release the binding of one channel, if any.',
+        parameters: [{ name: 'channel', description: 'the channel to release.' }],
+      },
+      {
+        signature: 'sessionOf(channel: ConnectorChannel): SessionId | undefined',
+        description: 'Resolve the Session a channel is currently bound to.',
+        parameters: [{ name: 'channel', description: 'the channel to resolve.' }],
+        returns: 'the bound Session id, or `undefined` when unbound.',
+      },
+      {
+        signature: 'channelOf(sessionId: SessionId): ConnectorChannel | undefined',
+        description: 'Resolve the channel a Session is currently bound to.',
+        parameters: [{ name: 'sessionId', description: 'the Session to resolve.' }],
+        returns: 'the bound channel, or `undefined` when unbound.',
       },
     ],
   },
@@ -979,6 +1081,26 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
     ],
   },
   {
+    key: 'documents',
+    summary: 'The `ctx.documents` surface: a single-provider reservation registry plus the routed `create` operation.',
+    description: 'The `ctx.documents` surface: a single-provider reservation registry plus the routed `create` operation. The seam exposes no protocol escape hatch — engines and intermediate representations are the provider\'s private concern.',
+    methods: [
+      {
+        signature: 'registerProvider(provider: DocumentsProvider): () => void',
+        description: 'Reserve the seam for one provider. Validate and conflict-check everything before mutating: an invalid or conflicting registration publishes nothing, and its disposer releases the reservation.',
+        parameters: [{ name: 'provider', description: 'the backend claiming the seam.' }],
+        returns: 'a synchronous disposer releasing this provider\'s reservation.',
+      },
+      {
+        signature: 'create(request: DocumentCreateRequest, signal?: AbortSignal): Promise<DocumentResult>',
+        description: 'Route one creation to the registered provider.',
+        parameters: [{ name: 'request', description: 'the creation request.' }, { name: 'signal', description: 'cancellation forwarded to the provider.' }],
+        returns: 'the created document.',
+        throws: ['{@link DocumentsError} with `DOCUMENTS_UNAVAILABLE` when no provider is registered.'],
+      },
+    ],
+  },
+  {
     key: 'fileReferences',
     summary: 'Host capability for cancellable file-reference discovery.',
     description: 'Host capability for cancellable file-reference discovery.',
@@ -1124,6 +1246,12 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
         returns: 'the outcome, including the version the write produced.',
       },
       {
+        signature: 'writeBytes( target: FsTarget, data: Uint8Array, expected?: FsWriteIntent, signal?: AbortSignal, sandboxPolicy?: SandboxExecutionPolicy, ): Promise<FsBinaryWriteOutcome>',
+        description: 'Atomically create or replace binary content, such as a generated document archive. Carries no textual diff basis. Backends that only carry UTF-8 text reject with `FS_NOT_TEXT`; the local and SSH backends override it.',
+        parameters: [{ name: 'target', description: 'the resolved target to write.' }, { name: 'data', description: 'the full new file content.' }, { name: 'expected', description: 'the write intent guarding the write; omit for unconditional.' }, { name: 'signal', description: 'aborts before atomic publication takes effect.' }, { name: 'sandboxPolicy', description: 'the per-call mode and workspace root this write runs under; a sandboxing backend fences the write by it, the bare backend ignores it. Omit to leave the backend its own default.' }],
+        returns: 'the outcome, including the version the write produced.',
+      },
+      {
         signature: 'abstract editText( target: FsTarget, edit: FsEditRequest, expected?: { version: FsVersion }, signal?: AbortSignal, sandboxPolicy?: SandboxExecutionPolicy, ): Promise<FsEditOutcome>',
         description: 'Atomically edit literal text. When supplied, the version guard is checked before matching so stale content reports `FS_STALE_VERSION`; omission edits the current content without a freshness precondition.',
         parameters: [{ name: 'target', description: 'the resolved target to edit.' }, { name: 'edit', description: 'the literal search/replace request.' }, { name: 'expected', description: 'the version guard; omit for an unconditional edit.' }, { name: 'signal', description: 'aborts before atomic publication takes effect.' }, { name: 'sandboxPolicy', description: 'the per-call mode and workspace root this edit runs under; a sandboxing backend fences the edit by it, the bare backend ignores it. Omit to leave the backend its own default.' }],
@@ -1232,6 +1360,26 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
         description: 'Read direct module dependency URLs from the active Node loader.',
         parameters: [{ name: 'url', description: 'Module URL.' }],
         returns: 'Linked module URLs, or an empty list for an uncached module.',
+      },
+    ],
+  },
+  {
+    key: 'image',
+    summary: 'The `ctx.image` surface: a single-provider reservation registry plus the routed `generate` operation.',
+    description: 'The `ctx.image` surface: a single-provider reservation registry plus the routed `generate` operation. The seam exposes no protocol escape hatch — endpoint shape, model, and credentials are the provider\'s private concern.',
+    methods: [
+      {
+        signature: 'registerProvider(provider: ImageProvider): () => void',
+        description: 'Reserve the seam for one provider. Validate and conflict-check everything before mutating: an invalid or conflicting registration publishes nothing, and its disposer releases the reservation.',
+        parameters: [{ name: 'provider', description: 'the backend claiming the seam.' }],
+        returns: 'a synchronous disposer releasing this provider\'s reservation.',
+      },
+      {
+        signature: 'generate(request: ImageGenerateRequest, signal?: AbortSignal): Promise<ImageResult>',
+        description: 'Route one generation to the registered provider.',
+        parameters: [{ name: 'request', description: 'the generation request.' }, { name: 'signal', description: 'cancellation forwarded to the provider.' }],
+        returns: 'the generated image.',
+        throws: ['{@link ImageError} with `IMAGE_UNAVAILABLE` when no provider is registered.'],
       },
     ],
   },
@@ -1356,6 +1504,77 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
     ],
   },
   {
+    key: 'knowledge',
+    summary: 'The `ctx.knowledge` surface: a single-provider reservation registry plus the four routed operations (`ingest`, `search`, `remove`, `list`).',
+    description: 'The `ctx.knowledge` surface: a single-provider reservation registry plus the four routed operations (`ingest`, `search`, `remove`, `list`). The seam exposes no chunking, embedding, or protocol escape hatch — storage layout and any vector retrieval are the provider\'s private concern.',
+    methods: [
+      {
+        signature: 'readonly available: boolean',
+        description: 'Whether a provider currently holds the seam; a read that never throws.',
+        parameters: [],
+      },
+      {
+        signature: 'registerProvider(provider: KnowledgeProvider): () => void',
+        description: 'Reserve the seam for one provider. Validate and conflict-check everything before mutating: an invalid or conflicting registration publishes nothing, and its disposer releases the reservation.',
+        parameters: [{ name: 'provider', description: 'the backend claiming the seam.' }],
+        returns: 'a synchronous disposer releasing this provider\'s reservation.',
+      },
+      {
+        signature: 'ingest(draft: KnowledgeDraft, signal?: AbortSignal): Promise<string>',
+        description: 'Route one ingest to the registered provider.',
+        parameters: [{ name: 'draft', description: 'the ingest payload.' }, { name: 'signal', description: 'cancellation forwarded to the provider.' }],
+        returns: 'the provider-assigned document identity.',
+        throws: ['{@link KnowledgeError} with `KNOWLEDGE_UNAVAILABLE` when no provider is registered.'],
+      },
+      {
+        signature: 'search(request: KnowledgeSearchRequest, signal?: AbortSignal): Promise<KnowledgeSearchResult>',
+        description: 'Route one search to the registered provider.',
+        parameters: [{ name: 'request', description: 'the normalized query.' }, { name: 'signal', description: 'cancellation forwarded to the provider.' }],
+        returns: 'a ranked, total result of hits with snippets.',
+        throws: ['{@link KnowledgeError} with `KNOWLEDGE_UNAVAILABLE` when no provider is registered.'],
+      },
+      {
+        signature: 'remove(id: string, signal?: AbortSignal): Promise<boolean>',
+        description: 'Route one deletion to the registered provider.',
+        parameters: [{ name: 'id', description: 'the document identity to remove.' }, { name: 'signal', description: 'cancellation forwarded to the provider.' }],
+        returns: '`true` when a document was removed, `false` when none matched.',
+        throws: ['{@link KnowledgeError} with `KNOWLEDGE_UNAVAILABLE` when no provider is registered.'],
+      },
+      {
+        signature: 'list(request?: KnowledgeListRequest, signal?: AbortSignal): Promise<KnowledgePage>',
+        description: 'Route one listing to the registered provider.',
+        parameters: [{ name: 'request', description: 'the listing filter; all fields optional.' }, { name: 'signal', description: 'cancellation forwarded to the provider.' }],
+        returns: 'a total page of documents.',
+        throws: ['{@link KnowledgeError} with `KNOWLEDGE_UNAVAILABLE` when no provider is registered.'],
+      },
+    ],
+  },
+  {
+    key: 'knowledgeBrowser',
+    summary: '`ctx.knowledgeBrowser`.',
+    description: '`ctx.knowledgeBrowser`. A read-and-remove face: ingest and search stay model-side operations, so the browser cannot write corpus content.',
+    methods: [
+      {
+        signature: '@Remote(\'status\') status(): Promise<KnowledgeBrowserStatus>',
+        description: 'Probe whether a provider holds the seam.',
+        parameters: [],
+        returns: 'the availability answer; never rejects for an unheld seam.',
+      },
+      {
+        signature: '@Remote(\'list\') async list(request?: KnowledgeListRequest, signal?: AbortSignal): Promise<KnowledgePage>',
+        description: 'List stored documents by recency.',
+        parameters: [{ name: 'request', description: 'the listing filter; all fields optional.' }, { name: 'signal', description: 'cancellation forwarded to the provider.' }],
+        returns: 'a total page of documents.',
+      },
+      {
+        signature: '@Remote(\'remove\') async remove(id: string, signal?: AbortSignal): Promise<boolean>',
+        description: 'Remove one document.',
+        parameters: [{ name: 'id', description: 'the document identity to remove.' }, { name: 'signal', description: 'cancellation forwarded to the provider.' }],
+        returns: '`true` when a document was removed, `false` when none matched.',
+      },
+    ],
+  },
+  {
     key: 'llm',
     summary: 'The abstract `llm` service: an adapter registry plus a streaming model-call API, interceptable via the `llm/stream` waterfall.',
     description: 'The abstract `llm` service: an adapter registry plus a streaming model-call API, interceptable via the `llm/stream` waterfall.',
@@ -1456,7 +1675,7 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
   {
     key: 'lsp',
     summary: 'The LSP capability seam (`ctx.lsp`).',
-    description: 'The LSP capability seam (`ctx.lsp`). Owns provider registration/selection and normalized query execution; exposes exactly the four operations and no protocol escape hatch.',
+    description: 'The LSP capability seam (`ctx.lsp`). Owns provider registration/selection and normalized query execution; exposes exactly the five operations and no protocol escape hatch.',
     methods: [
       {
         signature: 'registerProvider(provider: LspProvider): () => void',
@@ -1473,6 +1692,25 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
     ],
   },
   {
+    key: 'mcpBrowser',
+    summary: '`ctx.mcpBrowser`.',
+    description: '`ctx.mcpBrowser`. A read-only face: connecting, disconnecting, and resource reads stay with the connection plugins and the model-side resource tools.',
+    methods: [
+      {
+        signature: '@Remote(\'status\') status(): Promise<McpBrowserStatus>',
+        description: 'Probe whether any MCP server is registered.',
+        parameters: [],
+        returns: 'the availability answer; never rejects for a serverless deployment.',
+      },
+      {
+        signature: '@Remote(\'servers\') async servers(): Promise<{ servers: McpServerSummary[] }>',
+        description: 'Summarize the globally registered servers: each server\'s model-facing tools from the registry view and the first page of its reported resources. A server whose resource read fails keeps its tool list with a `failed` note instead of failing the whole read.',
+        parameters: [],
+        returns: 'one summary per registered server, in sorted name order.',
+      },
+    ],
+  },
+  {
     key: 'mcpResources',
     summary: 'Scoped resource access plus three tools shared by configured MCP servers.',
     description: 'Scoped resource access plus three tools shared by configured MCP servers.',
@@ -1482,6 +1720,90 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
         description: 'Register one server and expose resource tools while that scope has providers.',
         parameters: [{ name: 'server', description: 'configured server name, unique in this scope.' }, { name: 'provider', description: 'connection-owned resource operations.' }],
         returns: 'the effect disposer for this exact registration.',
+      },
+      {
+        signature: 'serverNames(): string[]',
+        description: 'Names of the servers registered in the global layer, sorted. Agent-scoped registrations belong to their agent\'s tool view, not this global listing.',
+        parameters: [],
+        returns: 'the sorted server names.',
+      },
+      {
+        signature: 'listResources(server: string, signal: AbortSignal): Promise<JsonValue>',
+        description: 'Read one globally registered server\'s first resource page as the browser face sees it. The synthetic execution carries only the cancellation the provider reads; no registry pipeline stage observes it.',
+        parameters: [{ name: 'server', description: 'the configured server namespace.' }, { name: 'signal', description: 'cancellation forwarded to the connection.' }],
+        returns: 'the server\'s lossless `resources/list` result.',
+        throws: ['when the server is not registered in the global layer.'],
+      },
+    ],
+  },
+  {
+    key: 'memory',
+    summary: 'The `ctx.memory` surface: a single-provider reservation registry plus the four routed operations (`remember`, `recall`, `forget`, `list`).',
+    description: 'The `ctx.memory` surface: a single-provider reservation registry plus the four routed operations (`remember`, `recall`, `forget`, `list`). The seam exposes no embedding or protocol escape hatch — storage layout and any vector retrieval are the provider\'s private concern.',
+    methods: [
+      {
+        signature: 'readonly available: boolean',
+        description: 'Whether a provider currently holds the seam; a read that never throws.',
+        parameters: [],
+      },
+      {
+        signature: 'registerProvider(provider: MemoryProvider): () => void',
+        description: 'Reserve the seam for one provider. Validate and conflict-check everything before mutating: an invalid or conflicting registration publishes nothing, and its disposer releases the reservation.',
+        parameters: [{ name: 'provider', description: 'the backend claiming the seam.' }],
+        returns: 'a synchronous disposer releasing this provider\'s reservation.',
+      },
+      {
+        signature: 'remember(draft: MemoryDraft, signal?: AbortSignal): Promise<string>',
+        description: 'Route one write to the registered provider.',
+        parameters: [{ name: 'draft', description: 'the write payload.' }, { name: 'signal', description: 'cancellation forwarded to the provider.' }],
+        returns: 'the provider-assigned record identity.',
+        throws: ['{@link MemoryError} with `MEMORY_UNAVAILABLE` when no provider is registered.'],
+      },
+      {
+        signature: 'recall(request: MemoryRecallRequest, signal?: AbortSignal): Promise<MemoryRecallResult>',
+        description: 'Route one recall to the registered provider.',
+        parameters: [{ name: 'request', description: 'the normalized query.' }, { name: 'signal', description: 'cancellation forwarded to the provider.' }],
+        returns: 'a ranked, total result of hits.',
+        throws: ['{@link MemoryError} with `MEMORY_UNAVAILABLE` when no provider is registered.'],
+      },
+      {
+        signature: 'forget(id: string, signal?: AbortSignal): Promise<boolean>',
+        description: 'Route one deletion to the registered provider.',
+        parameters: [{ name: 'id', description: 'the record identity to forget.' }, { name: 'signal', description: 'cancellation forwarded to the provider.' }],
+        returns: '`true` when a record was removed, `false` when none matched.',
+        throws: ['{@link MemoryError} with `MEMORY_UNAVAILABLE` when no provider is registered.'],
+      },
+      {
+        signature: 'list(request?: MemoryListRequest, signal?: AbortSignal): Promise<MemoryPage>',
+        description: 'Route one listing to the registered provider.',
+        parameters: [{ name: 'request', description: 'the listing filter; all fields optional.' }, { name: 'signal', description: 'cancellation forwarded to the provider.' }],
+        returns: 'a total page of records.',
+        throws: ['{@link MemoryError} with `MEMORY_UNAVAILABLE` when no provider is registered.'],
+      },
+    ],
+  },
+  {
+    key: 'memoryBrowser',
+    summary: '`ctx.memoryBrowser`.',
+    description: '`ctx.memoryBrowser`. A read-and-remove face: remembering and recall stay model-side operations, so the browser cannot write memory content.',
+    methods: [
+      {
+        signature: '@Remote(\'status\') status(): Promise<MemoryBrowserStatus>',
+        description: 'Probe whether a provider holds the seam.',
+        parameters: [],
+        returns: 'the availability answer; never rejects for an unheld seam.',
+      },
+      {
+        signature: '@Remote(\'list\') async list(request?: MemoryListRequest, signal?: AbortSignal): Promise<MemoryPage>',
+        description: 'List stored memories by recency.',
+        parameters: [{ name: 'request', description: 'the listing filter; all fields optional.' }, { name: 'signal', description: 'cancellation forwarded to the provider.' }],
+        returns: 'a total page of memories.',
+      },
+      {
+        signature: '@Remote(\'forget\') async forget(id: string, signal?: AbortSignal): Promise<boolean>',
+        description: 'Remove one memory.',
+        parameters: [{ name: 'id', description: 'the memory identity to remove.' }, { name: 'signal', description: 'cancellation forwarded to the provider.' }],
+        returns: '`true` when a memory was removed, `false` when none matched.',
       },
     ],
   },
@@ -1507,6 +1829,25 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
         description: 'Delete one item after checking its version; absence succeeds without an event.',
         parameters: [{ name: 'request', description: 'Session, message, and observed item version.' }],
         returns: 'the stable absent postcondition or an explicit failure.',
+      },
+    ],
+  },
+  {
+    key: 'notification',
+    summary: 'The `ctx.notification` surface: a single-provider reservation registry plus the routed `notify` operation.',
+    description: 'The `ctx.notification` surface: a single-provider reservation registry plus the routed `notify` operation. The seam exposes no protocol escape hatch — platform mechanics are the provider\'s private concern.',
+    methods: [
+      {
+        signature: 'registerProvider(provider: NotificationProvider): () => void',
+        description: 'Reserve the seam for one provider. Validate and conflict-check everything before mutating: an invalid or conflicting registration publishes nothing, and its disposer releases the reservation.',
+        parameters: [{ name: 'provider', description: 'the backend claiming the seam.' }],
+        returns: 'a synchronous disposer releasing this provider\'s reservation.',
+      },
+      {
+        signature: 'notify(request: NotificationRequest, signal?: AbortSignal): Promise<void>',
+        description: 'Route one alert to the registered provider.',
+        parameters: [{ name: 'request', description: 'the alert to surface.' }, { name: 'signal', description: 'cancellation forwarded to the provider.' }],
+        throws: ['{@link NotificationError} with `NOTIFICATION_UNAVAILABLE` when no provider is registered.'],
       },
     ],
   },
@@ -1767,6 +2108,40 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
     ],
   },
   {
+    key: 'repoWiki',
+    summary: 'The `ctx.repoWiki` surface: a single-provider reservation registry plus the read-only routes (`getPage`, `listPages`, `outline`) that forward to the registered provider.',
+    description: 'The `ctx.repoWiki` surface: a single-provider reservation registry plus the read-only routes (`getPage`, `listPages`, `outline`) that forward to the registered provider. The seam exposes exactly the read routes — populating, regenerating, and storing pages is the provider\'s private concern.',
+    methods: [
+      {
+        signature: 'registerProvider(provider: RepoWikiProvider): () => void',
+        description: 'Reserve the seam for one provider. Validate and conflict-check everything before mutating: an invalid or conflicting registration publishes nothing, and its disposer releases the reservation.',
+        parameters: [{ name: 'provider', description: 'the backend claiming the seam.' }],
+        returns: 'a synchronous disposer releasing this provider\'s reservation.',
+      },
+      {
+        signature: 'getPage(path: string): Promise<WikiPage>',
+        description: 'Route one page read to the registered provider.',
+        parameters: [{ name: 'path', description: 'the wiki-relative `.md` path.' }],
+        returns: 'the page\'s identity and body.',
+        throws: ['{@link RepoWikiError} with `REPO_WIKI_UNAVAILABLE` when no provider is registered.'],
+      },
+      {
+        signature: 'listPages(): Promise<WikiListing>',
+        description: 'List every page through the registered provider.',
+        parameters: [],
+        returns: 'the page summaries ordered by path.',
+        throws: ['{@link RepoWikiError} with `REPO_WIKI_UNAVAILABLE` when no provider is registered.'],
+      },
+      {
+        signature: 'outline(): Promise<readonly WikiOutlineEntry[]>',
+        description: 'Return every page\'s heading structure through the registered provider.',
+        parameters: [],
+        returns: 'the outline entries ordered by path.',
+        throws: ['{@link RepoWikiError} with `REPO_WIKI_UNAVAILABLE` when no provider is registered.'],
+      },
+    ],
+  },
+  {
     key: 'sandbox',
     summary: 'Abstract process-sandbox service.',
     description: 'Abstract process-sandbox service. confine must return enforcing argv or fail closed at wrap or runner-execution time; silent unconfined passthrough is forbidden. Functional probes arbitrate multi-runner chains and may be skipped for a sole candidate, whose own refusal remains the fail-closed end.',
@@ -1787,6 +2162,11 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
       {
         signature: 'readonly defaultMode: SandboxMode',
         description: 'The deployment default mode — the fallback beneath a session override.',
+        parameters: [],
+      },
+      {
+        signature: 'readonly defaultNetwork: SandboxNetworkMode',
+        description: 'The deployment network carriage resolved into every confined execution.',
         parameters: [],
       },
       {
@@ -2297,6 +2677,25 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
         description: 'Snapshot all references for one accepted direct message and return one aggregated durable context. Automatic budgets use the last assembled route, or agent options before any assembly. Missing model capacity or adapter uses 64 KiB; other metadata lookup failures and cancellation reject preparation. Truncated previews include omission facts and a full-snapshot spill locator, or an explicit unavailable notice. Cancellation prevents context publication, including when storage completes after cancellation.',
         parameters: [{ name: 'agent', description: 'target agent; references to it are rejected.' }, { name: 'content', description: 'already host-normalized readable message content.' }, { name: 'references', description: 'structured source sessions in mention order.' }, { name: 'signal', description: 'optional cancellation boundary for the active turn.' }],
         returns: 'detached content and optional referenced-session context.',
+      },
+    ],
+  },
+  {
+    key: 'sessionRewind',
+    summary: 'Serves the per-turn rewind records of live Sessions.',
+    description: 'Serves the per-turn rewind records of live Sessions.',
+    methods: [
+      {
+        signature: 'list(sessionId: SessionId): RewindSummary[]',
+        description: 'Every turn with captured paths, oldest first.',
+        parameters: [{ name: 'sessionId', description: 'the Session whose rewind records to list.' }],
+        returns: 'the summaries, or an empty list once the Session was disposed or when this Host never recorded it.',
+      },
+      {
+        signature: 'restore(sessionId: SessionId, turn: number, signal?: AbortSignal): Promise<RewindOutcome | undefined>',
+        description: 'Restore every path one turn\'s file tools changed to its content before that turn. A path absent before the turn is deleted; a later turn\'s edits to a covered path are overwritten.',
+        parameters: [{ name: 'sessionId', description: 'the Session whose rewind record to restore.' }, { name: 'turn', description: 'the turn whose pre-turn state to reproduce.' }, { name: 'signal', description: 'cancels the queued restore work.' }],
+        returns: 'the outcome, or undefined when no record exists for that turn, once the Session was disposed, or when this Host never recorded it.',
       },
     ],
   },
@@ -3125,6 +3524,77 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
     ],
   },
   {
+    key: 'textToSpeech',
+    summary: 'Registry shared by all synthesis consumers in one Host composition.',
+    description: 'Registry shared by all synthesis consumers in one Host composition.',
+    methods: [
+      {
+        signature: 'register(provider: TtsProvider): () => Promise<void>',
+        description: 'Register one synthesizer; duplicate ids fail without replacing the original.',
+        parameters: [{ name: 'provider', description: 'synthesizer owned by the contributing fiber.' }],
+        returns: 'idempotent disposer which rejects admission, cancels, and joins accepted work.',
+      },
+      {
+        signature: 'listProviders(): readonly TtsProviderInfo[]',
+        description: 'Read the current synthesizer roster.',
+        parameters: [],
+        returns: 'available provider facts in registration order.',
+      },
+      {
+        signature: 'catalogChanged(): void',
+        description: 'Re-read provider facts after a provider changed facts it owns outside registration — its `voices` roster, for example; readiness followers receive a new snapshot and read the announced facts live.',
+        parameters: [],
+      },
+      {
+        signature: 'async *follow(caller: AbortSignal): AsyncIterable<TtsSnapshot>',
+        description: 'Observe complete readiness snapshots; a slow reader coalesces intermediate progress.',
+        parameters: [{ name: 'caller', description: 'observer lifetime, independent of any preparation task.' }],
+        returns: 'an initial snapshot followed by the latest provider states.',
+      },
+      {
+        signature: 'snapshot(): TtsSnapshot',
+        description: 'Read provider readiness and current user preferences together.',
+        parameters: [],
+        returns: 'one detached complete observation.',
+      },
+      {
+        signature: 'async configure(patch: TtsSelectionPatch): Promise<void>',
+        description: 'Persist changed selection fields into this plugin\'s profile entry; the resulting voice must be accepted by the selected provider.',
+        parameters: [{ name: 'patch', description: 'explicit provider, voice, or rate changes.' }],
+        returns: 'after the profile write and the live update it applies.',
+      },
+      {
+        signature: 'prepare(id: TtsProviderId, options?: TtsPreparationOptions): void',
+        description: 'Start or join provider-owned preparation.',
+        parameters: [{ name: 'id', description: 'exact registered provider identity.' }, { name: 'options', description: 'task-local source selection validated by the provider.' }],
+      },
+      {
+        signature: 'async cancelPreparation(id: TtsProviderId): Promise<void>',
+        description: 'Explicitly cancel provider preparation without tying it to a browser connection.',
+        parameters: [{ name: 'id', description: 'exact registered provider identity.' }],
+        returns: 'after the preparation task settles.',
+      },
+      {
+        signature: 'async intakeVoice(id: TtsProviderId, intake: TtsVoiceIntake, signal: AbortSignal): Promise<TtsVoiceInfo>',
+        description: 'Store one recording as a selectable voice through the exact provider.',
+        parameters: [{ name: 'id', description: 'exact registered provider identity.' }, { name: 'intake', description: 'target voice id and complete recording bytes.' }, { name: 'signal', description: 'caller cancellation.' }],
+        returns: 'the selectable voice after the provider\'s roster reflects it.',
+      },
+      {
+        signature: 'resolve(request: TtsRequest): TtsSpec',
+        description: 'Apply composition defaults and capture the selected provider. Missing providers and unsupported voices fail explicitly.',
+        parameters: [{ name: 'request', description: 'complete text and optional selection.' }],
+        returns: 'provider-pinned input for synthesize().',
+      },
+      {
+        signature: 'async synthesize(spec: TtsSpec, signal: AbortSignal): Promise<TtsSynthesis>',
+        description: 'Execute exactly the resolved provider; no fallback sends text elsewhere.',
+        parameters: [{ name: 'spec', description: 'resolved input; a withdrawn or replaced registration is rejected.' }, { name: 'signal', description: 'caller cancellation.' }],
+        returns: 'synthesized WAV audio after provider settlement.',
+      },
+    ],
+  },
+  {
     key: 'timer',
     summary: 'Disposable timer helpers mixed into Cordis contexts.',
     description: 'Disposable timer helpers mixed into Cordis contexts.',
@@ -3267,6 +3737,54 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
     ],
   },
   {
+    key: 'ttsController',
+    summary: 'Synthesis calls never activate or submit to an Agent.',
+    description: 'Synthesis calls never activate or submit to an Agent.',
+    methods: [
+      {
+        signature: '@Remote catalog(): TtsCatalog',
+        description: 'Read provider choices without preparing a synthesizer.',
+        parameters: [],
+        returns: 'available providers, resolved default, and text limits.',
+      },
+      {
+        signature: '@Remote({ mode: \'stream\' }) async *follow(signal: AbortSignal): AsyncIterable<TtsCatalog>',
+        description: 'Follow provider readiness independently of Session and preparation lifetimes.',
+        parameters: [{ name: 'signal', description: 'Client observation lifetime.' }],
+        returns: 'initial and subsequent complete readiness snapshots.',
+      },
+      {
+        signature: '@Remote configure(patch: TtsSelectionPatch): Promise<void>',
+        description: 'Persist the user\'s synthesis preferences.',
+        parameters: [{ name: 'patch', description: 'changed preference fields.' }],
+        returns: 'after preferences are saved.',
+      },
+      {
+        signature: '@Remote prepare(providerId: TtsProviderId, options?: TtsPreparationOptions): void',
+        description: 'Start or join one Host-owned preparation task.',
+        parameters: [{ name: 'providerId', description: 'selected synthesizer.' }, { name: 'options', description: 'task-local source selection validated by the provider.' }],
+      },
+      {
+        signature: '@Remote cancelPreparation(providerId: TtsProviderId): Promise<void>',
+        description: 'Explicitly cancel resource preparation.',
+        parameters: [{ name: 'providerId', description: 'selected synthesizer.' }],
+        returns: 'after the preparation task settles.',
+      },
+      {
+        signature: '@Remote async synthesize(request: SynthesisRequest, signal: AbortSignal): Promise<SynthesisResult>',
+        description: 'Validate and synthesize one text through the explicit provider selection.',
+        parameters: [{ name: 'request', description: 'read-aloud text and optional provider id.' }, { name: 'signal', description: 'Client cancellation or Remote contribution disposal.' }],
+        returns: 'complete WAV audio encoded as base64 without adding a Session event.',
+      },
+      {
+        signature: '@Remote async intakeVoice(request: VoiceIntakeRequest, signal: AbortSignal): Promise<TtsVoiceInfo>',
+        description: 'Validate and store one recording as a selectable voice.',
+        parameters: [{ name: 'request', description: 'provider id, new voice id, and canonical base64 recording bytes.' }, { name: 'signal', description: 'Client cancellation or Remote contribution disposal.' }],
+        returns: 'the selectable voice once the provider\'s roster reflects it.',
+      },
+    ],
+  },
+  {
     key: 'typert',
     summary: 'Registry of generated schemas, package reflection, invocations, and Remote dependency providers.',
     description: 'Registry of generated schemas, package reflection, invocations, and Remote dependency providers.',
@@ -3393,6 +3911,20 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
     ],
   },
   {
+    key: 'webhookOutbox',
+    summary: 'Durable at-least-once queue: `deliver` persists one verified delivery before any rule runs, and every dispatch the runtime does not acknowledge is retried with the configured backoff and replayed on the next open.',
+    description: 'Durable at-least-once queue: `deliver` persists one verified delivery before any rule runs, and every dispatch the runtime does not acknowledge is retried with the configured backoff and replayed on the next open.',
+    methods: [
+      {
+        signature: 'deliver<K extends string>(delivery: VerifiedWebhookDelivery<K>): Promise<\'queued\' | \'duplicate\'>',
+        description: 'Persist one verified delivery and start its dispatch.',
+        parameters: [{ name: 'delivery', description: 'authenticated provider data; validated and snapshotted synchronously.' }],
+        returns: '`\'queued\'` once the durable record landed and dispatch was started; `\'duplicate\'` when an equivalent record is pending or retained as `delivered`.',
+        throws: ['synchronously when the outbox is closing or the delivery is malformed.'],
+      },
+    ],
+  },
+  {
     key: 'webhookRuntime',
     summary: 'Fire-and-forget rule runtime.',
     description: 'Fire-and-forget rule runtime. Session creation is the only built-in action.',
@@ -3407,6 +3939,13 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
         signature: 'dispatch<K extends string>(delivery: VerifiedWebhookDelivery<K>): void',
         description: 'Start every currently matching rule and return before any callback settles.',
         parameters: [{ name: 'delivery', description: 'authenticated provider data; snapshotted before dispatch.' }],
+        throws: ['synchronously when the runtime is closing or the delivery is malformed.'],
+      },
+      {
+        signature: 'dispatchAcknowledged<K extends string>(delivery: VerifiedWebhookDelivery<K>): Promise<boolean>',
+        description: 'Dispatch a delivery and await what became of it.',
+        parameters: [{ name: 'delivery', description: 'authenticated provider data; snapshotted before dispatch.' }],
+        returns: '`true` only when at least one rule matched and every invocation this call started settled successfully; `false` when no rule matched or any invocation failed.',
         throws: ['synchronously when the runtime is closing or the delivery is malformed.'],
       },
     ],
@@ -4058,6 +4597,14 @@ export const EVENT_API: readonly EventApiEntry[] = [
     parameters: [{ name: 'options', description: 'the full request. A LOOP-built request carries the process-local {@link markAgentLoopRequest} identity and arrives deep-frozen (mutation throws): its content is a pure function of the session log (the reconstructability Agent Note), so listeners read it, never rewrite it. Hand-built calls do not carry that marker; callers own their request inputs and must keep them unchanged until the stream settles.' }],
   },
   {
+    name: 'notification/raised',
+    mode: 'emit',
+    signature: '\'notification/raised\'(alert: NotificationRequest): void',
+    summary: 'One alert was accepted by the seam and is republished for surface consumers.',
+    description: 'One alert was accepted by the seam and is republished for surface consumers. A provider whose delivery path is a forwarded Host event emits this on every accepted request; deployments without such a forwarder have no listener.',
+    parameters: [{ name: 'alert', description: 'the accepted alert, as the caller raised it.' }],
+  },
+  {
     name: 'permission-presets/catalog-changed',
     mode: 'emit',
     signature: '\'permission-presets/catalog-changed\'(): void',
@@ -4096,6 +4643,14 @@ export const EVENT_API: readonly EventApiEntry[] = [
     summary: 'Durable task set changed; clients refetch global task and Session-active catalogs.',
     description: 'Durable task set changed; clients refetch global task and Session-active catalogs.',
     parameters: [],
+  },
+  {
+    name: 'schedule/delivered',
+    mode: 'emit',
+    signature: '\'schedule/delivered\'(payload: ScheduleDelivered): void',
+    summary: 'One admitted reminder reached its Session and its commit landed; surface consumers may alert the operator.',
+    description: 'One admitted reminder reached its Session and its commit landed; surface consumers may alert the operator. Raised once per committed member.',
+    parameters: [{ name: 'payload', description: 'delivered task identity, its Session, and the delivery instant.' }],
   },
   {
     name: 'session-telemetry/record',
@@ -4378,6 +4933,10 @@ export const TYPE_API: readonly TypeApiEntry[] = [
     declaration: 'export interface AdapterRegistrationHandle {\n    (): void;\n    replace(providers: string[]): void;\n}',
   },
   {
+    name: 'AdmittedAttachmentBlock',
+    declaration: 'export type AdmittedAttachmentBlock = {\n    readonly type: \'image\';\n    readonly attachment: ImageAttachmentRef;\n} | {\n    readonly type: \'file\';\n    readonly attachment: FileAttachmentRef;\n};',
+  },
+  {
     name: 'AdmittedPromptContentPart',
     declaration: 'export type AdmittedPromptContentPart = {\n    readonly type: \'text\';\n    readonly text: string;\n} | {\n    readonly type: \'image\';\n    readonly attachment: ImageAttachmentRef;\n} | {\n    readonly type: \'file\';\n    readonly attachment: FileAttachmentRef;\n};',
   },
@@ -4554,6 +5113,18 @@ export const TYPE_API: readonly TypeApiEntry[] = [
     declaration: 'export type AttachmentId = Branded<\'AttachmentId\'>;',
   },
   {
+    name: 'AudioProvider',
+    declaration: 'export interface AudioProvider {\n    readonly id: string;\n    transcribe(request: AudioTranscribeRequest, signal?: AbortSignal): Promise<AudioTranscript>;\n}',
+  },
+  {
+    name: 'AudioTranscribeRequest',
+    declaration: 'export interface AudioTranscribeRequest {\n    readonly data: Uint8Array;\n    readonly fileName?: string;\n    readonly mediaType?: string;\n    readonly language?: string;\n    readonly prompt?: string;\n}',
+  },
+  {
+    name: 'AudioTranscript',
+    declaration: 'export interface AudioTranscript {\n    readonly text: string;\n    readonly language?: string;\n    readonly durationSec?: number;\n}',
+  },
+  {
     name: 'AuthorizationEntry',
     declaration: 'export interface AuthorizationEntry {\n    key: CredentialKey;\n    label: string;\n    methods: readonly AuthorizationMethod[];\n    inFlight: boolean;\n}',
   },
@@ -4646,6 +5217,22 @@ export const TYPE_API: readonly TypeApiEntry[] = [
     declaration: 'export interface ClientArtifactBaseline {\n    readonly path: string;\n    readonly mtimeMs: number;\n    readonly ctimeMs: number;\n    readonly size: number;\n}',
   },
   {
+    name: 'CodeIndexProvider',
+    declaration: 'export interface CodeIndexProvider {\n    readonly id: string;\n    search(request: CodeSearchRequest, signal?: AbortSignal): Promise<CodeSearchPage>;\n}',
+  },
+  {
+    name: 'CodeSearchHit',
+    declaration: 'export interface CodeSearchHit {\n    readonly path: string;\n    readonly startLine: number;\n    readonly endLine: number;\n    readonly language?: string;\n    readonly score: number;\n    readonly snippet: string;\n}',
+  },
+  {
+    name: 'CodeSearchPage',
+    declaration: 'export interface CodeSearchPage {\n    readonly hits: readonly CodeSearchHit[];\n}',
+  },
+  {
+    name: 'CodeSearchRequest',
+    declaration: 'export interface CodeSearchRequest {\n    readonly query: string;\n    readonly glob?: string;\n    readonly language?: string;\n    readonly limit?: number;\n}',
+  },
+  {
     name: 'CollectedOutput',
     declaration: 'export interface CollectedOutput {\n    text: string;\n    truncated: boolean;\n    spillPath?: string;\n}',
   },
@@ -4715,7 +5302,7 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   },
   {
     name: 'ConfinedArgv',
-    declaration: 'export interface ConfinedArgv {\n    argv: string[];\n    enforcement: SandboxEnforcement;\n    denialSignatures: readonly string[];\n    runnerFailureRules: readonly RunnerFailureRule[];\n}',
+    declaration: 'export interface ConfinedArgv {\n    argv: string[];\n    enforcement: SandboxEnforcement;\n    networkEnforcement: SandboxEnforcement;\n    denialSignatures: readonly string[];\n    runnerFailureRules: readonly RunnerFailureRule[];\n}',
   },
   {
     name: 'ConfinedSandboxMode',
@@ -4776,6 +5363,50 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   {
     name: 'ConnectionTrustRequest',
     declaration: 'export interface ConnectionTrustRequest {\n    readonly headers: Headers | Readonly<Record<string, string | readonly string[] | undefined>>;\n}',
+  },
+  {
+    name: 'ConnectorChannel',
+    declaration: 'export interface ConnectorChannel {\n    readonly provider: string;\n    readonly channel: ConnectorChannelId;\n}',
+  },
+  {
+    name: 'ConnectorChannelId',
+    declaration: 'export type ConnectorChannelId = Branded<\'ConnectorChannelId\'>;',
+  },
+  {
+    name: 'ConnectorInboundAttachment',
+    declaration: 'export type ConnectorInboundAttachment = {\n    readonly type: \'image\';\n    readonly mediaType: ImageMediaType;\n    readonly data: string;\n    readonly name?: string;\n} | {\n    readonly type: \'file\';\n    readonly data: string;\n    readonly name?: string;\n};',
+  },
+  {
+    name: 'ConnectorInboundMessage',
+    declaration: 'export interface ConnectorInboundMessage {\n    readonly provider: string;\n    readonly channel: ConnectorChannelId;\n    readonly messageId: ConnectorMessageId;\n    readonly sender: string;\n    readonly text: string;\n    readonly attachments?: readonly ConnectorInboundAttachment[];\n    readonly resolution?: ConnectorResolution;\n}',
+  },
+  {
+    name: 'ConnectorInboundOptions',
+    declaration: 'export interface ConnectorInboundOptions {\n    readonly provider: string;\n    readonly workspacePath: string;\n    readonly agentPreset: string;\n    readonly permissionPreset: string;\n    readonly title?: string;\n    readonly model?: WebhookModelSelection;\n}',
+  },
+  {
+    name: 'ConnectorMessageId',
+    declaration: 'export type ConnectorMessageId = Branded<\'ConnectorMessageId\'>;',
+  },
+  {
+    name: 'ConnectorOutboundAction',
+    declaration: 'export interface ConnectorOutboundAction {\n    readonly id: string;\n    readonly label: string;\n    readonly style?: \'primary\' | \'danger\';\n}',
+  },
+  {
+    name: 'ConnectorOutboundMessage',
+    declaration: 'export interface ConnectorOutboundMessage {\n    readonly title?: string;\n    readonly text: string;\n    readonly actions?: readonly ConnectorOutboundAction[];\n}',
+  },
+  {
+    name: 'ConnectorProvider',
+    declaration: 'export interface ConnectorProvider {\n    readonly id: string;\n    push(channel: ConnectorChannelId, message: ConnectorOutboundMessage, signal?: AbortSignal): void | Promise<void>;\n}',
+  },
+  {
+    name: 'ConnectorResolution',
+    declaration: 'export interface ConnectorResolution {\n    readonly actionId: string;\n    readonly value: string;\n}',
+  },
+  {
+    name: 'ConnectorResolutionHandler',
+    declaration: 'export type ConnectorResolutionHandler = (message: ConnectorInboundMessage & {\n    readonly resolution: ConnectorResolution;\n}) => void | Promise<void>;',
   },
   {
     name: 'ContentBlockMap',
@@ -4943,7 +5574,7 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   },
   {
     name: 'DeepSeekLlmApiExtensionRequest',
-    declaration: 'export interface DeepSeekLlmApiExtensionRequest {\n    readonly body: Readonly<Record<string, DeepSeekLlmApiJson>>;\n    readonly sessionId?: string;\n    readonly purpose?: \'compaction\' | \'session-title\';\n    readonly signal: AbortSignal;\n}',
+    declaration: 'export interface DeepSeekLlmApiExtensionRequest {\n    readonly body: Readonly<Record<string, DeepSeekLlmApiJson>>;\n    readonly sessionId?: string;\n    readonly purpose?: \'compaction\' | \'session-title\' | \'memory-reflection\';\n    readonly signal: AbortSignal;\n}',
   },
   {
     name: 'DeepSeekLlmApiJson',
@@ -4992,6 +5623,26 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   {
     name: 'DirectoryRegistrationHandle',
     declaration: 'export interface DirectoryRegistrationHandle {\n    (): void;\n    replace(entries: readonly LlmConfigurableProvider[]): void;\n}',
+  },
+  {
+    name: 'DocumentBlock',
+    declaration: 'export type DocumentBlock = {\n    readonly kind: \'heading\';\n    readonly text: string;\n    readonly level?: number;\n} | {\n    readonly kind: \'text\';\n    readonly text: string;\n} | {\n    readonly kind: \'bullets\';\n    readonly items: readonly string[];\n} | {\n    readonly kind: \'table\';\n    readonly rows: readonly (readonly string[])[];\n} | {\n    readonly kind: \'chartPlaceholder\';\n    readonly label: string;\n};',
+  },
+  {
+    name: 'DocumentCreateRequest',
+    declaration: 'export interface DocumentCreateRequest {\n    readonly format: DocumentFormat;\n    readonly title: string;\n    readonly blocks: readonly DocumentBlock[];\n}',
+  },
+  {
+    name: 'DocumentFormat',
+    declaration: 'export type DocumentFormat = \'docx\' | \'xlsx\' | \'pptx\';',
+  },
+  {
+    name: 'DocumentResult',
+    declaration: 'export interface DocumentResult {\n    readonly data: Uint8Array;\n    readonly mediaType: string;\n}',
+  },
+  {
+    name: 'DocumentsProvider',
+    declaration: 'export interface DocumentsProvider {\n    readonly id: string;\n    create(request: DocumentCreateRequest, signal?: AbortSignal): Promise<DocumentResult>;\n}',
   },
   {
     name: 'Domain',
@@ -5134,6 +5785,10 @@ export const TYPE_API: readonly TypeApiEntry[] = [
     declaration: 'export interface FrequencyTooHighError {\n    readonly code: \'frequency_too_high\';\n    readonly message: string;\n}',
   },
   {
+    name: 'FsBinaryWriteOutcome',
+    declaration: 'export interface FsBinaryWriteOutcome {\n    operation: \'create\' | \'update\';\n    version: FsVersion;\n}',
+  },
+  {
     name: 'FsDirEntry',
     declaration: 'export interface FsDirEntry {\n    name: string;\n    type: \'file\' | \'directory\' | \'other\';\n    target: FsTarget;\n    version?: FsVersion;\n    size?: number;\n}',
   },
@@ -5179,7 +5834,7 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   },
   {
     name: 'GenerateOptions',
-    declaration: 'export interface GenerateOptions {\n    provider: string;\n    model: string;\n    reasoningEffort?: ReasoningEffortId;\n    messages: RequestMessage[];\n    system?: string;\n    tools?: ToolSchema[];\n    toolHistory?: ToolHistory;\n    temperature?: number;\n    maxTokens?: number;\n    stop?: string[];\n    signal?: AbortSignal;\n    sessionId?: Branded<\'SessionId\'>;\n    purpose?: \'compaction\' | \'session-title\';\n}',
+    declaration: 'export interface GenerateOptions {\n    provider: string;\n    model: string;\n    reasoningEffort?: ReasoningEffortId;\n    messages: RequestMessage[];\n    system?: string;\n    tools?: ToolSchema[];\n    toolHistory?: ToolHistory;\n    temperature?: number;\n    maxTokens?: number;\n    stop?: string[];\n    signal?: AbortSignal;\n    sessionId?: Branded<\'SessionId\'>;\n    purpose?: \'compaction\' | \'session-title\' | \'memory-reflection\';\n}',
   },
   {
     name: 'GenericCallView',
@@ -5254,12 +5909,24 @@ export const TYPE_API: readonly TypeApiEntry[] = [
     declaration: 'export interface ImageBlock {\n    type: \'image\';\n    attachment: ImageAttachmentRef;\n    offloaded?: true;\n}',
   },
   {
+    name: 'ImageGenerateRequest',
+    declaration: 'export interface ImageGenerateRequest {\n    readonly prompt: string;\n    readonly size?: string;\n    readonly n?: number;\n}',
+  },
+  {
     name: 'ImageMediaType',
     declaration: 'export type ImageMediaType = \'image/png\' | \'image/jpeg\' | \'image/webp\' | \'image/gif\';',
   },
   {
+    name: 'ImageProvider',
+    declaration: 'export interface ImageProvider {\n    readonly id: string;\n    generate(request: ImageGenerateRequest, signal?: AbortSignal): Promise<ImageResult>;\n}',
+  },
+  {
     name: 'ImageRequestTarget',
     declaration: 'export interface ImageRequestTarget {\n    width: number;\n    height: number;\n    maxBytes: number;\n}',
+  },
+  {
+    name: 'ImageResult',
+    declaration: 'export interface ImageResult {\n    readonly data: Uint8Array;\n    readonly mediaType: string;\n    readonly revisedPrompt?: string;\n}',
   },
   {
     name: 'ImageVariantId',
@@ -5474,6 +6141,42 @@ export const TYPE_API: readonly TypeApiEntry[] = [
     declaration: 'export type JsonValue = null | boolean | number | string | JsonValue[] | {\n    [key: string]: JsonValue;\n};',
   },
   {
+    name: 'KnowledgeBrowserStatus',
+    declaration: 'export interface KnowledgeBrowserStatus {\n    readonly available: boolean;\n}',
+  },
+  {
+    name: 'KnowledgeDraft',
+    declaration: 'export interface KnowledgeDraft {\n    readonly title: string;\n    readonly text: string;\n    readonly tags?: readonly string[];\n    readonly source?: string;\n}',
+  },
+  {
+    name: 'KnowledgeHit',
+    declaration: 'export interface KnowledgeHit {\n    readonly record: KnowledgeRecord;\n    readonly score: number;\n    readonly snippet: string;\n}',
+  },
+  {
+    name: 'KnowledgeListRequest',
+    declaration: 'export interface KnowledgeListRequest {\n    readonly tags?: readonly string[];\n    readonly limit?: number;\n}',
+  },
+  {
+    name: 'KnowledgePage',
+    declaration: 'export interface KnowledgePage {\n    readonly records: readonly KnowledgeRecord[];\n}',
+  },
+  {
+    name: 'KnowledgeProvider',
+    declaration: 'export interface KnowledgeProvider {\n    readonly id: string;\n    ingest(draft: KnowledgeDraft, signal?: AbortSignal): Promise<string>;\n    search(request: KnowledgeSearchRequest, signal?: AbortSignal): Promise<KnowledgeSearchResult>;\n    remove(id: string, signal?: AbortSignal): Promise<boolean>;\n    list(request?: KnowledgeListRequest, signal?: AbortSignal): Promise<KnowledgePage>;\n}',
+  },
+  {
+    name: 'KnowledgeRecord',
+    declaration: 'export interface KnowledgeRecord {\n    readonly id: string;\n    readonly title: string;\n    readonly text: string;\n    readonly tags: readonly string[];\n    readonly source?: string;\n    readonly createdAt: string;\n}',
+  },
+  {
+    name: 'KnowledgeSearchRequest',
+    declaration: 'export interface KnowledgeSearchRequest {\n    readonly query: string;\n    readonly tags?: readonly string[];\n    readonly limit?: number;\n}',
+  },
+  {
+    name: 'KnowledgeSearchResult',
+    declaration: 'export interface KnowledgeSearchResult {\n    readonly hits: readonly KnowledgeHit[];\n}',
+  },
+  {
     name: 'KvFacet',
     declaration: 'export interface KvFacet {\n    open(descriptor: KvUnitDescriptor): Promise<KvUnit>;\n}',
   },
@@ -5566,6 +6269,14 @@ export const TYPE_API: readonly TypeApiEntry[] = [
     declaration: 'export type LocalizedText = string | {\n    readonly en: string;\n    readonly [locale: string]: string;\n};',
   },
   {
+    name: 'LspDiagnostic',
+    declaration: 'export interface LspDiagnostic {\n    readonly range: LspRange;\n    readonly severity: LspDiagnosticSeverity;\n    readonly message: string;\n    readonly source?: string;\n    readonly code?: string;\n}',
+  },
+  {
+    name: 'LspDiagnosticSeverity',
+    declaration: 'export type LspDiagnosticSeverity = \'error\' | \'warning\' | \'information\' | \'hint\';',
+  },
+  {
     name: 'LspHover',
     declaration: 'export interface LspHover {\n    readonly contents: string;\n    readonly range?: LspRange;\n}',
   },
@@ -5575,7 +6286,7 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   },
   {
     name: 'LspOperation',
-    declaration: 'export type LspOperation = \'goToDefinition\' | \'findReferences\' | \'goToImplementation\' | \'hover\';',
+    declaration: 'export type LspOperation = \'goToDefinition\' | \'findReferences\' | \'goToImplementation\' | \'hover\' | \'diagnostics\';',
   },
   {
     name: 'LspPosition',
@@ -5595,11 +6306,11 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   },
   {
     name: 'LspQueryRequest',
-    declaration: 'export interface LspQueryRequest {\n    readonly operation: LspOperation;\n    readonly filePath: string;\n    readonly position: LspPosition;\n    readonly workspaceRoot: string;\n}',
+    declaration: 'export interface LspQueryRequest {\n    readonly operation: LspOperation;\n    readonly filePath: string;\n    readonly position?: LspPosition;\n    readonly workspaceRoot: string;\n}',
   },
   {
     name: 'LspQueryResult',
-    declaration: 'export type LspQueryResult = {\n    readonly kind: \'locations\';\n    readonly locations: readonly LspLocation[];\n    readonly resolvedWorkspaceUri: string;\n} | {\n    readonly kind: \'hover\';\n    readonly hover: LspHover | null;\n};',
+    declaration: 'export type LspQueryResult = {\n    readonly kind: \'locations\';\n    readonly locations: readonly LspLocation[];\n    readonly resolvedWorkspaceUri: string;\n} | {\n    readonly kind: \'hover\';\n    readonly hover: LspHover | null;\n} | {\n    readonly kind: \'diagnostics\';\n    readonly diagnostics: readonly LspDiagnostic[];\n    readonly resolvedWorkspaceUri: string;\n};',
   },
   {
     name: 'LspRange',
@@ -5614,12 +6325,68 @@ export const TYPE_API: readonly TypeApiEntry[] = [
     declaration: 'export interface ManualCompactAgentContext extends CompactionAgentContext {\n    runMaintenance<T>(task: (signal: AbortSignal) => Promise<T>): Promise<T>;\n}',
   },
   {
+    name: 'McpBrowserResource',
+    declaration: 'export interface McpBrowserResource {\n    readonly uri: string;\n    readonly name?: string;\n    readonly mimeType?: string;\n}',
+  },
+  {
+    name: 'McpBrowserStatus',
+    declaration: 'export interface McpBrowserStatus {\n    readonly available: boolean;\n}',
+  },
+  {
+    name: 'McpBrowserTool',
+    declaration: 'export interface McpBrowserTool {\n    readonly name: string;\n    readonly description: string;\n}',
+  },
+  {
     name: 'McpResourceProvider',
     declaration: 'export interface McpResourceProvider {\n    request(request: McpResourceRequest, exec: ToolExecution): Promise<JsonValue>;\n}',
   },
   {
     name: 'McpResourceRequest',
     declaration: 'export type McpResourceRequest = {\n    method: \'resources/list\' | \'resources/templates/list\';\n    cursor?: string;\n} | {\n    method: \'resources/read\';\n    uri: string;\n};',
+  },
+  {
+    name: 'McpServerSummary',
+    declaration: 'export interface McpServerSummary {\n    readonly name: string;\n    readonly tools: readonly McpBrowserTool[];\n    readonly resources: readonly McpBrowserResource[];\n    readonly resourcesNote?: \'empty\' | \'failed\';\n}',
+  },
+  {
+    name: 'MemoryBrowserStatus',
+    declaration: 'export interface MemoryBrowserStatus {\n    readonly available: boolean;\n}',
+  },
+  {
+    name: 'MemoryDraft',
+    declaration: 'export interface MemoryDraft {\n    readonly text: string;\n    readonly tags?: readonly string[];\n    readonly scope?: string;\n    readonly namespace?: MemoryNamespace;\n    readonly confidence?: number;\n    readonly ttlMs?: number;\n}',
+  },
+  {
+    name: 'MemoryHit',
+    declaration: 'export interface MemoryHit {\n    readonly record: MemoryRecord;\n    readonly score: number;\n}',
+  },
+  {
+    name: 'MemoryListRequest',
+    declaration: 'export interface MemoryListRequest {\n    readonly tags?: readonly string[];\n    readonly scope?: string;\n    readonly namespace?: MemoryNamespace;\n    readonly minConfidence?: number;\n    readonly limit?: number;\n}',
+  },
+  {
+    name: 'MemoryNamespace',
+    declaration: 'export type MemoryNamespace = \'preference\' | \'fact\' | \'style\';',
+  },
+  {
+    name: 'MemoryPage',
+    declaration: 'export interface MemoryPage {\n    readonly records: readonly MemoryRecord[];\n}',
+  },
+  {
+    name: 'MemoryProvider',
+    declaration: 'export interface MemoryProvider {\n    readonly id: string;\n    remember(draft: MemoryDraft, signal?: AbortSignal): Promise<string>;\n    recall(request: MemoryRecallRequest, signal?: AbortSignal): Promise<MemoryRecallResult>;\n    forget(id: string, signal?: AbortSignal): Promise<boolean>;\n    list(request?: MemoryListRequest, signal?: AbortSignal): Promise<MemoryPage>;\n}',
+  },
+  {
+    name: 'MemoryRecallRequest',
+    declaration: 'export interface MemoryRecallRequest {\n    readonly query: string;\n    readonly tags?: readonly string[];\n    readonly scope?: string;\n    readonly namespace?: MemoryNamespace;\n    readonly minConfidence?: number;\n    readonly limit?: number;\n}',
+  },
+  {
+    name: 'MemoryRecallResult',
+    declaration: 'export interface MemoryRecallResult {\n    readonly hits: readonly MemoryHit[];\n}',
+  },
+  {
+    name: 'MemoryRecord',
+    declaration: 'export interface MemoryRecord {\n    readonly id: string;\n    readonly text: string;\n    readonly tags: readonly string[];\n    readonly scope?: string;\n    readonly namespace?: MemoryNamespace;\n    readonly confidence?: number;\n    readonly createdAt: string;\n    readonly expiresAt?: string;\n}',
   },
   {
     name: 'Message',
@@ -5756,6 +6523,18 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   {
     name: 'NotFutureError',
     declaration: 'export interface NotFutureError {\n    readonly code: \'not_future\';\n    readonly message: string;\n}',
+  },
+  {
+    name: 'NotificationProvider',
+    declaration: 'export interface NotificationProvider {\n    readonly id: string;\n    notify(request: NotificationRequest, signal?: AbortSignal): void | Promise<void>;\n}',
+  },
+  {
+    name: 'NotificationRequest',
+    declaration: 'export interface NotificationRequest {\n    readonly title: string;\n    readonly body: string;\n    readonly tag?: string;\n    readonly urgency?: NotificationUrgency;\n}',
+  },
+  {
+    name: 'NotificationUrgency',
+    declaration: 'export type NotificationUrgency = \'low\' | \'normal\' | \'critical\';',
   },
   {
     name: 'ObjectJsonSchema',
@@ -6102,6 +6881,10 @@ export const TYPE_API: readonly TypeApiEntry[] = [
     declaration: 'export interface ReplayEnvelope {\n    response: unknown;\n    blocks?: readonly unknown[];\n}',
   },
   {
+    name: 'RepoWikiProvider',
+    declaration: 'export interface RepoWikiProvider {\n    readonly id: string;\n    getPage(path: string): Promise<WikiPage>;\n    listPages(): Promise<WikiListing>;\n    outline(): Promise<readonly WikiOutlineEntry[]>;\n}',
+  },
+  {
     name: 'RequestContext',
     declaration: 'export interface RequestContext {\n    provider: string;\n    model: string;\n    contextWindow?: number;\n    systemPromptUpdate?: SystemPromptUpdate;\n}',
   },
@@ -6162,6 +6945,18 @@ export const TYPE_API: readonly TypeApiEntry[] = [
     declaration: 'export interface ResumeAgentOptions {\n    readonly resumeSessionId: SessionId;\n    readonly parentAgent?: Agent;\n    readonly agentOptions?: AgentOptions;\n    readonly signal?: AbortSignal;\n    readonly setup?: AgentSetup;\n}',
   },
   {
+    name: 'RewindOutcome',
+    declaration: 'export interface RewindOutcome {\n    turn: number;\n    restored: string[];\n    removed: string[];\n    skipped: RewindSkippedPath[];\n}',
+  },
+  {
+    name: 'RewindSkippedPath',
+    declaration: 'export interface RewindSkippedPath {\n    path: string;\n    reason: \'oversized\' | \'unwritable\';\n}',
+  },
+  {
+    name: 'RewindSummary',
+    declaration: 'export interface RewindSummary {\n    turn: number;\n    paths: number;\n}',
+  },
+  {
     name: 'RpcId',
     declaration: 'export type RpcId = Branded<\'rpc-id\'>;',
   },
@@ -6175,11 +6970,15 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   },
   {
     name: 'SandboxExecutionPolicy',
-    declaration: 'export interface SandboxExecutionPolicy {\n    mode: SandboxMode;\n    workspaceRoot: string;\n    sessionId?: SessionId;\n}',
+    declaration: 'export interface SandboxExecutionPolicy {\n    mode: SandboxMode;\n    network: SandboxNetworkMode;\n    workspaceRoot: string;\n    sessionId?: SessionId;\n}',
   },
   {
     name: 'SandboxMode',
     declaration: 'export type SandboxMode = \'read-only\' | \'workspace-write\' | \'danger-full-access\';',
+  },
+  {
+    name: 'SandboxNetworkMode',
+    declaration: 'export type SandboxNetworkMode = \'blocked\' | \'allowed\';',
   },
   {
     name: 'SandboxPolicy',
@@ -6220,6 +7019,10 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   {
     name: 'ScheduleDeleteResult',
     declaration: 'export type ScheduleDeleteResult = {\n    readonly id: ScheduleId;\n    readonly deleted: true;\n} | {\n    readonly id: ScheduleId;\n    readonly deleted: false;\n    readonly code: \'schedule_not_found\';\n};',
+  },
+  {
+    name: 'ScheduleDelivered',
+    declaration: 'export interface ScheduleDelivered {\n    readonly sessionId: SessionId;\n    readonly id: ScheduleId;\n    readonly title: string;\n    readonly deliveredAt: string;\n}',
   },
   {
     name: 'ScheduleDeliveryHistoryRequest',
@@ -7058,10 +7861,6 @@ export const TYPE_API: readonly TypeApiEntry[] = [
     declaration: 'export interface SpeechSelection {\n    readonly providerId: SpeechProviderId;\n    readonly language: string;\n}',
   },
   {
-    name: 'SpeechSelectionPatch',
-    declaration: 'export interface SpeechSelectionPatch {\n    readonly providerId?: SpeechProviderId;\n    readonly language?: string;\n}',
-  },
-  {
     name: 'SpeechSetupEstimate',
     declaration: 'export interface SpeechSetupEstimate {\n    readonly recommendedDiskBytes: number;\n    readonly expectedMemoryBytes: number;\n    readonly minimumMinutes: number;\n    readonly maximumMinutes: number;\n}',
   },
@@ -7276,6 +8075,10 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   {
     name: 'SurfaceOp',
     declaration: 'export type SurfaceOp = \'append\' | {\n    op: \'replace\';\n    startSeq: SessionSeq;\n    endSeq: SessionSeq;\n};',
+  },
+  {
+    name: 'SynthesisRequest',
+    declaration: 'export interface SynthesisRequest {\n    readonly text: string;\n    readonly providerId?: TtsProviderId;\n}',
   },
   {
     name: 'SystemMessage',
@@ -7598,6 +8401,82 @@ export const TYPE_API: readonly TypeApiEntry[] = [
     declaration: 'export interface TranscriptionRequest {\n    readonly audioBase64: string;\n    readonly providerId?: SpeechProviderId;\n    readonly language?: string;\n}',
   },
   {
+    name: 'TtsCatalog',
+    declaration: 'export interface TtsCatalog extends TtsSnapshot {\n    readonly maxTextChars: number;\n    readonly maxAudioBytes: number;\n    readonly maxReferenceBytes: number;\n}',
+  },
+  {
+    name: 'TtsInput',
+    declaration: 'export interface TtsInput {\n    readonly text: string;\n    readonly voiceId?: string;\n    readonly speed?: number;\n}',
+  },
+  {
+    name: 'TtsPreparation',
+    declaration: 'export interface TtsPreparation {\n    snapshot(): TtsPreparationState;\n    subscribe(listener: () => void): () => void;\n    prepare(options?: TtsPreparationOptions): void;\n    cancel(): Promise<void>;\n}',
+  },
+  {
+    name: 'TtsPreparationOptions',
+    declaration: 'export type TtsPreparationOptions = SpeechPreparationOptions;',
+  },
+  {
+    name: 'TtsPreparationState',
+    declaration: 'export type TtsPreparationState = SpeechPreparationState;',
+  },
+  {
+    name: 'TtsProvider',
+    declaration: 'export interface TtsProvider {\n    readonly info: TtsProviderInfo;\n    readonly preparation?: TtsPreparation;\n    intake?(intake: TtsVoiceIntake, signal: AbortSignal): Promise<TtsVoiceInfo>;\n    synthesize(input: TtsInput, signal: AbortSignal): Promise<TtsSynthesis>;\n}',
+  },
+  {
+    name: 'TtsProviderId',
+    declaration: 'export type TtsProviderId = Branded<\'TtsProviderId\'>;',
+  },
+  {
+    name: 'TtsProviderInfo',
+    declaration: 'export interface TtsProviderInfo {\n    readonly id: TtsProviderId;\n    readonly name: string;\n    readonly location: \'host-local\' | \'cloud\';\n    readonly voices?: readonly TtsVoiceInfo[];\n    readonly setupEstimate?: TtsSetupEstimate;\n    readonly downloadSources?: readonly string[];\n    readonly intake?: TtsVoiceIntakeInfo;\n}',
+  },
+  {
+    name: 'TtsProviderView',
+    declaration: 'export interface TtsProviderView extends TtsProviderInfo {\n    readonly preparation: TtsPreparationState;\n}',
+  },
+  {
+    name: 'TtsRequest',
+    declaration: 'export interface TtsRequest extends TtsInput {\n    readonly providerId?: TtsProviderId;\n}',
+  },
+  {
+    name: 'TtsSelection',
+    declaration: 'export interface TtsSelection {\n    readonly providerId: TtsProviderId;\n    readonly voiceId: string;\n    readonly speed: number;\n}',
+  },
+  {
+    name: 'TtsSelectionPatch',
+    declaration: 'export interface TtsSelectionPatch {\n    readonly providerId?: TtsProviderId;\n    readonly voiceId?: string;\n    readonly speed?: number;\n}',
+  },
+  {
+    name: 'TtsSetupEstimate',
+    declaration: 'export type TtsSetupEstimate = SpeechSetupEstimate;',
+  },
+  {
+    name: 'TtsSnapshot',
+    declaration: 'export interface TtsSnapshot {\n    readonly providers: readonly TtsProviderView[];\n    readonly selection: TtsSelection;\n}',
+  },
+  {
+    name: 'TtsSpec',
+    declaration: 'export interface TtsSpec extends TtsInput {\n    readonly provider: TtsProvider;\n}',
+  },
+  {
+    name: 'TtsSynthesis',
+    declaration: 'export interface TtsSynthesis {\n    readonly audio: Uint8Array;\n    readonly sampleRate: number;\n}',
+  },
+  {
+    name: 'TtsVoiceInfo',
+    declaration: 'export interface TtsVoiceInfo {\n    readonly id: string;\n    readonly name: string;\n}',
+  },
+  {
+    name: 'TtsVoiceIntake',
+    declaration: 'export interface TtsVoiceIntake {\n    readonly voiceId: string;\n    readonly audio: Uint8Array;\n}',
+  },
+  {
+    name: 'TtsVoiceIntakeInfo',
+    declaration: 'export interface TtsVoiceIntakeInfo {\n    readonly accept: readonly string[];\n    readonly maxBytes: number;\n}',
+  },
+  {
     name: 'TurnEndCancelCause',
     declaration: 'export type TurnEndCancelCause = AgentCancelCause | {\n    readonly kind: \'legacy\';\n};',
   },
@@ -7726,6 +8605,10 @@ export const TYPE_API: readonly TypeApiEntry[] = [
     declaration: 'export interface VerifiedWebhookDelivery<K extends string = string> {\n    readonly kind: K;\n    readonly source: WebhookSourceId;\n    readonly deliveryId: WebhookDeliveryId;\n    readonly event: WebhookEventOf<K>;\n    readonly receivedAt: number;\n}',
   },
   {
+    name: 'VoiceIntakeRequest',
+    declaration: 'export interface VoiceIntakeRequest {\n    readonly providerId: TtsProviderId;\n    readonly voiceId: string;\n    readonly audioBase64: string;\n}',
+  },
+  {
     name: 'WebBootBatch',
     declaration: 'export interface WebBootBatch {\n    phase: WebBootBatchPhase;\n    url: string;\n    rev: string;\n    entries: string[];\n}',
   },
@@ -7787,7 +8670,7 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   },
   {
     name: 'WebhookSessionRequest',
-    declaration: 'export interface WebhookSessionRequest {\n    readonly workspacePath: string;\n    readonly title: string;\n    readonly prompt: string;\n    readonly agentPreset: string;\n    readonly permissionPreset: string;\n    readonly model?: WebhookModelSelection;\n}',
+    declaration: 'export interface WebhookSessionRequest {\n    readonly workspacePath: string;\n    readonly title: string;\n    readonly prompt: string;\n    readonly attachments?: readonly AdmittedAttachmentBlock[];\n    readonly agentPreset: string;\n    readonly permissionPreset: string;\n    readonly sessionId?: SessionId;\n    readonly model?: WebhookModelSelection;\n}',
   },
   {
     name: 'WebhookSourceId',
@@ -7848,6 +8731,22 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   {
     name: 'WeeklyScheduleRecord',
     declaration: 'export interface WeeklyScheduleRecord {\n    readonly id: ScheduleId;\n    readonly kind: \'weekly\';\n    readonly title: string;\n    readonly prompt: string;\n    readonly time: string;\n    readonly timeZone: string;\n    readonly weekdays: number[];\n    readonly scheduledAt: string;\n}',
+  },
+  {
+    name: 'WikiListing',
+    declaration: 'export interface WikiListing {\n    readonly pages: readonly WikiPageSummary[];\n}',
+  },
+  {
+    name: 'WikiOutlineEntry',
+    declaration: 'export interface WikiOutlineEntry extends WikiPageSummary {\n    readonly headings: readonly string[];\n}',
+  },
+  {
+    name: 'WikiPage',
+    declaration: 'export interface WikiPage extends WikiPageSummary {\n    readonly content: string;\n}',
+  },
+  {
+    name: 'WikiPageSummary',
+    declaration: 'export interface WikiPageSummary {\n    readonly path: string;\n    readonly title: string;\n    readonly stale: boolean;\n}',
   },
   {
     name: 'WorkflowAgentEndInfo',

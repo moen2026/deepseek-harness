@@ -30,6 +30,12 @@ The follow-up is a normal durable user-role message with `source.kind: "webhook"
 
 Failed attachment disposes the new Agent before a prompt exists. A failure between attachment and prompt admission attempts Workspace detach and Agent disposal without replacing the original error. A Workspace automatically created during preflight remains because another concurrent caller may already use it.
 
+## Durable outbox
+
+`@deepseek-ai/dsh-webhook-outbox` adds an opt-in durable at-least-once queue between verified deliveries and the runtime: `deliver()` persists one frozen snapshot before any rule runs and answers `'queued'` or `'duplicate'`; unacknowledged dispatches retry against `dispatchAcknowledged()` with the configured backoff, and pending records replay in receipt order at the next open. Terminal records are pruned past the retention window.
+
+Choose it when a delivery must survive a crash or a failing rule run. The [outbox package](../../packages/webhook/webhook-outbox/README.md) owns the deployment-facing configuration, and the [outbox decision](../../.agents/notes/implemented/feature/2026-09-28-durable-webhook-delivery-outbox.md) records the contract; `dispatch()` itself stays fire-and-forget.
+
 ## GitHub adapter
 
 `@deepseek-ai/dsh-webhook-github` registers an exact route on an injected WebServer, resolves its credential reference for each request, verifies the untouched `application/json` body before parsing, and returns `202` immediately after in-memory dispatch. Its normalized event guarantees a signed lossless-JSON object; rules validate the event-specific fields they consume.
@@ -43,6 +49,25 @@ The [GitHub review guide](../user/guide/github-review.md) mounts this route on a
 ## Cordis API
 
 Generated from source by `scripts/gen-cordis-catalog.ts` (verified fresh by `pnpm run verify-cordis-catalog` in doc-sync; regenerate with `pnpm run gen-cordis-catalog`) — the language sides differ only in locale-specific paired document paths. Signature blocks use a `ts cordis-catalog` fence and keep the original source JSDoc; dispatch modes are defined in the [primer](../cordis-primer.md#dispatch-modes), and the framework-inherited `ctx` API lives in [cordis-api/inherited.md](../cordis-api/inherited.md).
+
+<a id="ctxwebhookoutbox--webhookoutbox"></a>
+
+### `ctx.webhookOutbox` — `WebhookOutbox`
+
+Durable at-least-once queue: `deliver` persists one verified delivery before any rule runs, and every dispatch the runtime does not acknowledge is retried with the configured backoff and replayed on the next open.
+
+```ts cordis-catalog
+/**
+ * Persist one verified delivery and start its dispatch.
+ * @param delivery - authenticated provider data; validated and snapshotted synchronously.
+ * @returns `'queued'` once the durable record landed and dispatch was started; `'duplicate'`
+ * when an equivalent record is pending or retained as `delivered`.
+ * @throws synchronously when the outbox is closing or the delivery is malformed.
+ */
+deliver<K extends string>(delivery: VerifiedWebhookDelivery<K>): Promise<'queued' | 'duplicate'>
+```
+
+Source: [`packages/webhook/webhook-outbox/src/index.ts`](../../packages/webhook/webhook-outbox/src/index.ts)
 
 <a id="ctxwebhookruntime--webhookruntime"></a>
 
@@ -64,6 +89,15 @@ register<K extends string>(rule: WebhookRule<K>): () => Promise<void>
  * @throws synchronously when the runtime is closing or the delivery is malformed.
  */
 dispatch<K extends string>(delivery: VerifiedWebhookDelivery<K>): void
+
+/**
+ * Dispatch a delivery and await what became of it.
+ * @param delivery - authenticated provider data; snapshotted before dispatch.
+ * @returns `true` only when at least one rule matched and every invocation this call
+ * started settled successfully; `false` when no rule matched or any invocation failed.
+ * @throws synchronously when the runtime is closing or the delivery is malformed.
+ */
+dispatchAcknowledged<K extends string>(delivery: VerifiedWebhookDelivery<K>): Promise<boolean>
 ```
 
 Source: [`packages/webhook/webhook/src/index.ts`](../../packages/webhook/webhook/src/index.ts)

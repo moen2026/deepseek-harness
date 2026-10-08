@@ -1,0 +1,19 @@
+# Bilingual-pair consistency record for 2026-09-27-repo-wiki-generated-documentation.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-09-27-repo-wiki-generated-documentation.md
+/agent-note-generated-repository-wiki:
+  en: 630ea8ab8a1545fd
+  zh: 94878b451d0e1f75
+/agent-note-generated-repository-wiki/problem:
+  en: c8c80492f4a8c507
+  zh: 8c055a61226c29dc
+/agent-note-generated-repository-wiki/decision:
+  en: f672dbcb0809b008
+  zh: 36e9e87350d5daa8
+/agent-note-generated-repository-wiki/alternatives-considered:
+  en: ecdf53e4d5f10ed6
+  zh: de7b155e84144a7d
+/agent-note-generated-repository-wiki/consequences:
+  en: a0d6a162f67269a1
+  zh: 9e3002264aeaa731

@@ -22,7 +22,7 @@ session 组让对话持久保存，恢复已发布的日志格式，并使已提
 <a id="packages"></a>
 ## 包
 
-本组分为四个家族：持久存储（持久化 seam、后端、检查点策略）、投影、标题与遥测。每个包 README 负责各自的约定与配置。
+本组分为五个家族：持久存储（持久化 seam、后端、检查点策略）、投影、标题、遥测与回退。每个包 README 负责各自的约定与配置。
 
 ### 持久化
 
@@ -64,6 +64,12 @@ session 组让对话持久保存，恢复已发布的日志格式，并使已提
 | [`session-telemetry/`](session-telemetry/README.zh.md) | 捕获会话活动并把记录交给配置的上报后端 | `ctx.sessionTelemetry` |
 | [`session-telemetry-otel/`](session-telemetry-otel/README.zh.md) | 通过 OpenTelemetry 日志以 `FEEDBACK_ONLY` 或 `DISABLED` 模式投递遥测 | 注册到 `ctx.sessionTelemetry` |
 
+### 回退
+
+| 包 | 职责 | ctx key |
+|---|---|---|
+| [`session-rewind/`](session-rewind/README.zh.md) | 在每个顶层轮次的文件工具路径首次被改动前捕获它们，并恢复某一轮的轮前状态 | `ctx.sessionRewind` |
+
 同一时间只允许一个标题提供方注册；未注册时，标题服务保留其确定性回退。下面的子系统页面是各家族后端无关的参考资料。
 
 -----
@@ -75,6 +81,7 @@ session 组让对话持久保存，恢复已发布的日志格式，并使已提
 - [会话投影子系统](../../docs/subsystems/session-projection.zh.md)——投影单元约定与驱动语义。
 - [会话标题子系统](../../docs/subsystems/session-title.zh.md)——标题资格、回退与提供方流程。
 - [会话遥测子系统](../../docs/subsystems/session-telemetry.zh.md)——捕获、脱敏与投递模式。
+- [会话回退子系统](../../docs/subsystems/session-rewind.zh.md)——逐轮文件工具还原点与 `workspace_rewind` 工具。
 - [会话子系统](../../docs/subsystems/session.zh.md)——本组每个包持久化或派生的实时事件日志。
 
 <a id="dev-note"></a>

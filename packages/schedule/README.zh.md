@@ -27,6 +27,7 @@ kind: "package-group"
 | 包 | 职责 |
 |---|---|
 | [`schedule/`](schedule/README.zh.md) | Host 拥有的提醒持久化、调度、查询与显式删除 |
+| [`heartbeat/`](heartbeat/README.zh.md) | 基于 Schedule 的每会话心跳巡逻：一条周期提醒读取工作区心跳文件并处理其待办项 |
 
 -----
 

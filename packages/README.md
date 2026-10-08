@@ -9,7 +9,7 @@ English | [中文](README.zh.md)
 
 ## Summary
 
-The harness is assembled from npm packages under `packages/`, grouped by capability family: sessions and the agent loop, model-facing tools, shell and filesystem execution, web access, subagents, and the rest. Use this page as the top-level map: find the owning group, then open its README for the package list. Every package is scoped `@deepseek-ai/dsh-*` and lives in exactly one group; each group README is the authoritative package map for its family.
+The harness is assembled from npm packages under `packages/`, grouped by capability family: sessions, tools, execution, web access, subagents, and the rest. Use this page as the top-level map: find the owning group, then open its README. Every package is scoped `@deepseek-ai/dsh-*` and lives in exactly one group; each group README is the authoritative package map for its family.
 
 ## Table of Contents
 
@@ -24,7 +24,7 @@ The harness is assembled from npm packages under `packages/`, grouped by capabil
 <a id="package-groups"></a>
 ## Package groups
 
-Every package lives in exactly one group; new packages join existing groups, and a new group updates its own README and this table.
+Every package lives in exactly one group; a new group updates its own README and this table.
 
 | Group | Role |
 |---|---|
@@ -47,6 +47,9 @@ Every package lives in exactly one group; new packages join existing groups, and
 | [`deliverables/`](deliverables/README.md) | Turn deliverables: explicit file delivery and recorded workspace changes |
 | [`fs/`](fs/README.md) | Filesystem capability family: seam, local impl, model-facing file tools, discovery tools |
 | [`lsp/`](lsp/README.md) | LSP capability family: seam, generic stdio provider, and the `lsp` tool |
+| [`code-index/`](code-index/README.md) | Code-index capability family: seam, SQLite FTS5 provider, and the `search_codebase` tool |
+| [`memory/`](memory/README.md) | Memory capability family: seam, SQLite FTS5 provider, the `memory_write`/`memory_search`/`memory_forget` tools, turn-end reflection, and the collaboration-style profile |
+| [`knowledge/`](knowledge/README.md) | Knowledge-base capability family: seam, SQLite FTS5 provider, and the knowledge tools |
 | [`skill/`](skill/README.md) | Skill capability family: provider registry, local provider, model-facing catalog/loader |
 | [`compaction/`](compaction/README.md) | Compaction capability family: Service Definition + basic provider + command Consumer |
 | [`context/`](context/README.md) | Model-visible request context: workspace instructions, time context, references |
@@ -59,6 +62,7 @@ Every package lives in exactly one group; new packages join existing groups, and
 | [`document/`](document/README.md) | Shared Host Office-to-PDF conversion |
 | [`attachment/`](attachment/README.md) | Durable attachment identity, validation, local content-addressed storage |
 | [`spill/`](spill/README.md) | Spill capability family: storage seam, local impl, tool-result spill policy |
+| [`git/`](git/README.md) | Worktree and pull-request tracking tools |
 | [`todo/`](todo/README.md) | The model-facing `todo_write` tool |
 | [`plan/`](plan/README.md) | Plan collaboration state with a direct entry command and reviewed exit |
 | [`preset/`](preset/README.md) | Per-session agent composition from preset `cordis.yml` files |

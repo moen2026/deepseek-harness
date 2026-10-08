@@ -13,6 +13,7 @@
 import type { Writable } from 'node:stream'
 import type { SubprocessHandle, SubprocessSpawnSpec } from '@deepseek-ai/dsh-subprocess'
 import { encodeMessage, MessageDecoder } from './framing.ts'
+import type { WireDiagnostic, WirePublishDiagnosticsParams } from './protocol.ts'
 
 /** How to launch the server and answer its config requests. */
 export interface ConnectionSpec {
@@ -68,6 +69,10 @@ export class LspConnection {
   private readonly stdin: Writable
   private readonly decoder: MessageDecoder
   private readonly pending = new Map<number, Pending>()
+  /** Latest pushed diagnostics per document URI; a server may publish several times per open. */
+  private readonly diagnosticsByUri = new Map<string, readonly WireDiagnostic[]>()
+  /** Resolvers armed by {@link LspConnection.nextDiagnostics}, fired on the next publish per URI. */
+  private readonly diagnosticsWaiters = new Map<string, Set<() => void>>()
   private nextId = 1
   private closeReason: Error | undefined
   /** Set once the process has fully exited; the instance awaits it during teardown. */
@@ -204,6 +209,55 @@ export class LspConnection {
     return this.nextId
   }
 
+  /**
+   * The most recent pushed diagnostics for a document, if the server has published any.
+   * @param uri - the document URI.
+   * @returns the last `publishDiagnostics` payload for `uri`, or `undefined` when none arrived.
+   */
+  diagnosticsFor(uri: string): readonly WireDiagnostic[] | undefined {
+    return this.diagnosticsByUri.get(uri)
+  }
+
+  /**
+   * A promise that settles on the next `publishDiagnostics` for a document (already-resolved when a
+   * snapshot exists). The instance races it against a bounded wait and reads the snapshot afterward.
+   * @param uri - the document URI to watch.
+   * @returns a promise resolved when diagnostics for `uri` are next published; never rejects.
+   */
+  nextDiagnostics(uri: string): Promise<void> {
+    if (this.diagnosticsByUri.has(uri)) return Promise.resolve()
+    return new Promise<void>((resolve) => {
+      let waiters = this.diagnosticsWaiters.get(uri)
+      if (waiters === undefined) {
+        waiters = new Set()
+        this.diagnosticsWaiters.set(uri, waiters)
+      }
+      waiters.add(resolve)
+    })
+  }
+
+  /**
+   * Forget a document's pushed diagnostics and any armed waiters, so a pooled instance never leaks a
+   * prior query's snapshot into the next open of the same URI.
+   * @param uri - the document URI being closed.
+   */
+  clearDiagnostics(uri: string): void {
+    this.diagnosticsByUri.delete(uri)
+    this.diagnosticsWaiters.delete(uri)
+  }
+
+  private recordDiagnostics(params: unknown): void {
+    const record = params as WirePublishDiagnosticsParams | null
+    if (record === null || typeof record !== 'object' || typeof record.uri !== 'string') return
+    const diagnostics = Array.isArray(record.diagnostics) ? record.diagnostics : []
+    this.diagnosticsByUri.set(record.uri, diagnostics)
+    const waiters = this.diagnosticsWaiters.get(record.uri)
+    if (waiters !== undefined) {
+      this.diagnosticsWaiters.delete(record.uri)
+      for (const resolve of waiters) resolve()
+    }
+  }
+
   /** Terminate the server's provider-managed range (idempotent). */
   terminate(): void {
     this.handle.terminate()
@@ -245,7 +299,9 @@ export class LspConnection {
       return
     }
     if (typeof method === 'string') {
-      // A server→client notification (e.g. diagnostics, logs): ignored by this MVP host.
+      // The only server→client notification this host acts on is pushed diagnostics; logs and other
+      // notifications are ignored.
+      if (method === 'textDocument/publishDiagnostics') this.recordDiagnostics(frame.params)
       return
     }
     if (typeof id === 'number') this.handleResponse(id, frame)

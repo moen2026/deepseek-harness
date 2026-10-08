@@ -1,0 +1,58 @@
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write packages/session/session-rewind/README.md
+/:
+  en: 85ea0585637a8459
+  zh: f9bbaf19dc388835
+/deepseek-ai-dsh-session-rewind:
+  en: f3adba80d869b737
+  zh: 7cd25279dd2cd528
+/deepseek-ai-dsh-session-rewind/summary:
+  en: f774dd0aee886d83
+  zh: 92cd1450ba2873c6
+/deepseek-ai-dsh-session-rewind/table-of-contents:
+  en: d152484eb41ac6b4
+  zh: 09388d293f9be9cb
+/deepseek-ai-dsh-session-rewind/use-this-package:
+  en: adca032079a8cfe1
+  zh: 345e0fc38c7466e5
+/deepseek-ai-dsh-session-rewind/understand-the-implementation:
+  en: 95a44ddc0bab1755
+  zh: 9631122cadba4dab
+/deepseek-ai-dsh-session-rewind/further-exploration:
+  en: 3ca620c4dab8ecca
+  zh: 6d07484cbe0abda5
+/deepseek-ai-dsh-session-rewind/model-experience:
+  en: 215e7ba838619b7b
+  zh: a311da3843709f90
+/deepseek-ai-dsh-session-rewind/model-experience/tool-schema:
+  en: e4c7376d4f29dbd5
+  zh: 6b7a9eaf69c9ea53
+/deepseek-ai-dsh-session-rewind/model-experience/tool-schema/what-the-model-sees:
+  en: 2cb50b62e9e6dc78
+  zh: 4b8f33aa09df9213
+/deepseek-ai-dsh-session-rewind/model-experience/tool-schema/token-effect:
+  en: a8e50d270e6c233b
+  zh: 4603626844c01f60
+/deepseek-ai-dsh-session-rewind/model-experience/tool-schema/kv-cache-effect:
+  en: be3d1e39a5491de8
+  zh: 090e90b30790c277
+/deepseek-ai-dsh-session-rewind/model-experience/results:
+  en: 8e1b2953471f22ba
+  zh: 765a7c4655654c0a
+/deepseek-ai-dsh-session-rewind/model-experience/results/what-the-model-sees:
+  en: b90e6458585118a0
+  zh: 9a5d311cf152dbcb
+/deepseek-ai-dsh-session-rewind/model-experience/results/token-effect:
+  en: 95c6bb4a8572e115
+  zh: 6bb2533a4a9e8a4b
+/deepseek-ai-dsh-session-rewind/model-experience/results/kv-cache-effect:
+  en: f1b58edab035927b
+  zh: 8f21b331bc973a54
+/deepseek-ai-dsh-session-rewind/known-limitations-and-deferred-work:
+  en: 453e4ff2b59f23b9
+  zh: 28afb3738100f62e
+/deepseek-ai-dsh-session-rewind/known-limitations-and-deferred-work/dev-note:
+  en: e67f633dc6fe7773
+  zh: 3bb0c20c93f16f98

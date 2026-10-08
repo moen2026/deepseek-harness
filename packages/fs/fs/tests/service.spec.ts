@@ -181,6 +181,14 @@ describe('FileSystem provider seam', () => {
     expect(await fs.lstat('a.txt')).toEqual({ version: 'v1', type: 'file', size: 2 })
     expect(await fs.lstat('missing.txt')).toBeUndefined()
   })
+
+  it('writeBytes defaults to a FS_NOT_TEXT rejection for text-only backends', async () => {
+    const ctx = new Context()
+    await ctx.plugin(FakeFileSystem)
+    const fs = ctx.fs as FakeFileSystem
+    await expect(fs.writeBytes(await fs.resolve('doc.bin'), new Uint8Array([1])))
+      .rejects.toMatchObject({ code: 'FS_NOT_TEXT' })
+  })
 })
 
 describe('branded id factories', () => {

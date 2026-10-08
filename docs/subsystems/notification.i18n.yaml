@@ -1,0 +1,13 @@
+# Bilingual-pair consistency record for notification.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write docs/subsystems/notification.md
+/notifications:
+  en: 7c6f184ec08fcb7d
+  zh: 443e4edadd54ee9c
+/notifications/alerts-and-routing:
+  en: bc7d132182326e30
+  zh: abd8a1ea4431d319
+/notifications/surfaces-and-triggers:
+  en: 735fdcc097d58fd9
+  zh: 2c88d7361f6be949

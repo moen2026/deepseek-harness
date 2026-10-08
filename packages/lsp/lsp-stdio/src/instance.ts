@@ -10,6 +10,7 @@
 import { LspError } from '@deepseek-ai/dsh-lsp'
 import type {
   LspOperation,
+  LspPosition,
   LspProviderQuery,
   LspQueryResult,
 } from '@deepseek-ai/dsh-lsp'
@@ -18,13 +19,16 @@ import { abortable, abortError } from './abort.ts'
 import { LspConnection } from './connection.ts'
 import type { ConnectionSpawner, ConnectionSpec, ConnectionWriter } from './connection.ts'
 import type { HostSource } from './host.ts'
-import type { WireInitializeResult, WireServerCapabilities } from './protocol.ts'
+import type { WireDiagnostic, WireInitializeResult, WireServerCapabilities } from './protocol.ts'
 import {
+  diagnosticReportItems,
   negotiatePositionEncoding,
+  normalizeDiagnostics,
   normalizeHover,
   normalizeLocations,
   requestMethod,
   supportsOperation,
+  supportsPullDiagnostics,
   supportsTransientOpen,
 } from './translate.ts'
 
@@ -166,9 +170,19 @@ export class LspInstance {
         throw error
       }
       opened = true
-      const payload = await this.sendRequest(request.operation, uri, request.position, signal)
+      if (request.operation === 'diagnostics') {
+        return await this.collectDiagnostics(uri, supportsPullDiagnostics(capabilities), signal)
+      }
+      const position = request.position
+      if (position === undefined) {
+        throw new LspError(`the ${request.operation} operation requires a cursor position`, 'LSP_INVALID_REQUEST')
+      }
+      const payload = await this.sendRequest(request.operation, uri, position, signal)
       return this.normalize(request.operation, payload)
     } finally {
+      // Forget any pushed diagnostics before closing, so the pooled instance cannot leak this query's
+      // snapshot into the next open of the same document.
+      if (opened) this.connection.clearDiagnostics(uri)
       // A disposed or closed instance (e.g. an aborted request whose server ignored
       // `$/cancelRequest`) is already tearing down; sending didClose would race that teardown and let
       // the next queued query's document lifecycle overlap the still-active request.
@@ -187,7 +201,7 @@ export class LspInstance {
   private async sendRequest(
     operation: LspOperation,
     uri: string,
-    position: LspProviderQuery['position'],
+    position: LspPosition,
     signal?: AbortSignal,
   ): Promise<unknown> {
     const params = {
@@ -242,6 +256,58 @@ export class LspInstance {
     // The filesystem provider owns URI syntax for the execution platform, which may differ from the
     // harness host. Preserve that coordinate through rendering instead of reparsing `spec.cwd` there.
     return { kind: 'locations', locations: normalizeLocations(payload), resolvedWorkspaceUri: this.spec.workspaceUri }
+  }
+
+  /**
+   * Collect a document's diagnostics while it is transiently open. A pull-capable server is asked
+   * once (`textDocument/diagnostic`); otherwise the host waits a bounded window for the server to
+   * push `publishDiagnostics` and takes the latest snapshot. An empty result means either a clean
+   * document or a server that never published within the window — indistinguishable, and both are
+   * reported as "no problems".
+   */
+  private async collectDiagnostics(uri: string, pull: boolean, signal?: AbortSignal): Promise<LspQueryResult> {
+    if (pull) {
+      const requestId = this.connection.peekNextId()
+      const send = this.connection.request('textDocument/diagnostic', {
+        textDocument: { uri },
+        previousResultId: uri,
+      })
+      const report = signal === undefined ? await send : await this.raceAbort(send, requestId, signal)
+      return {
+        kind: 'diagnostics',
+        diagnostics: normalizeDiagnostics(diagnosticReportItems(report)),
+        resolvedWorkspaceUri: this.spec.workspaceUri,
+      }
+    }
+    const items = await this.awaitPushedDiagnostics(uri, signal)
+    return { kind: 'diagnostics', diagnostics: normalizeDiagnostics(items), resolvedWorkspaceUri: this.spec.workspaceUri }
+  }
+
+  /**
+   * Wait a bounded window for the server to push diagnostics for `uri`, then a short quiet period to
+   * coalesce a burst, and return the latest snapshot. A caller abort propagates; the budget elapsing
+   * without any publish returns the (possibly empty) snapshot rather than failing the query.
+   */
+  private async awaitPushedDiagnostics(uri: string, signal?: AbortSignal): Promise<readonly WireDiagnostic[]> {
+    const budget = deadline(undefined, DIAGNOSTICS_MAX_WAIT_MS, 'LSP_DIAGNOSTICS_WAIT')
+    try {
+      const active = signal === undefined ? budget.signal : AbortSignal.any([signal, budget.signal])
+      let published = true
+      try {
+        await abortable(this.connection.nextDiagnostics(uri), active)
+      } catch (error) {
+        // The caller canceled: propagate. Otherwise the budget elapsed with no publish yet.
+        if (signal?.aborted) throw error
+        published = false
+      }
+      // After the first publish, let a short follow-up burst land before reading the snapshot.
+      if (published) {
+        await abortable(delay(DIAGNOSTICS_QUIET_MS), active).catch(() => {})
+      }
+      return this.connection.diagnosticsFor(uri) ?? []
+    } finally {
+      budget[Symbol.dispose]()
+    }
   }
 
   private answerServerRequest(method: string, params: unknown): Promise<unknown> {
@@ -333,6 +399,22 @@ function markSettled(): boolean {
 }
 
 /**
+ * The push-diagnostics wait budget: how long to await a server's first `publishDiagnostics` after
+ * `didOpen`, and the quiet window afterward to coalesce a burst. A bounded detail of the transient
+ * host (which spawns and closes per query), not a user-facing knob; both sit well inside the tool's
+ * default call timeout.
+ */
+const DIAGNOSTICS_MAX_WAIT_MS = 5_000
+const DIAGNOSTICS_QUIET_MS = 250
+
+/** A cancellable timer used only to drain a push-diagnostics burst; `abortable()` bounds the wait. */
+function delay(ms: number): Promise<void> {
+  return new Promise<void>((resolve) => {
+    setTimeout(resolve, ms)
+  })
+}
+
+/**
  * The client capabilities advertised at `initialize`: UTF-16 positions, workspace folders and
  * configuration, markdown/plaintext hover, and link support for definition/implementation. No
  * dynamic registration; the server's returned capabilities are authoritative.
@@ -346,5 +428,8 @@ const CLIENT_CAPABILITIES = {
     definition: { linkSupport: true },
     implementation: { linkSupport: true },
     references: {},
+    // Advertise pull diagnostics and acceptance of pushed `publishDiagnostics`; the host reads either.
+    diagnostic: {},
+    publishDiagnostics: { relatedInformation: false },
   },
 } as const

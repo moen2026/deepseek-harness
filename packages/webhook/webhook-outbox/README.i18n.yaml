@@ -1,0 +1,40 @@
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write packages/webhook/webhook-outbox/README.md
+/:
+  en: ef7f805132589740
+  zh: 9de879d503f36306
+/deepseek-ai-dsh-webhook-outbox:
+  en: c6a8e8e8d9d05da8
+  zh: 83e48b7e7b000420
+/deepseek-ai-dsh-webhook-outbox/summary:
+  en: 57a7126ddab0a5aa
+  zh: d8fb8b7ab9d8206d
+/deepseek-ai-dsh-webhook-outbox/table-of-contents:
+  en: 8303848073bc1bd8
+  zh: db0d2c90e2966a4a
+/deepseek-ai-dsh-webhook-outbox/delivery-ledger:
+  en: 8e3894bd93bdd5c7
+  zh: e10b676962f0d48a
+/deepseek-ai-dsh-webhook-outbox/dispatch-and-retry:
+  en: d58779a6ba99151d
+  zh: 41466eda929ab9f3
+/deepseek-ai-dsh-webhook-outbox/replay-and-retention:
+  en: 1977b6971993c994
+  zh: 35a62a07b6ebe8a8
+/deepseek-ai-dsh-webhook-outbox/composition:
+  en: a3f1039868da6440
+  zh: 4a3a1c1f8fd166f2
+/deepseek-ai-dsh-webhook-outbox/model-experience:
+  en: 48086f51a87971ec
+  zh: a37f81609feeb1c5
+/deepseek-ai-dsh-webhook-outbox/model-experience/kv-cache-effect:
+  en: 336cedb2f93a68a8
+  zh: 9913917ac6872721
+/deepseek-ai-dsh-webhook-outbox/known-limitations-and-deferred-work:
+  en: 31a4158f9a30aa67
+  zh: 47a7e0db15101bf6
+/deepseek-ai-dsh-webhook-outbox/known-limitations-and-deferred-work/dev-note:
+  en: e67f633dc6fe7773
+  zh: 8ec3e73528ddb1a6

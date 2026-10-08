@@ -9,7 +9,7 @@ English | [中文](README.zh.md)
 
 ## Summary
 
-Use `dsh-lsp-stdio` to give agents definitions, references, implementations, and hover from explicitly configured local language servers. It maps file extensions to language identifiers, starts one server per workspace on demand, and reads each queried file afresh without retaining document state between queries. Language-server processes and source reads share the mounted filesystem and subprocess environment. The package does not install servers or provide a sandbox: deployments supply commands, mappings, and any required confinement. Queries are serialized per server and workspace, while different workspaces can run in parallel.
+Use `dsh-lsp-stdio` to give agents definitions, references, implementations, hover, and a file's current diagnostics from explicitly configured local language servers. It maps file extensions to language identifiers, starts one server per workspace on demand, and reads each queried file afresh without retaining document state between queries. Language-server processes and source reads share the mounted filesystem and subprocess environment. The package does not install servers or provide a sandbox: deployments supply commands, mappings, and any required confinement. Queries are serialized per server and workspace, while different workspaces can run in parallel.
 
 ## Table of Contents
 
@@ -68,7 +68,7 @@ On the first query for a workspace, the provider launches one server process for
 
 ### Observable success and failures
 
-A successful navigation returns normalized locations, and hover returns normalized text or a no-hover notice; empty results are successful no-result responses. The query fails when the server does not support the operation or the transient open/close synchronization (`LSP_UNSUPPORTED_OPERATION`), when the source is missing, non-regular, non-UTF-8, oversized, or outside the canonical workspace (rejected before the server starts), or when the server returns a malformed payload (`LSP_MALFORMED_RESPONSE`). A hard-killed harness leaves servers running until they exit on their own — graceful shutdown happens only through service disposal.
+A successful navigation returns normalized locations, hover returns normalized text or a no-hover notice, and diagnostics returns the document's current problems (normalized severities, ranges, and messages) or an empty list; empty results are successful no-result responses. A diagnostics query transiently opens the file and either pulls (`textDocument/diagnostic` when the server advertises `diagnosticProvider`) or waits a bounded window for the server to `publishDiagnostics`. The query fails when the server does not support the operation or the transient open/close synchronization (`LSP_UNSUPPORTED_OPERATION`), when the source is missing, non-regular, non-UTF-8, oversized, or outside the canonical workspace (rejected before the server starts), or when the server returns a malformed payload (`LSP_MALFORMED_RESPONSE`). A hard-killed harness leaves servers running until they exit on their own — graceful shutdown happens only through service disposal.
 
 ### Security boundary
 
@@ -103,14 +103,14 @@ This section explains the design decisions behind the provider and where the cod
 | [`src/instance.ts`](src/instance.ts) | One server process: initialize handshake, serialized transient-open queries, bounded teardown |
 | [`src/connection.ts`](src/connection.ts) | JSON-RPC endpoint: id correlation, outbound requests, inbound server requests, stderr cap |
 | [`src/framing.ts`](src/framing.ts) | `Content-Length` framing and a bounded decoder |
-| [`src/protocol.ts`](src/protocol.ts) | Wire-type subset: capabilities, locations, hover, text-document synchronization |
-| [`src/translate.ts`](src/translate.ts) | Capability checks, UTF-16 negotiation, `Location`/`LocationLink`/hover normalization |
+| [`src/protocol.ts`](src/protocol.ts) | Wire-type subset: capabilities, locations, hover, diagnostics, text-document synchronization |
+| [`src/translate.ts`](src/translate.ts) | Capability checks, UTF-16 negotiation, `Location`/`LocationLink`/hover/diagnostic normalization |
 | [`src/abort.ts`](src/abort.ts) | Cancellation helpers fusing caller and disposal signals |
 | — | No runtime invariant companion is published; process pools and per-workspace queues are private implementation state, and this provider publishes no independent lifecycle event stream or enumerable snapshot. |
 
 ### Protocol behavior
 
-Initialization advertises UTF-16 positions, workspace folders and configuration, markdown/plaintext hover, and link support for definition and implementation, with no dynamic registration; the server's returned capabilities are authoritative. An omitted server `positionEncoding` defaults to `utf-16`; any other value fails the query. The client answers `workspace/configuration` from static config, accepts lifecycle bookkeeping requests, and rejects `workspace/applyEdit` — it never applies edits or runs commands. Navigation maps `Location` directly and `LocationLink` from `targetUri` plus `targetSelectionRange`; hover normalization accepts `MarkupContent` and `MarkedString` shapes, preserves string values, renders language-tagged values as fenced code, and joins arrays with one blank line. Missing results, malformed ranges or positions, and malformed hover encodings fail as structured `LSP_MALFORMED_RESPONSE` errors.
+Initialization advertises UTF-16 positions, workspace folders and configuration, markdown/plaintext hover, link support for definition and implementation, and both pull (`diagnostic`) and push (`publishDiagnostics`) diagnostics, with no dynamic registration; the server's returned capabilities are authoritative. An omitted server `positionEncoding` defaults to `utf-16`; any other value fails the query. The client answers `workspace/configuration` from static config, accepts lifecycle bookkeeping requests, captures `textDocument/publishDiagnostics` notifications for the file-level diagnostics wait, and rejects `workspace/applyEdit` — it never applies edits or runs commands. Navigation maps `Location` directly and `LocationLink` from `targetUri` plus `targetSelectionRange`; hover normalization accepts `MarkupContent` and `MarkedString` shapes, preserves string values, renders language-tagged values as fenced code, and joins arrays with one blank line; diagnostics normalization maps numeric severities (defaulting to `error`), extracts `relatedInformation`-free report items from a pull report, and treats `unchanged` as empty. Missing results, malformed ranges or positions, and malformed hover encodings fail as structured `LSP_MALFORMED_RESPONSE` errors.
 
 </details>
 

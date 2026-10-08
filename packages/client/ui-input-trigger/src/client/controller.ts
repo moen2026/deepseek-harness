@@ -403,7 +403,7 @@ export class InputTriggerController {
   sourceRemoved(source: InputTriggerSource): void {
     const state = this.menu.getSnapshot()
     if (state.open && state.hit !== null && state.hit.trigger === source.trigger) {
-      this.reduce({ type: 'source-failed', generation: state.generation, source: source.name })
+      this.reduce({ type: 'source-removed', generation: state.generation, source: source.name })
     }
     this.lexiconOffs.get(source)?.()
     this.lexiconOffs.delete(source)

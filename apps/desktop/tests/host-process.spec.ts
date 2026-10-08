@@ -2,6 +2,7 @@ import { existsSync, mkdirSync, mkdtempSync, realpathSync, rmSync, writeFileSync
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import type { DesktopAlertMessage } from '@deepseek-ai/dsh-notification-desktop'
 import { DesktopHostFatalError, DesktopHostProcess, DesktopHostUncleanExitError, QUIT_INSPECTION_DEADLINE_MS } from '../src/host-process.ts'
 
 const roots: string[] = []
@@ -196,6 +197,8 @@ describe('desktop host process', () => {
     ["process.send({ type: 'fatal', message: 'startup failed' }); process.disconnect()", 'startup failed'],
     ["process.send({ type: 'ready', url: 4 })", 'invalid IPC event'],
     ["process.send({ type: 'fatal', message: 'startup failed', diagnostic: 42 })", 'invalid IPC event'],
+    ["process.send({ type: 'desktop-notification', title: 'missing body' })", 'invalid IPC event'],
+    ["process.send({ type: 'desktop-notification', title: 'x', body: 'y', urgency: 'urgent' })", 'invalid IPC event'],
     ['process.exit(0)', 'host stopped'],
   ])('rejects startup when the child fails before readiness: %s', async (source, message) => {
     const host = hostProcess(projectWithHost(source))
@@ -236,5 +239,21 @@ it.each([undefined, '', 7])('rejects malformed Platform account identity %s on p
   hosts.push(host)
   await expect(host.start()).rejects.toThrow('invalid IPC event')
   expect(changed.mock.calls).toEqual([[null]])
+  await host.stop()
+})
+
+it('carries Host-raised alerts to the shell over private IPC', async () => {
+  const runtime = projectWithHost(HTTP_HOST.replace("process.send({ type: 'ready'",
+    "process.send({ type: 'desktop-notification', title: 'Reminder due', body: 'Task #1 is due', tag: 'schedule-1', urgency: 'critical' }); process.send({ type: 'desktop-notification', title: 'Goal reached', body: 'Objective complete' }); process.send({ type: 'ready'"))
+  const alerts: DesktopAlertMessage[] = []
+  const host = new DesktopHostProcess(process.execPath, runtime, runtime, undefined, process.env,
+    undefined, undefined, undefined, undefined, (alert) => { alerts.push(alert) })
+  hosts.push(host)
+  await host.start()
+  await expect.poll(() => alerts.length).toBe(2)
+  expect(alerts).toEqual([
+    { type: 'desktop-notification', title: 'Reminder due', body: 'Task #1 is due', tag: 'schedule-1', urgency: 'critical' },
+    { type: 'desktop-notification', title: 'Goal reached', body: 'Objective complete' },
+  ])
   await host.stop()
 })

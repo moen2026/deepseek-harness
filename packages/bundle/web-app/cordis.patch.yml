@@ -114,17 +114,42 @@
       name: '@deepseek-ai/dsh-api-workspace-files'
 
     # Durable Host-wide reminders. The Schedule service owns the task store and
-    # delivers each due occurrence as a follow-up in its original Session;
+    # delivers each due occurrence as a follow-up in its original Session; it
+    # also registers the model-facing `schedule_*` tools on the host tool
+    # registry, the same shape as the base's `mcp-resources` row.
     # `time-context` supplies the current time, browser zone, and elapsed time
     # the model needs to resolve an unqualified date or time. The browser half
     # is the `ui-schedule` row below.
     - id: time-context
       name: '@deepseek-ai/dsh-time-context'
-      disabled: true
 
     - id: schedule
       name: '@deepseek-ai/dsh-schedule'
-      disabled: true
+
+    # Per-session heartbeat patrol: the model enables one recurring reminder
+    # through heartbeat_enable; each delivery reads the workspace heartbeat
+    # file and acts on its pending items.
+    - id: heartbeat
+      name: '@deepseek-ai/dsh-heartbeat'
+
+    # User-visible alerts from Host events (approval waits, turn completion,
+    # schedule deliveries, goal milestones) routed to the surface provider:
+    # Web republishes accepted alerts for the browser surface, Desktop forwards
+    # them over the Host IPC channel to the native Electron shell. The two
+    # providers divide the seam by profile, so exactly one is mounted.
+    - id: notification
+      name: '@deepseek-ai/dsh-notification'
+
+    - id: notification-web
+      name: '@deepseek-ai/dsh-notification-web'
+      disabled: !!js "ctx.get('profileContext')?.name === 'desktop'"
+
+    - id: notification-desktop
+      name: '@deepseek-ai/dsh-notification-desktop'
+      disabled: !!js "ctx.get('profileContext')?.name !== 'desktop'"
+
+    - id: notification-triggers
+      name: '@deepseek-ai/dsh-notification-triggers'
 
     # Configuration-surface reads and writes over Typert Remote. Each method
     # reports an actionable error when its settings-domain provider is absent.
@@ -333,6 +358,11 @@
     - id: workspace-changes
       name: '@deepseek-ai/dsh-workspace-changes'
 
+    # Captures file-tool paths before each top-level turn first changes them
+    # and registers the workspace_rewind restore tool over the sessionRewind
+    # service.
+    - id: session-rewind
+      name: '@deepseek-ai/dsh-session-rewind'
 
     - id: ui-workspace
       name: '@deepseek-ai/dsh-client-ui-workspace'
@@ -369,11 +399,30 @@
     # service mounted above.
     - id: ui-schedule
       name: '@deepseek-ai/dsh-client-ui-schedule'
-      disabled: true
+
+    # Knowledge center: right-Sidebar page over the Host knowledge group's
+    # browser Remote face mounted above.
+    - id: ui-knowledge
+      name: '@deepseek-ai/dsh-client-ui-knowledge'
+
+    # Memory center: right-Sidebar page plus Turn cards over the Host memory
+    # group's browser Remote face mounted above.
+    - id: ui-memory
+      name: '@deepseek-ai/dsh-client-ui-memory'
+
+    # MCP panel: right-Sidebar page over the Host `mcp-browser` face, which
+    # the base patch mounts beside `mcp-resources`.
+    - id: ui-mcp
+      name: '@deepseek-ai/dsh-client-ui-mcp'
 
     # Goal surface: GoalBar in the input dock over the goal session projection.
     - id: ui-goal
       name: '@deepseek-ai/dsh-client-ui-goal'
+
+    # Host-raised alerts presented through the browser's Web Notification API;
+    # permission stays the user's decision, so the surface is silent until granted.
+    - id: ui-notification
+      name: '@deepseek-ai/dsh-client-ui-notification'
 
     # The feedback surface: Like/Dislike in the assistant-message action
     # strip, the feedback dialog behind Dislike and /feedback with its
@@ -413,6 +462,11 @@
 
     - id: ui-settings-web-search
       name: '@deepseek-ai/dsh-client-ui-settings-web-search'
+
+    # Registers its page only while a synthesis provider is cataloged, so a
+    # deployment without the read-aloud bundle shows no trace of it.
+    - id: ui-settings-speech
+      name: '@deepseek-ai/dsh-client-ui-settings-speech'
 
     # Plan control: the composer plan seat over the plan projection + /plan channel.
     - id: ui-plan

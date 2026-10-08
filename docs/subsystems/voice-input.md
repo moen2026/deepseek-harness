@@ -161,4 +161,152 @@ async transcribe(spec: SpeechSpec, signal: AbortSignal): Promise<Transcript>
 ```
 
 Source: [`packages/experimental/speech-to-text/src/index.ts`](../../packages/experimental/speech-to-text/src/index.ts)
+
+<a id="ctxtexttospeech--texttospeech"></a>
+
+### `ctx.textToSpeech` — `TextToSpeech`
+
+Registry shared by all synthesis consumers in one Host composition.
+
+```ts cordis-catalog
+/**
+ * Register one synthesizer; duplicate ids fail without replacing the original.
+ * @param provider - synthesizer owned by the contributing fiber.
+ * @returns idempotent disposer which rejects admission, cancels, and joins accepted work.
+ */
+register(provider: TtsProvider): () => Promise<void>
+
+/**
+ * Read the current synthesizer roster.
+ * @returns available provider facts in registration order.
+ */
+listProviders(): readonly TtsProviderInfo[]
+
+/**
+ * Re-read provider facts after a provider changed facts it owns outside
+ * registration — its `voices` roster, for example; readiness followers
+ * receive a new snapshot and read the announced facts live.
+ */
+catalogChanged(): void
+
+/**
+ * Observe complete readiness snapshots; a slow reader coalesces intermediate progress.
+ * @param caller - observer lifetime, independent of any preparation task.
+ * @returns an initial snapshot followed by the latest provider states.
+ */
+async *follow(caller: AbortSignal): AsyncIterable<TtsSnapshot>
+
+/**
+ * Read provider readiness and current user preferences together.
+ * @returns one detached complete observation.
+ */
+snapshot(): TtsSnapshot
+
+/**
+ * Persist changed selection fields into this plugin's profile entry; the resulting voice must be accepted by the selected provider.
+ * @param patch - explicit provider, voice, or rate changes.
+ * @returns after the profile write and the live update it applies.
+ */
+async configure(patch: TtsSelectionPatch): Promise<void>
+
+/**
+ * Start or join provider-owned preparation.
+ * @param id - exact registered provider identity.
+ * @param options - task-local source selection validated by the provider.
+ */
+prepare(id: TtsProviderId, options?: TtsPreparationOptions): void
+
+/**
+ * Explicitly cancel provider preparation without tying it to a browser connection.
+ * @param id - exact registered provider identity.
+ * @returns after the preparation task settles.
+ */
+async cancelPreparation(id: TtsProviderId): Promise<void>
+
+/**
+ * Store one recording as a selectable voice through the exact provider.
+ * @param id - exact registered provider identity.
+ * @param intake - target voice id and complete recording bytes.
+ * @param signal - caller cancellation.
+ * @returns the selectable voice after the provider's roster reflects it.
+ */
+async intakeVoice(id: TtsProviderId, intake: TtsVoiceIntake, signal: AbortSignal): Promise<TtsVoiceInfo>
+
+/**
+ * Apply composition defaults and capture the selected provider. Missing providers and unsupported voices fail explicitly.
+ * @param request - complete text and optional selection.
+ * @returns provider-pinned input for synthesize().
+ */
+resolve(request: TtsRequest): TtsSpec
+
+/**
+ * Execute exactly the resolved provider; no fallback sends text elsewhere.
+ * @param spec - resolved input; a withdrawn or replaced registration is rejected.
+ * @param signal - caller cancellation.
+ * @returns synthesized WAV audio after provider settlement.
+ */
+async synthesize(spec: TtsSpec, signal: AbortSignal): Promise<TtsSynthesis>
+```
+
+Source: [`packages/experimental/text-to-speech/src/index.ts`](../../packages/experimental/text-to-speech/src/index.ts)
+
+<a id="ctxttscontroller--ttscontroller"></a>
+
+### `ctx.ttsController` — `TtsController`
+
+Synthesis calls never activate or submit to an Agent.
+
+```ts cordis-catalog
+/**
+ * Read provider choices without preparing a synthesizer.
+ * @returns available providers, resolved default, and text limits.
+ */
+@Remote catalog(): TtsCatalog
+
+/**
+ * Follow provider readiness independently of Session and preparation lifetimes.
+ * @param signal - Client observation lifetime.
+ * @returns initial and subsequent complete readiness snapshots.
+ */
+@Remote({ mode: 'stream' }) async *follow(signal: AbortSignal): AsyncIterable<TtsCatalog>
+
+/**
+ * Persist the user's synthesis preferences.
+ * @param patch - changed preference fields.
+ * @returns after preferences are saved.
+ */
+@Remote configure(patch: TtsSelectionPatch): Promise<void>
+
+/**
+ * Start or join one Host-owned preparation task.
+ * @param providerId - selected synthesizer.
+ * @param options - task-local source selection validated by the provider.
+ */
+@Remote prepare(providerId: TtsProviderId, options?: TtsPreparationOptions): void
+
+/**
+ * Explicitly cancel resource preparation.
+ * @param providerId - selected synthesizer.
+ * @returns after the preparation task settles.
+ */
+@Remote cancelPreparation(providerId: TtsProviderId): Promise<void>
+
+/**
+ * Validate and synthesize one text through the explicit provider selection.
+ * @param request - read-aloud text and optional provider id.
+ * @param signal - Client cancellation or Remote contribution disposal.
+ * @returns complete WAV audio encoded as base64 without adding a Session event.
+ */
+@Remote async synthesize(request: SynthesisRequest, signal: AbortSignal): Promise<SynthesisResult>
+
+/**
+ * Validate and store one recording as a selectable voice.
+ * @param request - provider id, new voice id, and canonical base64 recording bytes.
+ * @param signal - Client cancellation or Remote contribution disposal.
+ * @returns the selectable voice once the provider's roster reflects it.
+ */
+@Remote async intakeVoice(request: VoiceIntakeRequest, signal: AbortSignal): Promise<TtsVoiceInfo>
+```
+
+Source: [`packages/experimental/api-text-to-speech/src/index.ts`](../../packages/experimental/api-text-to-speech/src/index.ts)
 <!-- END GENERATED cordis-surface -->

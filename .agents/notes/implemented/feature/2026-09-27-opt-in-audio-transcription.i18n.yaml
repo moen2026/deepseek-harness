@@ -1,0 +1,19 @@
+# Bilingual-pair consistency record for 2026-09-27-opt-in-audio-transcription.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-09-27-opt-in-audio-transcription.md
+/agent-note-opt-in-audio-transcription-seam:
+  en: 6bfebc2def60b566
+  zh: 6cddba54e44b0c67
+/agent-note-opt-in-audio-transcription-seam/problem:
+  en: 5ffccee0811d37bc
+  zh: a7430a4ea1787327
+/agent-note-opt-in-audio-transcription-seam/decision:
+  en: 7db723629001552b
+  zh: ffaf7d5999d5de11
+/agent-note-opt-in-audio-transcription-seam/alternatives-considered:
+  en: 52dbb1ccd614b9c4
+  zh: b95e39d11719eef8
+/agent-note-opt-in-audio-transcription-seam/consequences:
+  en: 8749fe66de31986f
+  zh: 89ed90f7d1ec18dd

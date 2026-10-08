@@ -1,0 +1,58 @@
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write packages/code-index/code-index/README.md
+/:
+  en: a39bd1c1a1d22771
+  zh: 45a5482ef23a87e9
+/deepseek-ai-dsh-code-index:
+  en: 9651736fce1a9837
+  zh: 240ee4ab08a8743b
+/deepseek-ai-dsh-code-index/summary:
+  en: d701083ed671f7ea
+  zh: 7135e1520d883994
+/deepseek-ai-dsh-code-index/table-of-contents:
+  en: d152484eb41ac6b4
+  zh: 09388d293f9be9cb
+/deepseek-ai-dsh-code-index/use-this-package:
+  en: aa2cbc8f51bd0ed0
+  zh: 18cda1671e21e840
+/deepseek-ai-dsh-code-index/use-this-package/when-to-choose-it:
+  en: 4e017cda2e3a55e3
+  zh: 74a3ce2c2751f778
+/deepseek-ai-dsh-code-index/use-this-package/composing-a-search-stack:
+  en: 5f41f318a57761ba
+  zh: ec8111d4cd5c9585
+/deepseek-ai-dsh-code-index/use-this-package/the-operation:
+  en: 856862648a953450
+  zh: 68622a1f790ab631
+/deepseek-ai-dsh-code-index/use-this-package/failures-and-recovery:
+  en: 4865c1d092691890
+  zh: a1cf2465628382b8
+/deepseek-ai-dsh-code-index/understand-the-implementation:
+  en: 1e0acac55fc6c314
+  zh: fe4ebe8a86dc480f
+/deepseek-ai-dsh-code-index/understand-the-implementation/design-philosophy:
+  en: 7278a407d394eb29
+  zh: 8cbda618e1226e64
+/deepseek-ai-dsh-code-index/understand-the-implementation/source-map:
+  en: e949d2e3c420edc5
+  zh: e793fffb214ca7d1
+/deepseek-ai-dsh-code-index/understand-the-implementation/registration-and-disposal-lifecycle:
+  en: fadabb614f28d16e
+  zh: 35a5f8b9011e6fb8
+/deepseek-ai-dsh-code-index/further-exploration:
+  en: 68e67fe260f1fd3f
+  zh: 93b2a6b23cf00b83
+/deepseek-ai-dsh-code-index/model-experience:
+  en: 8138c6091bbcb7ea
+  zh: 2a9043bde4283a81
+/deepseek-ai-dsh-code-index/model-experience/kv-cache-effect:
+  en: cfdc3305eb8c9449
+  zh: 9ee72b27c306dec6
+/deepseek-ai-dsh-code-index/known-limitations-and-deferred-work:
+  en: 0999b3cfd3f3a5a2
+  zh: 9489e4f5cb00b41a
+/deepseek-ai-dsh-code-index/known-limitations-and-deferred-work/dev-note:
+  en: e67f633dc6fe7773
+  zh: 3bb0c20c93f16f98

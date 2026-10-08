@@ -1,0 +1,45 @@
+{
+  "name": "@deepseek-ai/dsh-code-index-hybrid",
+  "description": "Opt-in hybrid code-index provider for the DeepSeek Harness code seam (ctx.codeIndex) — structure-aware block chunking, BM25 over node:sqlite FTS5, and vectors from a deployment-supplied OpenAI-compatible embeddings endpoint, fused by reciprocal-rank fusion",
+  "version": "0.1.0-rc.1",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "directory": "packages/code-index/code-index-hybrid"
+  },
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./src/*": "./src/*",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib/index.js",
+    "lib/types/**/*.d.ts"
+  ],
+  "license": "MIT",
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "workspace:~",
+    "@deepseek-ai/dsh-code-index": "workspace:*"
+  },
+  "dependencies": {
+    "@deepseek-ai/dsh-code-index-sqlite": "workspace:*",
+    "@deepseek-ai/dsh-memory-sqlite": "workspace:*",
+    "@deepseek-ai/schemastery": "workspace:~"
+  },
+  "devDependencies": {
+    "@deepseek-ai/cordis": "workspace:~",
+    "@deepseek-ai/dsh-code-index": "workspace:*",
+    "@deepseek-ai/dsh-code-index-sqlite": "workspace:*",
+    "@deepseek-ai/dsh-memory-sqlite": "workspace:*",
+    "@deepseek-ai/schemastery": "workspace:~"
+  }
+}

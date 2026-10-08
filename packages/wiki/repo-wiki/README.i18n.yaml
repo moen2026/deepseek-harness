@@ -1,0 +1,55 @@
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write packages/wiki/repo-wiki/README.md
+/:
+  en: edf75977ac4f7c14
+  zh: 08c0984a3600cb63
+/deepseek-ai-dsh-repo-wiki:
+  en: 6d4d103cbed9fb4e
+  zh: e5cfabb55feef923
+/deepseek-ai-dsh-repo-wiki/summary:
+  en: 07ed8942df62f15b
+  zh: 914c14ade97fd36f
+/deepseek-ai-dsh-repo-wiki/table-of-contents:
+  en: d152484eb41ac6b4
+  zh: 071ea728d1fb7ad6
+/deepseek-ai-dsh-repo-wiki/use-this-package:
+  en: 9a8f7559c28478b6
+  zh: ded7156250cfa4dc
+/deepseek-ai-dsh-repo-wiki/use-this-package/the-provider-contract:
+  en: eff0becadde089fd
+  zh: 86cf5bad011ba81d
+/deepseek-ai-dsh-repo-wiki/use-this-package/page-vocabulary:
+  en: c51ed52f8a269545
+  zh: c5eeea211f7518e5
+/deepseek-ai-dsh-repo-wiki/use-this-package/path-normalization:
+  en: add041006a6d0661
+  zh: df43245af0e82186
+/deepseek-ai-dsh-repo-wiki/use-this-package/failures:
+  en: 3380cff5d5946118
+  zh: 611e114483254f6a
+/deepseek-ai-dsh-repo-wiki/understand-the-implementation:
+  en: 1e0acac55fc6c314
+  zh: 204efad68e3edcd4
+/deepseek-ai-dsh-repo-wiki/understand-the-implementation/design-notes:
+  en: c03a4c521abfad21
+  zh: 4fe80b530c92d256
+/deepseek-ai-dsh-repo-wiki/understand-the-implementation/source-map:
+  en: f81479248a064ea4
+  zh: f81428536f9076d2
+/deepseek-ai-dsh-repo-wiki/further-exploration:
+  en: 50caa6d71eae3a69
+  zh: d17aa82db8cfd8ee
+/deepseek-ai-dsh-repo-wiki/model-experience:
+  en: 6e95872ac9f71318
+  zh: 929177776bb591be
+/deepseek-ai-dsh-repo-wiki/model-experience/kv-cache-effect:
+  en: 25761fcf6a7c6231
+  zh: 22ebfb2fee467d89
+/deepseek-ai-dsh-repo-wiki/known-limitations-and-deferred-work:
+  en: bf91cb1409bf8cfe
+  zh: a9eee700156b73c1
+/deepseek-ai-dsh-repo-wiki/known-limitations-and-deferred-work/dev-note:
+  en: e67f633dc6fe7773
+  zh: 9c6918ce849f6c93

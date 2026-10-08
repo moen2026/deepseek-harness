@@ -151,7 +151,9 @@ export function MenuView({ menu, headers, onPick, onCrumb, onHover, onDismiss, t
                     <div className={css.skeletonRow}><span className={css.skeletonBar} style={{ width: '48%' }} /></div>
                   </div>
                 )
-                : group.items.map((item, index) => {
+                : group.status === 'failed' ? (
+                  <div role="status" aria-label={t('load.failed')} className={css.failedRow} data-source={group.source}>{t('load.failed')}</div>
+                ) : group.items.map((item, index) => {
                   const active = highlight !== null && highlight.source === group.source && highlight.index === index
                   return (
                     <Fragment key={optionId(group.source, index)}>

@@ -8,7 +8,7 @@ import { deadline } from '@deepseek-ai/dsh-timeout'
 import { z } from 'zod'
 import type { Config } from './config.ts'
 import { SpeechInputError } from './input.ts'
-import { SpeechDownloadError } from './download-error.ts'
+import { SpeechDownloadError } from '@deepseek-ai/dsh-experimental-local-speech-runtime'
 import { inspectRuntime, prepareRuntime, type RuntimePaths } from './runtime.ts'
 
 const transcriptSchema = z.object({

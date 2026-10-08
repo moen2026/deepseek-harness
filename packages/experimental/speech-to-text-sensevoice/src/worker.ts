@@ -2,7 +2,7 @@
 import { z } from 'zod'
 import { Config } from './config.ts'
 import { createTranscriber } from './inference.ts'
-import { startRecognitionServer } from './process-server.ts'
+import { startRecognitionServer } from '@deepseek-ai/dsh-experimental-local-speech-runtime'
 
 const raw: unknown = JSON.parse(z.string().parse(process.argv[2]))
 const paths = z.object({ model: z.string().min(1), tokens: z.string().min(1), vad: z.string().min(1) }).parse(raw)

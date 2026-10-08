@@ -130,6 +130,15 @@
   text-decoration-color: currentColor;
 }
 
+/* Dev-server preview link below the expanded body: reuses .fileLink's link
+   affordance; this class only moves it into the body flow (the collapsed
+   suffix rides .summarySuffix). */
+.previewLink {
+  align-self: flex-start;
+  margin: 4px 0 2px 4px;
+  font: var(--dsw-font-sm-13);
+}
+
 /* Error row's collapsed summary: the failure's first line in the error color. */
 .errorSummary {
   color: var(--dsw-alias-state-error-primary);

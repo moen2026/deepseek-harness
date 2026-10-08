@@ -654,6 +654,35 @@ describe('writeText', () => {
   })
 })
 
+describe('writeBytes', () => {
+  it('atomically creates and replaces binary content with no diff basis', async () => {
+    const bytes = new Uint8Array([0x50, 0x4b, 0x03, 0x04, 0x00, 0xff])
+    const target = await fs.resolve('archive.bin')
+    const created = await fs.writeBytes(target, bytes, { kind: 'createIfAbsent' })
+    expect(created).toEqual({ operation: 'create', version: await versionOf(target) })
+    expect(new Uint8Array(await readFile(join(dir, 'archive.bin')))).toEqual(bytes)
+
+    const updated = await fs.writeBytes(target, new Uint8Array([1, 2, 3]), { kind: 'replaceIfVersion', version: created.version })
+    expect(updated).toEqual({ operation: 'update', version: await versionOf(target) })
+    expect(new Uint8Array(await readFile(join(dir, 'archive.bin')))).toEqual(new Uint8Array([1, 2, 3]))
+  })
+
+  it('rejects stale guards and guarded creates on existing targets', async () => {
+    await writeFile(join(dir, 'a.bin'), 'old')
+    const target = await fs.resolve('a.bin')
+    await expect(fs.writeBytes(target, new Uint8Array([1]), { kind: 'createIfAbsent' }))
+      .rejects.toMatchObject({ code: 'FS_NOT_OBSERVED' })
+    await expect(fs.writeBytes(target, new Uint8Array([1]), { kind: 'replaceIfVersion', version: FsVersion('stale') }))
+      .rejects.toMatchObject({ code: 'FS_STALE_VERSION' })
+  })
+
+  it('rejects writing binary onto a directory', async () => {
+    const target = await fs.resolve('.')
+    await expect(fs.writeBytes(target, new Uint8Array([1])))
+      .rejects.toMatchObject({ code: 'FS_NOT_REGULAR_FILE' })
+  })
+})
+
 describe('editText', () => {
   it('applies a literal edit at the matching version', async () => {
     await writeFile(join(dir, 'a.txt'), 'hello world')

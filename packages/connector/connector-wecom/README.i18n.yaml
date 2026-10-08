@@ -1,0 +1,40 @@
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write packages/connector/connector-wecom/README.md
+/:
+  en: 9cf8e26efaac7f56
+  zh: 697c8481a5ecf9f5
+/deepseek-ai-dsh-connector-wecom:
+  en: 2b7157010a87cdab
+  zh: 398d4e2dbe2b17b1
+/deepseek-ai-dsh-connector-wecom/summary:
+  en: 065001961a42d1ad
+  zh: add8466900fcdf48
+/deepseek-ai-dsh-connector-wecom/table-of-contents:
+  en: 13859eda50366405
+  zh: 009465af2fbdb355
+/deepseek-ai-dsh-connector-wecom/configuration:
+  en: da309df05f30b21e
+  zh: c4929bd19078aba9
+/deepseek-ai-dsh-connector-wecom/callback-contract:
+  en: 96ffb8f923711b8d
+  zh: 1fb5ae9a8d7136f6
+/deepseek-ai-dsh-connector-wecom/inbound-messages:
+  en: 64a9868c4684b3fc
+  zh: 22c90687b6e94abe
+/deepseek-ai-dsh-connector-wecom/outbound-replies:
+  en: f766b924f9af153a
+  zh: e42f31e360fddfcd
+/deepseek-ai-dsh-connector-wecom/model-experience:
+  en: abe376e12952730f
+  zh: 9831db988f723c8f
+/deepseek-ai-dsh-connector-wecom/model-experience/kv-cache-effect:
+  en: 1b434b4ac81ec0d6
+  zh: 559e58daea13072b
+/deepseek-ai-dsh-connector-wecom/known-limitations-and-deferred-work:
+  en: aff40a089b6b58fe
+  zh: c859945ea79e8d68
+/deepseek-ai-dsh-connector-wecom/known-limitations-and-deferred-work/dev-note:
+  en: cd9dd4a041ca520e
+  zh: b498f1286d84cdfa

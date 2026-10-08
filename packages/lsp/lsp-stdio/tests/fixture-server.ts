@@ -8,11 +8,15 @@
  * - LSP_FAKE_SYNC: textDocumentSync value as JSON (default 1/Full).
  * - LSP_FAKE_CAPS: JSON of extra capability flags merged into the defaults.
  * - LSP_FAKE_DEF / LSP_FAKE_REFS / LSP_FAKE_IMPL / LSP_FAKE_HOVER: JSON result per request.
+ * - LSP_FAKE_DIAG: JSON result for a pull `textDocument/diagnostic` request.
+ * - LSP_FAKE_PUSH_DIAG: JSON diagnostics array; when set, a didOpen pushes `publishDiagnostics` for
+ *   that document after a short delay instead of (or in addition to) offering a pull provider.
  * - LSP_FAKE_HANG: "1" makes textDocument/* requests never respond (for abort/timeout tests).
  * - LSP_FAKE_CRASH_ON_OPEN: "1" exits the process when a didOpen arrives (crash test).
  * - LSP_FAKE_EXIT_AFTER_REPLY: "1" exits the process right after answering a textDocument/* request,
  *   simulating a server that dies while idle so the pool holds a dead instance (eviction test).
  * - LSP_FAKE_OPEN_MARKER: appends each didOpen document text as one JSON line to this path.
+ * - LSP_FAKE_REQUEST_MARKER: appends each textDocument/* request method as one line to this path.
  * - LSP_FAKE_INITIALIZED_MARKER: records initialized receipt after any requested stdin pause.
  * - LSP_FAKE_PAUSE_STDIN_AFTER_INITIALIZED: "1" stops consuming stdin after initialized.
  * - LSP_FAKE_EXIT_DELAY_MS / LSP_FAKE_EXIT_MARKER: delay protocol exit and record exit/termination.
@@ -34,12 +38,14 @@ const hang = process.env.LSP_FAKE_HANG === '1'
 const crashOnOpen = process.env.LSP_FAKE_CRASH_ON_OPEN === '1'
 const exitAfterReply = process.env.LSP_FAKE_EXIT_AFTER_REPLY === '1'
 const openMarker = process.env.LSP_FAKE_OPEN_MARKER
+const requestMarker = process.env.LSP_FAKE_REQUEST_MARKER
 const initializedMarker = process.env.LSP_FAKE_INITIALIZED_MARKER
 const pauseStdinAfterInitialized = process.env.LSP_FAKE_PAUSE_STDIN_AFTER_INITIALIZED === '1'
 const exitDelayMs = Number(process.env.LSP_FAKE_EXIT_DELAY_MS ?? 0)
 const exitMarker = process.env.LSP_FAKE_EXIT_MARKER
 const noShutdown = process.env.LSP_FAKE_NO_SHUTDOWN === '1'
 const onOpen = process.env.LSP_FAKE_ON_OPEN
+const pushDiag: unknown = process.env.LSP_FAKE_PUSH_DIAG !== undefined ? JSON.parse(process.env.LSP_FAKE_PUSH_DIAG) : undefined
 const errorReply = process.env.LSP_FAKE_ERROR === '1'
 const garbage = process.env.LSP_FAKE_GARBAGE === '1'
 
@@ -63,6 +69,7 @@ function resultFor(method: string): unknown {
       if (echoName !== undefined) return { contents: process.env[echoName] ?? `<${echoName} unset>` }
       return envJson('LSP_FAKE_HOVER', null)
     }
+    case 'textDocument/diagnostic': return envJson('LSP_FAKE_DIAG', { kind: 'full', items: [] })
     default: return null
   }
 }
@@ -140,6 +147,13 @@ function handle(message: { id?: number; method?: string; params?: unknown; resul
       const params = message.params as { textDocument?: { text?: unknown } } | undefined
       appendFileSync(openMarker, `${JSON.stringify(params?.textDocument?.text)}\n`)
     }
+    if (pushDiag !== undefined) {
+      // Push diagnostics asynchronously so the client arms its waiter before the publish lands.
+      const docUri = (message.params as { textDocument?: { uri?: unknown } }).textDocument?.uri
+      setTimeout(() => {
+        send({ method: 'textDocument/publishDiagnostics', params: { uri: docUri, diagnostics: pushDiag } })
+      }, 5)
+    }
     if (onOpen !== undefined) emitServerRequest(onOpen)
     return
   }
@@ -150,6 +164,7 @@ function handle(message: { id?: number; method?: string; params?: unknown; resul
   }
   if (method === 'textDocument/didClose') return
   if (method?.startsWith('textDocument/')) {
+    if (requestMarker !== undefined) appendFileSync(requestMarker, `${method}\n`)
     if (hang) return
     if (errorReply) {
       send({ id, error: { code: -32000, message: 'server refused the request' } })

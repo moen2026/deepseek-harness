@@ -12,7 +12,7 @@ import { abbreviateHomePath, relativizeToCwd } from '@deepseek-ai/dsh-util-works
 export type { ToolCallBlock } from '@deepseek-ai/dsh-client-ui-chat/client'
 
 /** Tool-call row variants selected by the generic atomic renderer. */
-export type ToolRowVariant = 'search' | 'read' | 'bash' | 'write' | 'edit' | 'code' | 'others'
+export type ToolRowVariant = 'search' | 'read' | 'bash' | 'write' | 'edit' | 'code' | 'computer-use' | 'others'
 
 /** Row lifecycle state used by summary styling and accessible status text. */
 export type ToolRowState = 'preparing' | 'running' | 'ok' | 'error' | 'stopped'
@@ -29,6 +29,7 @@ type ToolTitleKey = Extract<LocaleKeysOf<'conversation'>, `tool.title.${string}`
 export const VARIANT_TITLE_KEYS = {
   search: 'tool.title.search', read: 'tool.title.read', bash: 'tool.title.bash',
   write: 'tool.title.write', edit: 'tool.title.edit', code: 'tool.title.code',
+  'computer-use': 'tool.title.computerUse',
   others: 'tool.title.generic',
 } as const satisfies Record<ToolRowVariant, ToolTitleKey>
 
@@ -40,6 +41,9 @@ export const VARIANT_TITLE_KEYS = {
  * (this table is only reached through GenericToolCard, the dispatch fallback in
  * ToolCallTree). An entry here would be unreachable, and a second title for the
  * same call would be a second answer to a question the card already owns.
+ *
+ * Computer-use tool names carry a dynamic upstream suffix, so they classify by
+ * wire-name prefix instead of joining this table (see COMPUTER_USE_PREFIXES).
  */
 const TOOL_VARIANTS: Record<string, ToolRowVariant> = {
   bash: 'bash',
@@ -121,11 +125,20 @@ const TOOL_TITLE_KEYS: Record<string, ToolTitleKey> = {
 }
 
 /**
+ * Wire-name prefixes of the computer-use providers: the in-process Cua Driver
+ * (`cua_driver_native__<upstream>`) and the MCP bridge (serverName
+ * `cua-driver-mcp`, public name `mcp__cua-driver-mcp__<rawName>`). Both
+ * upstream catalogs are discovered at runtime, so the rows classify by prefix.
+ */
+const COMPUTER_USE_PREFIXES = ['cua_driver_native__', 'mcp__cua-driver-mcp__'] as const
+
+/**
  * Classify a tool name into its row variant.
  * @param toolName - wire tool name.
  * @returns matching variant, others when unknown.
  */
 export function classifyTool(toolName: string): ToolRowVariant {
+  if (COMPUTER_USE_PREFIXES.some(prefix => toolName.startsWith(prefix))) return 'computer-use'
   return TOOL_VARIANTS[toolName] ?? 'others'
 }
 
@@ -219,6 +232,9 @@ const SUMMARY_KEYS: Record<ToolRowVariant, readonly string[]> = {
   write: ['path', 'file_path'],
   edit: ['path', 'file_path'],
   code: ['description'],
+  // Cua Driver tool arguments name the acted-on surface first; everything
+  // else (coordinates, element tokens, typed text) stays in the expandable body.
+  'computer-use': ['window_title', 'app', 'application'],
   others: [],
 }
 

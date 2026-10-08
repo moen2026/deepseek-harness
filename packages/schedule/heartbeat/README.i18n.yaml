@@ -1,0 +1,70 @@
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write packages/schedule/heartbeat/README.md
+/:
+  en: cadc27601269b6d0
+  zh: 5c4544756018a01a
+/deepseek-ai-dsh-heartbeat:
+  en: 46b793a055d2c36e
+  zh: e4d247cf617adf8f
+/deepseek-ai-dsh-heartbeat/summary:
+  en: 1db0cc589b4bf0c8
+  zh: 13a2327c713a4c7f
+/deepseek-ai-dsh-heartbeat/table-of-contents:
+  en: d152484eb41ac6b4
+  zh: d152484eb41ac6b4
+/deepseek-ai-dsh-heartbeat/use-this-package:
+  en: a9fc2262c79512c8
+  zh: 293db48166e2b759
+/deepseek-ai-dsh-heartbeat/understand-the-implementation:
+  en: a091be9f090deaa7
+  zh: 0b5337f75e5be666
+/deepseek-ai-dsh-heartbeat/further-exploration:
+  en: 7e205cd30b6486e7
+  zh: c839bf9ed6ac185b
+/deepseek-ai-dsh-heartbeat/model-experience:
+  en: 215e7ba838619b7b
+  zh: 215e7ba838619b7b
+/deepseek-ai-dsh-heartbeat/model-experience/tool-schemas-on-root-agents:
+  en: c4c31a3f6826626d
+  zh: c4c31a3f6826626d
+/deepseek-ai-dsh-heartbeat/model-experience/tool-schemas-on-root-agents/what-the-model-sees:
+  en: f939506be7de71c4
+  zh: e3d7cf02be2fe324
+/deepseek-ai-dsh-heartbeat/model-experience/tool-schemas-on-root-agents/token-effect:
+  en: d1ada4a88fcef7be
+  zh: 514c21dc0d2e8fab
+/deepseek-ai-dsh-heartbeat/model-experience/tool-schemas-on-root-agents/kv-cache-effect:
+  en: e16cfcf67ccf06d8
+  zh: c3399c63855f314d
+/deepseek-ai-dsh-heartbeat/model-experience/tool-results-after-management-calls:
+  en: 2a940dee68296bc7
+  zh: 2a940dee68296bc7
+/deepseek-ai-dsh-heartbeat/model-experience/tool-results-after-management-calls/what-the-model-sees:
+  en: 444a09870ce1d0fa
+  zh: b02493eda5e0281b
+/deepseek-ai-dsh-heartbeat/model-experience/tool-results-after-management-calls/token-effect:
+  en: 9089775a09577ee0
+  zh: b0d0464b9a5babfc
+/deepseek-ai-dsh-heartbeat/model-experience/tool-results-after-management-calls/kv-cache-effect:
+  en: 5f142c9bbdfb40b4
+  zh: ce8e4a6f0f411b71
+/deepseek-ai-dsh-heartbeat/model-experience/heartbeat-deliveries-in-the-original-session:
+  en: 9d1e51b803963293
+  zh: 9d1e51b803963293
+/deepseek-ai-dsh-heartbeat/model-experience/heartbeat-deliveries-in-the-original-session/what-the-model-sees:
+  en: 730e9e36c7930ff1
+  zh: 44bbaa869df71e74
+/deepseek-ai-dsh-heartbeat/model-experience/heartbeat-deliveries-in-the-original-session/token-effect:
+  en: 9548482b7daced39
+  zh: a67160c338485813
+/deepseek-ai-dsh-heartbeat/model-experience/heartbeat-deliveries-in-the-original-session/kv-cache-effect:
+  en: 0d8da163edbbd433
+  zh: 405bd5d1c06e56e8
+/deepseek-ai-dsh-heartbeat/known-limitations-and-deferred-work:
+  en: 283ad92f92bfd116
+  zh: 22bc8795ccb441f5
+/deepseek-ai-dsh-heartbeat/known-limitations-and-deferred-work/dev-note:
+  en: e67f633dc6fe7773
+  zh: e67f633dc6fe7773

@@ -1,0 +1,37 @@
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write packages/connector/connector-approval/README.md
+/:
+  en: 84461cc702e8d9e8
+  zh: 8f05c37073ea941d
+/deepseek-ai-dsh-connector-approval:
+  en: 090ec15394856720
+  zh: 8eaa8395a333a675
+/deepseek-ai-dsh-connector-approval/summary:
+  en: 97bd7d7094eec39c
+  zh: 0eb4e874fa033609
+/deepseek-ai-dsh-connector-approval/table-of-contents:
+  en: aa4b3fcf5e4a1cf5
+  zh: ea9c720ef1c13bbb
+/deepseek-ai-dsh-connector-approval/configuration:
+  en: bf90dd225560ae0e
+  zh: 96b355e47f695cbc
+/deepseek-ai-dsh-connector-approval/request-flow:
+  en: 63ee8fbbae5c4def
+  zh: 42161ad788552a66
+/deepseek-ai-dsh-connector-approval/decision-routing:
+  en: 3f4f6bbe454f2f96
+  zh: fb7d8ee822f77880
+/deepseek-ai-dsh-connector-approval/model-experience:
+  en: 1966f7aa005e141a
+  zh: 1a9e420cd0ee0ef4
+/deepseek-ai-dsh-connector-approval/model-experience/kv-cache-effect:
+  en: 3f75b68693836834
+  zh: 74ad80b7fbad9fe7
+/deepseek-ai-dsh-connector-approval/known-limitations-and-deferred-work:
+  en: 8c6b962a7902e888
+  zh: 9cc60528042ad4a8
+/deepseek-ai-dsh-connector-approval/known-limitations-and-deferred-work/dev-note:
+  en: aef2b74d13251e0d
+  zh: f933ee9f2487a4b8

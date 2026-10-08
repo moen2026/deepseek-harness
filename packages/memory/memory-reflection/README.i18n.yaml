@@ -1,0 +1,79 @@
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write packages/memory/memory-reflection/README.md
+/:
+  en: 67356f28ca123d35
+  zh: 6b652669f9595e97
+/deepseek-ai-dsh-memory-reflection:
+  en: 98313db9c8faeba7
+  zh: 9fea3827495b7c70
+/deepseek-ai-dsh-memory-reflection/summary:
+  en: 84fd7cbaeb2c9e2a
+  zh: 153565c5d7cd5c2d
+/deepseek-ai-dsh-memory-reflection/table-of-contents:
+  en: d152484eb41ac6b4
+  zh: 09388d293f9be9cb
+/deepseek-ai-dsh-memory-reflection/use-this-package:
+  en: 9472d22d66b20212
+  zh: cd6df141d6941ce3
+/deepseek-ai-dsh-memory-reflection/use-this-package/the-reflection-call:
+  en: 6cba73559be40bc7
+  zh: b1627e059c7b3b07
+/deepseek-ai-dsh-memory-reflection/use-this-package/writing-candidates:
+  en: 31d612dc97643f9b
+  zh: 040f49e1a8de1cca
+/deepseek-ai-dsh-memory-reflection/use-this-package/configuration:
+  en: 7509e874f3e8a558
+  zh: 83c6731f2e1da213
+/deepseek-ai-dsh-memory-reflection/use-this-package/failures-and-recovery:
+  en: 2095c5678aa89d0a
+  zh: a11a549b954acbbd
+/deepseek-ai-dsh-memory-reflection/understand-the-implementation:
+  en: b22ba840f7e9c125
+  zh: 8ccb87c41bdfce67
+/deepseek-ai-dsh-memory-reflection/understand-the-implementation/design-notes:
+  en: e65d3d900d4cee17
+  zh: ac5181911c08662a
+/deepseek-ai-dsh-memory-reflection/understand-the-implementation/source-map:
+  en: 893f3cd6700a8248
+  zh: bbcb788f95791e2d
+/deepseek-ai-dsh-memory-reflection/further-exploration:
+  en: 34f3fec8aee26c87
+  zh: 9eb675eb19de6a67
+/deepseek-ai-dsh-memory-reflection/model-experience:
+  en: 215e7ba838619b7b
+  zh: a311da3843709f90
+/deepseek-ai-dsh-memory-reflection/model-experience/auxiliary-reflection-request:
+  en: 66b27ff8a65f4a29
+  zh: 9e16808d5a967bb9
+/deepseek-ai-dsh-memory-reflection/model-experience/auxiliary-reflection-request/what-the-model-sees:
+  en: 46c7e8198f282196
+  zh: 9ae5f39b841e588c
+/deepseek-ai-dsh-memory-reflection/model-experience/auxiliary-reflection-request/what-the-model-sees/extraction-instruction:
+  en: 0f43872641a50d2b
+  zh: 092bcdd1d5346ab0
+/deepseek-ai-dsh-memory-reflection/model-experience/auxiliary-reflection-request/token-effect:
+  en: 6ca349414392fc89
+  zh: a844eff728f951f8
+/deepseek-ai-dsh-memory-reflection/model-experience/auxiliary-reflection-request/kv-cache-effect:
+  en: a8d39e99958b3213
+  zh: 775411d3001e96c4
+/deepseek-ai-dsh-memory-reflection/model-experience/write-back-approval:
+  en: 39d24aa5f509adde
+  zh: 28cf366b51697eff
+/deepseek-ai-dsh-memory-reflection/model-experience/write-back-approval/what-the-model-sees:
+  en: 42cf47a29db4bcec
+  zh: b97e08abf6d5dfab
+/deepseek-ai-dsh-memory-reflection/model-experience/write-back-approval/token-effect:
+  en: 041fc3b7cf176506
+  zh: b903a0ee5d7c8af6
+/deepseek-ai-dsh-memory-reflection/model-experience/write-back-approval/kv-cache-effect:
+  en: fb9fdc728b8c7292
+  zh: 68da77a20bc8a517
+/deepseek-ai-dsh-memory-reflection/known-limitations-and-deferred-work:
+  en: 030415be00f8fdb9
+  zh: e06841938755410e
+/deepseek-ai-dsh-memory-reflection/known-limitations-and-deferred-work/dev-note:
+  en: e67f633dc6fe7773
+  zh: 3bb0c20c93f16f98

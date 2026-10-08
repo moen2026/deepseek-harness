@@ -1,0 +1,64 @@
+/* The "D" brand mascot. Static at rest; hovering the padded hitbox
+   bobs/sways/breathes the body and blinks the eyes. Motion is gated to hover +
+   no-preference, so it degrades to a still logo on touch and reduced-motion
+   contexts. The hitbox padding widens the hover target beyond the glyph. */
+.hitbox {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* Widen the hover target beyond the glyph; hosts override per context via
+     the custom property (e.g. fixed-height rows set it to 0). */
+  padding: var(--dsh-mascot-hit-pad, 10px);
+}
+
+.mascot {
+  display: block;
+  overflow: visible;
+  transform-origin: 50% 55%;
+}
+
+.eye {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+@keyframes mascot-idle {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg) scale(1);
+  }
+
+  30% {
+    transform: translateY(-1.6px) rotate(-3.5deg) scale(1.035);
+  }
+
+  62% {
+    transform: translateY(0.6px) rotate(2.2deg) scale(0.99);
+  }
+}
+
+@keyframes mascot-blink {
+  0%,
+  88%,
+  100% {
+    transform: scaleY(1);
+  }
+
+  92% {
+    transform: scaleY(0.12);
+  }
+
+  96% {
+    transform: scaleY(1);
+  }
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .hitbox:hover .mascot {
+    animation: mascot-idle 2.6s ease-in-out infinite;
+  }
+
+  .hitbox:hover .eye {
+    animation: mascot-blink 3.4s ease-in-out infinite;
+  }
+}

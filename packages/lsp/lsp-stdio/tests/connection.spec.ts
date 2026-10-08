@@ -158,6 +158,51 @@ function connectScript(script: string, maxStderrBytes = 100_000, writer?: Connec
   return conn
 }
 
+describe('LspConnection pushed diagnostics', () => {
+  it('resolves nextDiagnostics immediately when a snapshot already exists', async () => {
+    const conn = connect({ LSP_FAKE_PUSH_DIAG: '[]' })
+    await conn.request('initialize', { capabilities: {} })
+    await conn.notify('textDocument/didOpen', { textDocument: { uri: 'file:///snap', languageId: 'ts', version: 1, text: '' } })
+    await waitFor(() => conn.diagnosticsFor('file:///snap') !== undefined)
+    await expect(conn.nextDiagnostics('file:///snap')).resolves.toBeUndefined()
+  })
+
+  it('shares one waiter set across concurrent nextDiagnostics calls', async () => {
+    const conn = connect({ LSP_FAKE_PUSH_DIAG: '[]' })
+    await conn.request('initialize', { capabilities: {} })
+    // Arm both waiters BEFORE didOpen: the fixture publishes 5 ms after it receives the open, so the
+    // second call finds the first call's waiter set and joins it.
+    const first = conn.nextDiagnostics('file:///z')
+    const second = conn.nextDiagnostics('file:///z')
+    await conn.notify('textDocument/didOpen', { textDocument: { uri: 'file:///z', languageId: 'ts', version: 1, text: '' } })
+    await Promise.all([first, second])
+    expect(conn.diagnosticsFor('file:///z')).toEqual([])
+  })
+
+  it('ignores malformed publishes and accepts a publish with no armed waiter', async () => {
+    const script = 'let b=Buffer.alloc(0);'
+      + 'const fr=(o)=>{const x=Buffer.from(JSON.stringify({jsonrpc:"2.0",...o}));return Buffer.concat([Buffer.from(`Content-Length: ${x.length}\\r\\n\\r\\n`),x]);};'
+      + 'const send=(o)=>{process.stdout.write(fr(o));};'
+      + 'process.stdin.on("data",c=>{b=Buffer.concat([b,c]);for(;;){const s=b.indexOf("\\r\\n\\r\\n");if(s<0)break;const len=Number(/(\\d+)/.exec(b.toString("ascii",0,s))[1]);if(b.length<s+4+len)break;const m=JSON.parse(b.toString("utf8",s+4,s+4+len));b=b.subarray(s+4+len);'
+      + 'if(m.method==="initialize")send({id:m.id,result:{capabilities:{}}});'
+      + 'else if(m.method==="$/test/push"){'
+      + 'send({method:"textDocument/publishDiagnostics",params:null});'
+      + 'send({method:"textDocument/publishDiagnostics",params:42});'
+      + 'send({method:"textDocument/publishDiagnostics",params:{uri:42}});'
+      + 'send({method:"textDocument/publishDiagnostics",params:{uri:"file:///x",diagnostics:"oops"}});'
+      + 'send({method:"textDocument/publishDiagnostics",params:{uri:"file:///other",diagnostics:[]}});'
+      + '}}});'
+    const conn = connectScript(script)
+    await conn.request('initialize', { capabilities: {} })
+    const armed = conn.nextDiagnostics('file:///x')
+    await conn.notify('$/test/push', {})
+    await expect(armed).resolves.toBeUndefined()
+    // A non-array diagnostics value records an empty snapshot; an unarmed URI still records one.
+    expect(conn.diagnosticsFor('file:///x')).toEqual([])
+    expect(conn.diagnosticsFor('file:///other')).toEqual([])
+  })
+})
+
 describe('LspConnection edge behavior', () => {
   it('fails a request when the command cannot be spawned', async () => {
     const conn = new LspConnection({

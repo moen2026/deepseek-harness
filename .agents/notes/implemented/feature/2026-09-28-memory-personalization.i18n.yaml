@@ -1,0 +1,19 @@
+# Bilingual-pair consistency record for 2026-09-28-memory-personalization.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-09-28-memory-personalization.md
+/agent-note-turn-end-reflection-and-the-collaboration-style-profile:
+  en: 11d028c9483c5a75
+  zh: dbe489b09cc9ed51
+/agent-note-turn-end-reflection-and-the-collaboration-style-profile/problem:
+  en: 572936c20377f602
+  zh: 5d5e9dffa6e653d4
+/agent-note-turn-end-reflection-and-the-collaboration-style-profile/decision:
+  en: 09d353bcc0ae4ea7
+  zh: bb4f66a678041229
+/agent-note-turn-end-reflection-and-the-collaboration-style-profile/alternatives-considered:
+  en: 6ddc531e1904d0ba
+  zh: b392bb242ad1b682
+/agent-note-turn-end-reflection-and-the-collaboration-style-profile/consequences:
+  en: 582b7c5ffad21954
+  zh: 6a34a58afedefe9e

@@ -88,6 +88,10 @@ export interface ToolRowProps {
   onOpenFile?: ((path: string, options?: OpenFileOptions) => void) | undefined
   /** Safe http(s) URL from tool args; when set, the summary renders as a link that opens it in a new tab. */
   href?: string | undefined
+  /** Loopback dev-server URL detected in a process-output call's result; renders the open-preview link. */
+  previewUrl?: string | undefined
+  /** The `host:port` of `previewUrl`, shown as the collapsed row's trailing suffix. */
+  previewHost?: string | undefined
   /**
    * Jump to this call in the trajectory view: a hover-revealed Inspect pill
    * over the expanded body. Absent = no affordance.
@@ -143,6 +147,8 @@ export const ToolRow = memo(function ToolRow({
   filePathLine,
   onOpenFile,
   href,
+  previewUrl,
+  previewHost,
   inspect,
   useDisclosure,
 }: ToolRowProps) {
@@ -189,7 +195,7 @@ export const ToolRow = memo(function ToolRow({
     return `+${added} -${removed}`
   }, [diffBody])
   const settledWithCue = state === 'error' || state === 'stopped'
-  const suffix = settledWithCue ? null : summarySuffix ?? diffStat
+  const suffix = settledWithCue ? null : summarySuffix ?? diffStat ?? previewHost ?? null
   const openFile = useMemo(() => filePath !== undefined && onOpenFile !== undefined && !settledWithCue
     ? (event: MouseEvent<HTMLButtonElement>) => {
       event.stopPropagation()
@@ -338,6 +344,16 @@ export const ToolRow = memo(function ToolRow({
                           )}
                         </>
                       )}
+      {previewUrl !== undefined && (
+        <a
+          className={clsx(css.fileLink, css.previewLink)}
+          href={previewUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {t('row.openPreview')} · {previewHost}
+        </a>
+      )}
       {inspect !== undefined && (
         <button
           type="button"
@@ -352,7 +368,7 @@ export const ToolRow = memo(function ToolRow({
   ) : undefined, [
     open, detailsBody, askQuestionBody, terminalBody, terminalLabels, diffBody, diffLabels, readBody, readLabels,
     imageBody, renderSlot, loadImage, searchBody, searchLabels, webBody, webLabels, inspect, t, onOpenFile,
-    variant, bodyText, cardBody, outputText, state,
+    previewUrl, previewHost, variant, bodyText, cardBody, outputText, state,
   ])
   return (
     <div className={css.root} data-variant={variant} data-tool={toolName} data-state={state}>

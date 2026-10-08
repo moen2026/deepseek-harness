@@ -1,0 +1,55 @@
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write packages/memory/memory-sqlite/README.md
+/:
+  en: 3629850153806ac1
+  zh: 0b5b69698f88f47b
+/deepseek-ai-dsh-memory-sqlite:
+  en: f16bcf4b1edad5fe
+  zh: 72f9a6d9946539e6
+/deepseek-ai-dsh-memory-sqlite/summary:
+  en: c3822c575e021dcc
+  zh: 8abfd0a9e511fae2
+/deepseek-ai-dsh-memory-sqlite/table-of-contents:
+  en: d152484eb41ac6b4
+  zh: 09388d293f9be9cb
+/deepseek-ai-dsh-memory-sqlite/use-this-package:
+  en: 4ba0804ee3dd42b0
+  zh: 54d823cce035bd04
+/deepseek-ai-dsh-memory-sqlite/use-this-package/minimal-configuration:
+  en: defb70e7c4a365d4
+  zh: 27e3953cbb053747
+/deepseek-ai-dsh-memory-sqlite/use-this-package/enabling-the-optional-vector-path:
+  en: 81bc0f4a0d994416
+  zh: 0197595101a20598
+/deepseek-ai-dsh-memory-sqlite/use-this-package/what-recall-does:
+  en: d9de0cffb123c928
+  zh: f501bfe58b4cad33
+/deepseek-ai-dsh-memory-sqlite/use-this-package/observable-success-and-failures:
+  en: 48e4d26440e414ad
+  zh: 869aa9b862da3c3e
+/deepseek-ai-dsh-memory-sqlite/understand-the-implementation:
+  en: 8a5efa64f5b12f88
+  zh: 451548c05c045c22
+/deepseek-ai-dsh-memory-sqlite/understand-the-implementation/design-philosophy:
+  en: 54998d05bf2938fb
+  zh: 3338a5a977a38c3c
+/deepseek-ai-dsh-memory-sqlite/understand-the-implementation/source-map:
+  en: 4d6a3ebd8aa032a7
+  zh: ca4787e496267fea
+/deepseek-ai-dsh-memory-sqlite/further-exploration:
+  en: 0867ede0d93b2d9d
+  zh: adec7417b879bb07
+/deepseek-ai-dsh-memory-sqlite/model-experience:
+  en: 365565aad53e9345
+  zh: 722eabf717546766
+/deepseek-ai-dsh-memory-sqlite/model-experience/kv-cache-effect:
+  en: 2f911f0f09f0a825
+  zh: b5febe1e8797fdde
+/deepseek-ai-dsh-memory-sqlite/known-limitations-and-deferred-work:
+  en: 997776115178c015
+  zh: ecd0202281ed16c4
+/deepseek-ai-dsh-memory-sqlite/known-limitations-and-deferred-work/dev-note:
+  en: e67f633dc6fe7773
+  zh: 3bb0c20c93f16f98

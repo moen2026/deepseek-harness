@@ -1,0 +1,19 @@
+# Bilingual-pair consistency record for 2026-09-28-durable-webhook-delivery-outbox.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-09-28-durable-webhook-delivery-outbox.md
+/agent-note-durable-webhook-delivery-outbox:
+  en: cbbc8bc80a12d482
+  zh: 95e94b1147ca5d08
+/agent-note-durable-webhook-delivery-outbox/problem:
+  en: f6f4572beb636911
+  zh: 1f64f78e829e4bfd
+/agent-note-durable-webhook-delivery-outbox/decision:
+  en: a6012377e07fff4b
+  zh: fa86e45b26c89d2c
+/agent-note-durable-webhook-delivery-outbox/alternatives-considered:
+  en: 60e6437cbdf9554c
+  zh: e270c4ea4693f6d8
+/agent-note-durable-webhook-delivery-outbox/consequences:
+  en: dd60ace64c82f226
+  zh: 4b8f01a289afbe19

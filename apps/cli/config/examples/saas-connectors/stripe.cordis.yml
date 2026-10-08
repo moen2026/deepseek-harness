@@ -1,0 +1,12 @@
+# Opt-in reference for Stripe's official MCP server
+# (https://docs.stripe.com/mcp). Set STRIPE_SECRET_KEY before launching; a
+# restricted key that grants only what this agent needs is the safer choice.
+- insert:
+    - id: saas-stripe
+      name: '@deepseek-ai/dsh-mcp-client'
+      config:
+        serverName: stripe
+        transport: streamable-http
+        url: https://mcp.stripe.com
+        headers:
+          Authorization: !!js ('Bearer ' + (process.env.STRIPE_SECRET_KEY ?? ''))

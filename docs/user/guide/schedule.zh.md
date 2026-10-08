@@ -9,6 +9,7 @@
 ## 目录
 
 - [创建提醒](#create-reminders)
+- [心跳巡逻](#heartbeat-patrol)
 - [查看和删除任务](#manage-tasks)
 - [修改活动任务](#edit-timing)
 - [时间与投递参考](#timing-and-delivery)
@@ -22,6 +23,11 @@
 向模型提出创建、列出、修改或删除提醒的请求。模型使用 `schedule_create`、`schedule_list`、`schedule_update` 和 `schedule_delete`（更新原地修改一条提醒，保留其 id 与已保存的投递记录）；「自动化任务」页面的「新建」操作则为创建打开一个新会话，其 composer 已写好该请求。支持正整数秒的一次性延迟、绝对日期时间、至少一分钟的固定间隔、带 IANA 时区的每日本地时间、带 IANA 时区和 ISO 星期（周一 1 至周日 7）的每周本地时间，以及带显式 IANA 时区的五字段 cron 表达式（表达式以规范化形式保存）。
 
 例如，请求：“每天 Asia/Shanghai 时区 23:00 提醒我查看天气。”打开自动化任务页面并选择刚创建的提醒，检查频率显示的是每日规则和所需时区，而非仅一次。一次性提醒不会在投递后变成重复任务。
+
+<a id="heartbeat-patrol"></a>
+## 心跳巡逻
+
+若希望智能体自行定期检查一份常驻待办清单，可让模型启用心跳巡逻。它会创建一条周期提醒（默认每 30 分钟，可按部署配置），周期性唤醒该对话。把要检查的事项写在工作区根目录的 `HEARTBEAT.md` 中；每次心跳时智能体读取该文件，处理其中的待办项，把已完成项记录回文件，文件缺失或没有待办项时仅回答 `HEARTBEAT_OK`。不再需要唤醒时，让模型停止巡逻；该提醒以“Heartbeat”出现在自动化任务页面，也可以在那里删除。若从提醒指令中移除 `[HEARTBEAT]` 前缀，该任务将不再被模型的停止工具识别；此时应从自动化任务页面删除它。
 
 <a id="manage-tasks"></a>
 ## 查看和删除任务
@@ -70,6 +76,7 @@ Session 未打开时，提醒仍然保存。宿主运行期间，在提醒到期
 ## 延伸阅读
 
 - [Schedule 参考](../../../packages/schedule/schedule/README.zh.md) 说明精确的时间选择器、持久化与投递限制。
+- [Heartbeat 参考](../../../packages/schedule/heartbeat/README.zh.md) 说明每会话巡逻工具及其提醒 prompt。
 - [自动化任务页面参考](../../../packages/client/ui-schedule/README.zh.md) 说明全局页面与对话顶部目录。
 
 ## 开发备注

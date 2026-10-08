@@ -463,11 +463,30 @@ export type ScheduleDeliveryHistoryResult =
   }
   | { readonly id: ScheduleId; readonly code: 'schedule_not_found' | 'delivery_cursor_not_found' }
 
+/** One durably committed reminder delivery, published after its commit landed. */
+export interface ScheduleDelivered {
+  /** Session that received the reminder. */
+  readonly sessionId: SessionId
+  /** Delivered task identity. */
+  readonly id: ScheduleId
+  /** Stored task name. */
+  readonly title: string
+  /** Canonical delivery instant shared by the whole admitted batch. */
+  readonly deliveredAt: string
+}
+
 declare module '@deepseek-ai/cordis' {
   interface Events {
     /** Durable task set changed; clients refetch global task and Session-active catalogs.
      * @mode emit
      */
     'schedule/changed'(): void
+    /**
+     * One admitted reminder reached its Session and its commit landed; surface
+     * consumers may alert the operator. Raised once per committed member.
+     * @mode emit
+     * @param payload - delivered task identity, its Session, and the delivery instant.
+     */
+    'schedule/delivered'(payload: ScheduleDelivered): void
   }
 }

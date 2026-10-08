@@ -24,10 +24,20 @@ export { canonicalPath, writableRoots } from './roots.ts'
 /**
  * File-effect policy for confined processes. `read-only` permits only required
  * sinks such as `/dev/null`; `workspace-write` also permits the workspace and a
- * backend-defined temp area; `danger-full-access` bypasses confinement. Network
- * and process visibility are outside this vocabulary.
+ * backend-defined temp area; `danger-full-access` bypasses confinement. Process
+ * visibility is outside this vocabulary; network carriage is the separate
+ * {@link SandboxNetworkMode} axis.
  */
 export type SandboxMode = 'read-only' | 'workspace-write' | 'danger-full-access'
+
+/**
+ * Network carriage for confined processes, requested beside the file-effect
+ * mode. `allowed` preserves the host's network access; `blocked` asks the
+ * backend to deny the confined process network access. Backends that cannot
+ * govern network carriage report the gap through
+ * {@link ConfinedArgv.networkEnforcement} instead of silently allowing.
+ */
+export type SandboxNetworkMode = 'blocked' | 'allowed'
 
 /** A confining (non-`danger-full-access`) mode — the modes a {@link SandboxPolicy} can carry. */
 export type ConfinedSandboxMode = Exclude<SandboxMode, 'danger-full-access'>
@@ -40,6 +50,8 @@ export type ConfinedSandboxMode = Exclude<SandboxMode, 'danger-full-access'>
 export interface SandboxExecutionPolicy {
   /** The file-effect mode this execution runs under. */
   mode: SandboxMode
+  /** Whether this execution may use host network carriage. */
+  network: SandboxNetworkMode
   /** Absolute root directory `workspace-write` may write under. */
   workspaceRoot: string
   /**
@@ -98,6 +110,15 @@ export interface ConfinedArgv {
   argv: string[]
   /** How completely the selected backend enforces the policy's file effects. */
   enforcement: SandboxEnforcement
+  /**
+   * How completely the selected backend enforces the policy's network mode.
+   * `allowed` network is always `full` (no restriction to enforce); `blocked`
+   * is `full` only on backends that govern network carriage and `partial`
+   * where the kernel mechanism cannot (Landlock file-only ABI, the Windows
+   * restricted token) — a consumer that needs the block as an absolute
+   * boundary must not treat `partial` as blocked.
+   */
+  networkEnforcement: SandboxEnforcement
   /**
    * The selected backend's denial DIALECT: the case-insensitive stderr
    * substrings a file effect denied by THIS backend produces (EROFS text

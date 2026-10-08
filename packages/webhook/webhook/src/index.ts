@@ -9,6 +9,7 @@ import type { VerifiedWebhookDelivery, WebhookRule, WebhookSessionRequest } from
 
 export * from './brand.ts'
 export type * from './types.ts'
+export { webhookDeliveryMessage } from './session.ts'
 
 declare module '@deepseek-ai/cordis' {
   interface Context {
@@ -30,13 +31,20 @@ interface AnyWebhookRule {
 interface RuleRegistration {
   readonly rule: AnyWebhookRule
   readonly controller: AbortController
-  readonly active: Set<Promise<void>>
+  readonly active: Set<Promise<boolean>>
   closing: boolean
   disposal?: Promise<void>
 }
 
-/** Validate and detach one delivery before sharing it across arbitrary rules. */
-function snapshotDelivery(delivery: VerifiedWebhookDelivery): VerifiedWebhookDelivery {
+/**
+ * Validate and detach one delivery before sharing it across arbitrary rules
+ * or persisting it in durable storage.
+ * @param delivery - provider data validated and copied at this boundary.
+ * @returns a frozen lossless-JSON copy sharing no reference with the input.
+ * @throws TypeError when kind, source, or deliveryId is not a non-empty string, when receivedAt
+ * is not a non-negative safe integer, or when the value is not lossless JSON.
+ */
+export function snapshotDelivery(delivery: VerifiedWebhookDelivery): VerifiedWebhookDelivery {
   if (typeof delivery.kind !== 'string' || delivery.kind.trim() === '') {
     throw new TypeError('webhook delivery kind must be a non-empty string')
   }
@@ -126,15 +134,40 @@ export class WebhookRuntime extends Service {
   dispatch<K extends string>(delivery: VerifiedWebhookDelivery<K>): void {
     if (this.closing) throw new Error('webhook runtime is closing')
     const snapshot = snapshotDelivery(delivery)
-    for (const registration of [...this.rules.values()]) {
-      if (registration.closing || registration.rule.kind !== snapshot.kind) continue
-      this.startInvocation(registration, snapshot)
+    for (const registration of this.matchingRegistrations(snapshot)) {
+      void this.startInvocation(registration, snapshot)
     }
   }
 
-  /** Start one contained invocation and attach it to registration teardown. */
-  private startInvocation(registration: RuleRegistration, delivery: VerifiedWebhookDelivery): void {
-    const tracked = Promise.resolve().then(async () => {
+  /**
+   * Dispatch a delivery and await what became of it.
+   * @param delivery - authenticated provider data; snapshotted before dispatch.
+   * @returns `true` only when at least one rule matched and every invocation this call
+   * started settled successfully; `false` when no rule matched or any invocation failed.
+   * @throws synchronously when the runtime is closing or the delivery is malformed.
+   */
+  dispatchAcknowledged<K extends string>(delivery: VerifiedWebhookDelivery<K>): Promise<boolean> {
+    if (this.closing) throw new Error('webhook runtime is closing')
+    const snapshot = snapshotDelivery(delivery)
+    const invocations = this.matchingRegistrations(snapshot)
+      .map(registration => this.startInvocation(registration, snapshot))
+    if (invocations.length === 0) return Promise.resolve(false)
+    return Promise.all(invocations).then(outcomes => outcomes.every(succeeded => succeeded))
+  }
+
+  /** Registrations currently eligible for one snapshotted delivery. */
+  private matchingRegistrations(delivery: VerifiedWebhookDelivery): RuleRegistration[] {
+    return [...this.rules.values()].filter(
+      registration => !registration.closing && registration.rule.kind === delivery.kind,
+    )
+  }
+
+  /**
+   * Start one contained invocation and attach it to registration teardown.
+   * @returns `true` when the rule and any Session creation settled successfully, `false` after a contained failure.
+   */
+  private startInvocation(registration: RuleRegistration, delivery: VerifiedWebhookDelivery): Promise<boolean> {
+    const tracked = Promise.resolve().then(async (): Promise<boolean> => {
       registration.controller.signal.throwIfAborted()
       const request = await registration.rule.run(delivery, registration.controller.signal)
       registration.controller.signal.throwIfAborted()
@@ -147,7 +180,8 @@ export class WebhookRuntime extends Service {
           registration.controller.signal,
         )
       }
-    }).catch((error: unknown) => {
+      return true
+    }).catch((error: unknown): boolean => {
       const invocation = `webhook: provider=${JSON.stringify(delivery.kind)} source=${JSON.stringify(delivery.source)} `
         + `delivery=${JSON.stringify(delivery.deliveryId)} rule=${JSON.stringify(registration.rule.id)}`
       if (registration.controller.signal.aborted) {
@@ -155,10 +189,12 @@ export class WebhookRuntime extends Service {
       } else {
         this.selfCtx.logger.warn(`${invocation} failed: ${errorChain(error)}`)
       }
+      return false
     }).finally(() => {
       registration.active.delete(tracked)
     })
     registration.active.add(tracked)
+    return tracked
   }
 
   /** Memoized registration teardown: hide, abort, then drain. */

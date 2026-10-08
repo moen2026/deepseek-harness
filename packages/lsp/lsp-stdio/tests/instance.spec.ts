@@ -149,11 +149,12 @@ describe('LspInstance query and abort', () => {
   })
 
   it('cancels an in-flight request on abort and rejects', async () => {
-    const instance = makeInstance({ LSP_FAKE_HANG: '1' })
+    const marker = join(root, 'inflight.log')
+    const instance = makeInstance({ LSP_FAKE_HANG: '1', LSP_FAKE_REQUEST_MARKER: marker })
     const controller = new AbortController()
-    // Warm the instance first so the abort lands during the hanging request, not during startup.
     const pending = run(instance, 'goToDefinition', controller.signal)
-    await new Promise<void>(resolve => setTimeout(resolve, 300))
+    // Wait for the hanging request to be in flight, so the abort cannot land on startup instead.
+    await waitForFile(marker, 10_000, new AbortController().signal)
     controller.abort(new Error('mid-flight'))
     await expect(pending).rejects.toThrow(/mid-flight/)
   })
@@ -161,10 +162,11 @@ describe('LspInstance query and abort', () => {
   it('terminates the instance when the server ignores $/cancelRequest past the grace', async () => {
     // The hang server never honors cancellation, so after the bounded grace the instance must be torn
     // down (its process closed) rather than left with an active request.
-    const instance = makeInstance({ LSP_FAKE_HANG: '1' }, { killGraceMs: 100 })
+    const marker = join(root, 'grace-request.log')
+    const instance = makeInstance({ LSP_FAKE_HANG: '1', LSP_FAKE_REQUEST_MARKER: marker }, { killGraceMs: 100 })
     const controller = new AbortController()
     const pending = run(instance, 'goToDefinition', controller.signal)
-    await new Promise<void>(resolve => setTimeout(resolve, 300))
+    await waitForFile(marker, 10_000, new AbortController().signal)
     controller.abort(new Error('mid-flight'))
     await expect(pending).rejects.toThrow(/mid-flight/)
     expect(instance.dead).toBe(true)
@@ -273,6 +275,15 @@ describe('LspInstance query and abort', () => {
     await expect(run(instance, 'goToDefinition')).rejects.toThrow(/does not support goToDefinition/)
   })
 
+  it('rejects a cursor operation when the position is omitted', async () => {
+    // The seam type requires a position for cursor operations; this guards a caller that bypasses it.
+    const instance = makeInstance({ LSP_FAKE_DEF: 'null' })
+    const workspace = { target: await fs.resolve(ws), canonicalPath: ws, fileUrl: pathToFileURL(ws).href }
+    const source = await readHostSource(fs, 'a.ts', workspace, 4_000_000)
+    const noPosition: LspProviderQuery = { operation: 'goToDefinition', filePath: 'a.ts', workspaceRoot: ws, languageId: 'typescript' }
+    await expect(instance.query(noPosition, source)).rejects.toThrow(expect.objectContaining({ code: 'LSP_INVALID_REQUEST' }))
+  })
+
   it('propagates a server error response even when a signal is supplied (not an abort)', async () => {
     // A live signal is passed, but the request fails for a server reason; the catch must rethrow
     // without treating it as an abort.
@@ -359,10 +370,11 @@ describe('LspInstance disposal', () => {
   })
 
   it('carries a non-Error abort reason as a generic aborted error', async () => {
-    const instance = makeInstance({ LSP_FAKE_HANG: '1' })
+    const marker = join(root, 'reason-request.log')
+    const instance = makeInstance({ LSP_FAKE_HANG: '1', LSP_FAKE_REQUEST_MARKER: marker })
     const controller = new AbortController()
     const pending = run(instance, 'goToDefinition', controller.signal)
-    await new Promise<void>(resolve => setTimeout(resolve, 200))
+    await waitForFile(marker, 10_000, new AbortController().signal)
     controller.abort('a string reason, not an Error')
     await expect(pending).rejects.toThrow(/aborted/)
   })
@@ -422,3 +434,111 @@ async function waitForFile(path: string, timeoutMs: number, signal: AbortSignal)
     await new Promise<void>(resolve => setTimeout(resolve, 10))
   }
 }
+
+describe('LspInstance diagnostics', () => {
+  const wireDiag = (severity: number, message: string) => JSON.stringify({
+    range: { start: { line: 0, character: 0 }, end: { line: 0, character: 3 } },
+    severity,
+    message,
+    source: 'fixture',
+    code: 42,
+  })
+
+  it('pulls a DocumentDiagnosticReport when the server advertises diagnosticProvider', async () => {
+    const instance = makeInstance({
+      LSP_FAKE_CAPS: JSON.stringify({ diagnosticProvider: true }),
+      LSP_FAKE_DIAG: JSON.stringify({ kind: 'full', items: [JSON.parse(wireDiag(1, 'boom'))] }),
+    })
+    const result = await run(instance, 'diagnostics')
+    expect(result).toMatchObject({ kind: 'diagnostics' })
+    if (result.kind !== 'diagnostics') throw new Error('expected diagnostics')
+    expect(result.diagnostics).toEqual([{
+      range: { start: { line: 0, character: 0 }, end: { line: 0, character: 3 } },
+      severity: 'error',
+      message: 'boom',
+      source: 'fixture',
+      code: '42',
+    }])
+  })
+
+  it('collects pushed publishDiagnostics when the server has no pull provider', async () => {
+    // No diagnosticProvider: the host relies on the fixture pushing after didOpen.
+    const instance = makeInstance({ LSP_FAKE_PUSH_DIAG: JSON.stringify([JSON.parse(wireDiag(2, 'careful'))]) })
+    const result = await run(instance, 'diagnostics')
+    expect(result).toMatchObject({ kind: 'diagnostics' })
+    if (result.kind !== 'diagnostics') throw new Error('expected diagnostics')
+    expect(result.diagnostics.map(d => [d.severity, d.message])).toEqual([['warning', 'careful']])
+  })
+
+  it('reports no problems when the server pushes an empty diagnostic set', async () => {
+    const instance = makeInstance({ LSP_FAKE_PUSH_DIAG: '[]' })
+    const result = await run(instance, 'diagnostics')
+    expect(result).toMatchObject({ kind: 'diagnostics', diagnostics: [] })
+  })
+
+  it('ignores a cursor position for the file-level diagnostics operation', async () => {
+    // Reuse the pull path; omit position to prove diagnostics does not require one.
+    const instance = makeInstance({
+      LSP_FAKE_CAPS: JSON.stringify({ diagnosticProvider: true }),
+      LSP_FAKE_DIAG: JSON.stringify({ kind: 'full', items: [] }),
+    })
+    const workspace = { target: await fs.resolve(ws), canonicalPath: ws, fileUrl: pathToFileURL(ws).href }
+    const source = await readHostSource(fs, 'a.ts', workspace, 4_000_000)
+    const noPosition: LspProviderQuery = { operation: 'diagnostics', filePath: 'a.ts', workspaceRoot: ws, languageId: 'typescript' }
+    await expect(instance.query(noPosition, source)).resolves.toMatchObject({ kind: 'diagnostics', diagnostics: [] })
+  })
+
+  it('runs the pull race when a live signal is supplied', async () => {
+    // A signal that never aborts still routes the pull through the cancel-aware race.
+    const instance = makeInstance({
+      LSP_FAKE_CAPS: JSON.stringify({ diagnosticProvider: true }),
+      LSP_FAKE_DIAG: JSON.stringify({ kind: 'full', items: [JSON.parse(wireDiag(1, 'pulled'))] }),
+    })
+    const controller = new AbortController()
+    const result = await run(instance, 'diagnostics', controller.signal)
+    expect(result).toMatchObject({ kind: 'diagnostics' })
+    if (result.kind !== 'diagnostics') throw new Error('expected diagnostics')
+    expect(result.diagnostics.map(d => d.message)).toEqual(['pulled'])
+  })
+
+  it('propagates a caller abort while waiting for the first pushed publish', async () => {
+    // No LSP_FAKE_PUSH_DIAG: nothing ever publishes, so the abort lands inside the wait.
+    const marker = join(root, 'abort-open.log')
+    const instance = makeInstance({ LSP_FAKE_OPEN_MARKER: marker })
+    const controller = new AbortController()
+    const pending = run(instance, 'diagnostics', controller.signal)
+    await waitForFile(marker, 10_000, new AbortController().signal)
+    await new Promise<void>(resolve => setTimeout(resolve, 50))
+    controller.abort(new Error('waiting-abort'))
+    await expect(pending).rejects.toThrow(/waiting-abort/)
+  })
+
+  it('reports no problems when no publish arrives within the wait budget', async () => {
+    // No push and no pull provider: the budget elapses, the quiet window is skipped, and the absent
+    // snapshot renders as an empty result.
+    const instance = makeInstance({})
+    await expect(run(instance, 'diagnostics')).resolves.toEqual({
+      kind: 'diagnostics',
+      diagnostics: [],
+      resolvedWorkspaceUri: pathToFileURL(ws).href,
+    })
+  }, 15_000)
+
+  it('keeps the pushed snapshot when the caller aborts during the quiet window', async () => {
+    const marker = join(root, 'quiet-open.log')
+    const instance = makeInstance({
+      LSP_FAKE_PUSH_DIAG: JSON.stringify([JSON.parse(wireDiag(1, 'quiet'))]),
+      LSP_FAKE_OPEN_MARKER: marker,
+    })
+    const controller = new AbortController()
+    const pending = run(instance, 'diagnostics', controller.signal)
+    await waitForFile(marker, 10_000, new AbortController().signal)
+    // The fixture publishes shortly after didOpen, then the 250 ms quiet delay runs; abort inside it.
+    await new Promise<void>(resolve => setTimeout(resolve, 60))
+    controller.abort(new Error('quiet-abort'))
+    const result = await pending
+    expect(result).toMatchObject({ kind: 'diagnostics' })
+    if (result.kind !== 'diagnostics') throw new Error('expected diagnostics')
+    expect(result.diagnostics.map(d => d.message)).toEqual(['quiet'])
+  })
+})

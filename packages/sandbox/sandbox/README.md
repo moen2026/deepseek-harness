@@ -61,6 +61,8 @@ The mode names the file effects a command may perform; enforcement completeness 
 
 Enforcement is reported per call: `full` means the backend governs every promised file effect, while `partial` means an active backend or older kernel ABI governs only a subset — the Windows ACL rung and older Landlock ABIs are the current partial cases, so a consumer that requires the absolute boundary can reject or surface them.
 
+Network carriage is the policy's second axis: `network: 'allowed'` (the deployment default) preserves host network access, and `network: 'blocked'` asks the backend to deny the confined process network access. Backends that cannot govern the block — the Landlock ABI is file-effect-only, and the Windows restricted token carries no network authority — report `networkEnforcement: 'partial'` instead of claiming it.
+
 ### Denied calls and escalation
 
 When a confined call is denied, the operation reports a denial marker naming the mode — `[sandbox: file access denied under <mode> mode]` — and, when the composition advertises escalation, an escalation hint. The model may retry the exact call once with `sandbox_permissions` (the narrowest wider mode that suffices) plus a `justification`; the approval service obtains consent for the operation. The request retains its audit reason and supplies English and Chinese presentation copy with the model's justification unchanged. Missing translations follow the locale service's fallback chain, ultimately English; requesters own their translated presentation text. A wider mode requires approval and applies to that one call only. Repeating the call's effective mode succeeds without approval; narrower targets remain invalid.
@@ -164,7 +166,7 @@ Append-only; escalation text follows the retained prefix and does not invalidate
 
 These limits define when the seam is a poor fit or needs special operational care. They are current package constraints, not a general sandbox comparison or a task backlog.
 
-- **File effects are the whole policy vocabulary** — the seam expresses no network, process, syscall, device, or credential restrictions.
+- **Process visibility stays outside the vocabulary** — the seam expresses network carriage beside the file-effect mode, but no process, syscall, device, or credential restrictions.
 - **Same-world confinement only** — containers, microVMs, and remote execution require replacing capability implementations rather than adding a provider here.
 - **Denial reporting is a stderr dialect** — the seam returns backend signatures instead of a typed runtime denial channel, so consumers that need classification infer it from the child process's output.
 - **Runner diagnostics are in-band** — exit status plus stderr evidence cannot prove which process wrote a matching line, so a confined child that deliberately mimics its runner can cause a false availability or diagnostic attribution; this cannot bypass confinement, and an out-of-band runner-status channel is deferred.

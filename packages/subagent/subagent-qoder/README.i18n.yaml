@@ -1,0 +1,82 @@
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write packages/subagent/subagent-qoder/README.md
+/:
+  en: ff6fde4fa7afd35f
+  zh: 2dee66559c413cd8
+/deepseek-ai-dsh-subagent-qoder:
+  en: 4c7b1623b69f693e
+  zh: 0c216d0f58a264e1
+/deepseek-ai-dsh-subagent-qoder/summary:
+  en: 29a49e70be35cd68
+  zh: 394543f611dd4bf2
+/deepseek-ai-dsh-subagent-qoder/table-of-contents:
+  en: d152484eb41ac6b4
+  zh: 09388d293f9be9cb
+/deepseek-ai-dsh-subagent-qoder/use-this-package:
+  en: e1097e9c17dea955
+  zh: 556817d285059437
+/deepseek-ai-dsh-subagent-qoder/use-this-package/installing-the-bundle:
+  en: e8451514d8f20d65
+  zh: 8299b0ea04c2178b
+/deepseek-ai-dsh-subagent-qoder/use-this-package/configuration:
+  en: 48f6a6399bd1b235
+  zh: f5162a5df6ae0a63
+/deepseek-ai-dsh-subagent-qoder/use-this-package/exposing-the-tool:
+  en: 2935370d7694a9ba
+  zh: 487c8d11276f2932
+/deepseek-ai-dsh-subagent-qoder/use-this-package/what-you-get:
+  en: 46b55a0daa0d3037
+  zh: c82f38bccff2647d
+/deepseek-ai-dsh-subagent-qoder/use-this-package/failure-and-recovery:
+  en: 3f941d5e843a901e
+  zh: a7dd3862aea7fb08
+/deepseek-ai-dsh-subagent-qoder/understand-the-implementation:
+  en: c68b73c960a2e77f
+  zh: bc74be6e848433dd
+/deepseek-ai-dsh-subagent-qoder/understand-the-implementation/design-concept:
+  en: a889a0fd0e154037
+  zh: 9c141897625f8d99
+/deepseek-ai-dsh-subagent-qoder/understand-the-implementation/source-map:
+  en: b0081c04c5ebeefa
+  zh: b511bfdf454a7bfd
+/deepseek-ai-dsh-subagent-qoder/understand-the-implementation/run-flow:
+  en: 4b0b3b239f34c9a5
+  zh: 6566dcf123cc205f
+/deepseek-ai-dsh-subagent-qoder/further-exploration:
+  en: 539e3e719d50e9bc
+  zh: b52675c1dd1815a5
+/deepseek-ai-dsh-subagent-qoder/model-experience:
+  en: 215e7ba838619b7b
+  zh: a311da3843709f90
+/deepseek-ai-dsh-subagent-qoder/model-experience/child-request:
+  en: 1796fa78833bfc2b
+  zh: d925d4c0d6c46552
+/deepseek-ai-dsh-subagent-qoder/model-experience/child-request/what-the-model-sees:
+  en: 87b3225b34d9530f
+  zh: 694a433956ccdac4
+/deepseek-ai-dsh-subagent-qoder/model-experience/child-request/token-effect:
+  en: 5d33a2e9aec3b604
+  zh: 33cf23cb9f54d92d
+/deepseek-ai-dsh-subagent-qoder/model-experience/child-request/kv-cache-effect:
+  en: 89b075ee8205e0a3
+  zh: 9f8dc684bd40698b
+/deepseek-ai-dsh-subagent-qoder/model-experience/parent-scheduling-and-results-indirectly:
+  en: 4c391bb16e3cd380
+  zh: ab3847efe35fa6dc
+/deepseek-ai-dsh-subagent-qoder/model-experience/parent-scheduling-and-results-indirectly/what-the-model-sees:
+  en: 3eb9774329763b35
+  zh: b4958fda4ec2366b
+/deepseek-ai-dsh-subagent-qoder/model-experience/parent-scheduling-and-results-indirectly/token-effect:
+  en: 0bf99fe5b871cb64
+  zh: 6bb608e9b39ffb5b
+/deepseek-ai-dsh-subagent-qoder/model-experience/parent-scheduling-and-results-indirectly/kv-cache-effect:
+  en: fdbb7dcbf8b37f2b
+  zh: c7bcbf1e91ffe1d4
+/deepseek-ai-dsh-subagent-qoder/known-limitations-and-deferred-work:
+  en: efc76fcf777c2ce6
+  zh: 05d961f67b4024bc
+/deepseek-ai-dsh-subagent-qoder/known-limitations-and-deferred-work/dev-note:
+  en: 40a3a2a97d66149e
+  zh: 51632f0ac416f0b4

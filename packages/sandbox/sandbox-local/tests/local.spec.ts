@@ -22,8 +22,9 @@ import {
 import type { Config } from '@deepseek-ai/dsh-sandbox-local'
 import { bwrapProfileArgs, landlockProfileArgs, seatbeltProfileArgs } from '../src/profiles.ts'
 
-const RO: SandboxPolicy = { mode: 'read-only', workspaceRoot: '/ws' }
-const WW: SandboxPolicy = { mode: 'workspace-write', workspaceRoot: '/ws' }
+const RO: SandboxPolicy = { mode: 'read-only', network: 'allowed', workspaceRoot: '/ws' }
+const WW: SandboxPolicy = { mode: 'workspace-write', network: 'allowed', workspaceRoot: '/ws' }
+const RO_NET_BLOCKED: SandboxPolicy = { mode: 'read-only', network: 'blocked', workspaceRoot: '/ws' }
 
 /** Every temp dir created by this file (fake launchers and runner entries), removed after each test. */
 const tempDirs: string[] = []
@@ -110,10 +111,24 @@ describe('profile dialects', () => {
   })
 
   it('seatbelt workspace-write dedups a workspace root that already IS the temp dir', () => {
-    const profile = seatbeltProfileArgs({ mode: 'workspace-write', workspaceRoot: tmpdir() })[1] as string
+    const profile = seatbeltProfileArgs({ mode: 'workspace-write', network: 'allowed', workspaceRoot: tmpdir() })[1] as string
     const grant = `(subpath "${realpathSync(tmpdir())}")`
     expect(profile).toContain(grant)
     expect(profile.split(grant)).toHaveLength(2)
+  })
+
+  it('bwrap network blocked: unshares the network namespace alongside the file profile', () => {
+    expect(bwrapProfileArgs(RO_NET_BLOCKED)).toEqual([
+      '--ro-bind', '/', '/', '--dev', '/dev', '--unshare-pid', '--proc', '/proc', '--die-with-parent', '--unshare-net',
+    ])
+  })
+
+  it('seatbelt network blocked: denies network* in the profile', () => {
+    expect(seatbeltProfileArgs(RO_NET_BLOCKED)).toEqual(['-p', `${SEATBELT_RO_PROFILE} (deny network*)`])
+  })
+
+  it('landlock network blocked: the file-only ABI carries no network clause, so the profile is unchanged', () => {
+    expect(landlockProfileArgs(RO_NET_BLOCKED)).toEqual(['--ro', '/', '--rw', '/dev/null'])
   })
 })
 
@@ -130,6 +145,7 @@ describe('runnerCommand config', () => {
     expect(confined).toEqual({
       argv: ['fake-runner', '--flag', ...bwrapProfileArgs(WW), '--', 'bash', '-c', 'echo hi'],
       enforcement: 'full',
+      networkEnforcement: 'full',
       // An operator runner's kernel mechanism is unknown: both Linux
       // file-denial dialects, never bare EPERM.
       denialSignatures: ['read-only file system', 'permission denied'],
@@ -178,6 +194,7 @@ describe('the platform chains', () => {
     expect(confined).toEqual({
       argv: ['bwrap', ...bwrapProfileArgs(RO), '--', 'true'],
       enforcement: 'full',
+      networkEnforcement: 'full',
       denialSignatures: ['read-only file system'],
       runnerFailureRules: [{ fatalSignatures: ['bwrap: '] }],
     })
@@ -193,6 +210,7 @@ describe('the platform chains', () => {
     expect(confined).toEqual({
       argv: [launcher, ...landlockProfileArgs(WW), '--', 'bash', '-c', 'echo hi'],
       enforcement: 'full',
+      networkEnforcement: 'full',
       denialSignatures: ['permission denied'],
       runnerFailureRules: [{
         allowedExitCodes: [LAUNCHER_FAILURE_EXIT],
@@ -213,6 +231,7 @@ describe('the platform chains', () => {
     expect(confined).toEqual({
       argv: ['sandbox-exec', ...seatbeltProfileArgs(RO), '--', 'bash', '-c', 'echo hi'],
       enforcement: 'full',
+      networkEnforcement: 'full',
       denialSignatures: ['operation not permitted'],
       runnerFailureRules: [{ fatalSignatures: ['sandbox-exec: '] }],
     })
@@ -319,6 +338,17 @@ describe('the default landlock probe (launcher CLI contract)', () => {
     expect((await sandbox.confine(['true'], RO)).enforcement).toBe('full')
   })
 
+  it('reports network-blocked carriage as partial on the file-only Landlock rung', async () => {
+    const { sandbox } = await setup({}, { platform: 'linux', probeBwrap: () => false, landlockLauncher: fakeLauncher() })
+    expect((await sandbox.confine(['true'], RO_NET_BLOCKED)).networkEnforcement).toBe('partial')
+  })
+
+  it('reports network-blocked carriage as full on the bwrap rung and allowed as full everywhere', async () => {
+    const { sandbox } = await setup({}, { platform: 'linux', probeBwrap: () => true })
+    expect((await sandbox.confine(['true'], RO_NET_BLOCKED)).networkEnforcement).toBe('full')
+    expect((await sandbox.confine(['true'], RO)).networkEnforcement).toBe('full')
+  })
+
   it('parses a partially-enforced (older-ABI) probe report as partial enforcement', async () => {
     const launcher = fakeLauncher('landlock: partially enforced (older ABI)')
     const { sandbox } = await setup({}, { platform: 'linux', probeBwrap: () => false, landlockLauncher: launcher })
@@ -378,6 +408,7 @@ describe('the default seatbelt probe (sandbox-exec contract)', () => {
     expect(confined).toEqual({
       argv: [exec, ...seatbeltProfileArgs(RO), '--', 'true'],
       enforcement: 'full',
+      networkEnforcement: 'full',
       denialSignatures: ['operation not permitted'],
       runnerFailureRules: [{ fatalSignatures: ['sandbox-exec: '] }],
     })

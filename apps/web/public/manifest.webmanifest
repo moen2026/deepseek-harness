@@ -1,6 +1,6 @@
 {
-  "name": "DeepSeek Harness",
-  "short_name": "DSH",
+  "name": "Damon",
+  "short_name": "Damon",
   "start_url": "./",
   "scope": "./",
   "display": "fullscreen",

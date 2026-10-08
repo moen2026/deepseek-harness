@@ -1,0 +1,40 @@
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write packages/connector/connector-telegram/README.md
+/:
+  en: 72d09afe66813b24
+  zh: 718c801de97c8f39
+/deepseek-ai-dsh-connector-telegram:
+  en: 18d628e6d34da316
+  zh: 2a0a4e629c0dca1c
+/deepseek-ai-dsh-connector-telegram/summary:
+  en: 1bf83fedb10fb706
+  zh: a2297b6e04f99236
+/deepseek-ai-dsh-connector-telegram/table-of-contents:
+  en: 13859eda50366405
+  zh: 009465af2fbdb355
+/deepseek-ai-dsh-connector-telegram/configuration:
+  en: 18ea8f3b19e4d813
+  zh: fc26f5bcbb7f0fd9
+/deepseek-ai-dsh-connector-telegram/callback-contract:
+  en: 1cfefbfc09ac1090
+  zh: 8ca65a57ad242ef4
+/deepseek-ai-dsh-connector-telegram/inbound-messages:
+  en: 4aa1986ad11ef283
+  zh: a17bb1b16e6f8763
+/deepseek-ai-dsh-connector-telegram/outbound-replies:
+  en: fb3a878c6770ef5e
+  zh: 72dc09f0eb4edae1
+/deepseek-ai-dsh-connector-telegram/model-experience:
+  en: abe376e12952730f
+  zh: 9831db988f723c8f
+/deepseek-ai-dsh-connector-telegram/model-experience/kv-cache-effect:
+  en: fbff52adb2588af3
+  zh: db64912844ce06f2
+/deepseek-ai-dsh-connector-telegram/known-limitations-and-deferred-work:
+  en: 38bcd3f7b596848a
+  zh: ec29411ea1aeae14
+/deepseek-ai-dsh-connector-telegram/known-limitations-and-deferred-work/dev-note:
+  en: cd9dd4a041ca520e
+  zh: 9fd648221ae335c4

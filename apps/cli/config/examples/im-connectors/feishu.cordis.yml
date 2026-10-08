@@ -1,0 +1,49 @@
+# Opt-in Feishu connector overlay over the shipped Web composition. The
+# callback server lives in an isolated realm so exposing it never exposes the
+# UI API. Set DSH_FEISHU_APP_ID before launching; DSH_FEISHU_APP_SECRET and
+# DSH_FEISHU_VERIFICATION_TOKEN are resolved per callback. The route is served
+# at /feishu on DSH_CONNECTOR_PORT (default 3082), so point the platform's
+# event-subscription URL there.
+
+- insert:
+    - id: webhook-runtime
+      name: '@deepseek-ai/dsh-webhook'
+
+    - id: webhook-outbox
+      name: '@deepseek-ai/dsh-webhook-outbox'
+      config:
+        maxAttempts: 3
+        retryBackoffMs: 30000
+        retentionMs: 604800000
+
+    - id: connector
+      name: '@deepseek-ai/dsh-connector'
+
+    - id: connector-feishu-inbound
+      name: './connector-inbound-rule.mjs'
+      config:
+        provider: feishu
+        workspacePath: !!js process.env.DSH_CONNECTOR_WORKSPACE ?? process.cwd()
+        agentPreset: standard
+        permissionPreset: read-only
+
+    - id: connector-feishu-ingress
+      name: cordis:group
+      group: true
+      isolate:
+        webServer: true
+      config:
+        - id: connector-feishu-server
+          name: '@deepseek-ai/dsh-host-webserver'
+          config:
+            host: '127.0.0.1'
+            port: !!js Number(process.env.DSH_CONNECTOR_PORT ?? 3082)
+
+        - id: connector-feishu
+          name: '@deepseek-ai/dsh-connector-feishu'
+          config:
+            path: /feishu
+            appId: !!js process.env.DSH_FEISHU_APP_ID
+            appSecretEnv: DSH_FEISHU_APP_SECRET
+            verificationTokenEnv: DSH_FEISHU_VERIFICATION_TOKEN
+            maxBodyBytes: 1048576

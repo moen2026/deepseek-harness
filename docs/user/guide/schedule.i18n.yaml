@@ -9,11 +9,14 @@
   en: bc85e4ac935f2fd5
   zh: c39e54e4beaa3f9a
 /schedule-reminders/table-of-contents:
-  en: b3b2a6e0ce02bdee
-  zh: 2ddb168de79fd19c
+  en: e1f4252ac92dd657
+  zh: 73a1867acf2cbe4e
 /schedule-reminders/create-reminders:
-  en: 70ae56895847c453
-  zh: 19b38057c7462123
+  en: e9db679f9f75778c
+  zh: 5cf7539ffcbc66ff
+/schedule-reminders/heartbeat-patrol:
+  en: c845b98277e059fa
+  zh: 6e86bc8fe35dfd05
 /schedule-reminders/inspect-and-delete-tasks:
   en: a44fc1aabc2ab957
   zh: 31f444d4c7fd5c7a
@@ -24,8 +27,8 @@
   en: 6e5aa8ae5906df4f
   zh: afdf670a31fae2bb
 /schedule-reminders/further-exploration:
-  en: b7eb797281f028c0
-  zh: 3754f9d19127a3c5
+  en: ed36f1d81794a30d
+  zh: 0aeec756c4578815
 /schedule-reminders/dev-note:
   en: b75c8458928b72b9
   zh: 003ba4e17b4b5269

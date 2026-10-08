@@ -1,0 +1,25 @@
+# Bilingual-pair consistency record for 2026-10-02-vm-execution-world.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/proposed/feature/2026-10-02-vm-execution-world.md
+/agent-note-vm-execution-world:
+  en: 619d248d35ffe2ba
+  zh: 8933b80f64307cd0
+/agent-note-vm-execution-world/problem:
+  en: 16a68b5f917ada8c
+  zh: ef7d2d020b0fd0c0
+/agent-note-vm-execution-world/proposal:
+  en: 1d0e1858421c8243
+  zh: 5ea259f9f9e42734
+/agent-note-vm-execution-world/proposal/lifecycle-and-ownership:
+  en: ef185eb0cdda615a
+  zh: 9a655d4cc9c370b0
+/agent-note-vm-execution-world/alternatives-considered:
+  en: f58c085f0c52b4c1
+  zh: 6bc3746bef741912
+/agent-note-vm-execution-world/acceptance-criteria:
+  en: a08113c02793f5ad
+  zh: 0f115061e7c416dc
+/agent-note-vm-execution-world/risks:
+  en: 6a18f02d4f9f7a60
+  zh: 1b0fd13f94d6a643

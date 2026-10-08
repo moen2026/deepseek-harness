@@ -30,6 +30,14 @@ Every package below exports a Cordis plugin that a bundle patch can name in a Lo
 |---|---|---|
 | `@deepseek-ai/dsh-attachment-local` | yes | Private content-addressed DSH_HOME attachment storage |
 
+## audio
+
+| Package | Config | Description |
+|---|---|---|
+| `@deepseek-ai/dsh-audio` | no | Abstract audio-transcription capability seam (ctx.audio) for the DeepSeek Harness — single-provider registry with a branded reservation, a normalized transcribe contract over raw audio bytes, the AudioTranscribeRequest/AudioTranscript vocabulary, and the AudioError taxonomy |
+| `@deepseek-ai/dsh-audio-http` | yes | OpenAI-compatible HTTP transcription provider for the DeepSeek Harness audio seam (ctx.audio) — uploads raw audio bytes as multipart/form-data to a deployment-configured /audio/transcriptions endpoint, reads the bearer token from a named environment variable at call time, and surfaces endpoint failures as typed AUDIO_PROVIDER_FAILED errors with no local fallback |
+| `@deepseek-ai/dsh-tool-audio` | yes | Model-facing transcribe_audio tool over the DeepSeek Harness audio seam (ctx.audio) and filesystem (ctx.fs) — bounded audio reads, normalized arguments, bounded transcript rendering, and a graceful unavailable answer when no provider is mounted |
+
 ## boot
 
 | Package | Config | Description |
@@ -77,9 +85,13 @@ Every package below exports a Cordis plugin that a bundle patch can name in a Lo
 | `@deepseek-ai/dsh-client-ui-goal` | no | Session goal surface: GoalBar docked above the composer, read from the goal session projection |
 | `@deepseek-ai/dsh-client-ui-input-trigger` | no | Input trigger pipeline: '/' and '@' detection, candidate menu, pick routing to registered sources |
 | `@deepseek-ai/dsh-client-ui-jobs` | no | Session-header background-job list with on-demand streaming record panels |
+| `@deepseek-ai/dsh-client-ui-knowledge` | no | Web knowledge center: the right-Sidebar page listing the deployment's stored knowledge documents |
 | `@deepseek-ai/dsh-client-ui-layout` | no | Shell plugin: three-column AppFrame with drag handles, ctx.layout viewing-state service (navigation + panels) |
+| `@deepseek-ai/dsh-client-ui-mcp` | no | Web MCP panel: the right-Sidebar page listing the deployment's connected MCP servers with their tools and resources |
+| `@deepseek-ai/dsh-client-ui-memory` | no | Web memory center: the right-Sidebar page listing the deployment's stored long-term memories, with the transcript card of one remembered entry |
 | `@deepseek-ai/dsh-client-ui-message-feedback` | no | The Web feedback surface: per-message Like/Dislike in the assistant-message action strip and the feedback dialog behind both ratings and /feedback, backed by the messageFeedback and sessionFeedback Host Remotes |
 | `@deepseek-ai/dsh-client-ui-model-selection` | no | Model selection over the shared model catalog, Session projection, and session.selectModel |
+| `@deepseek-ai/dsh-client-ui-notification` | no | Notification surface: presents Host-raised alerts through the browser's Web Notification API |
 | `@deepseek-ai/dsh-client-ui-open-in-app` | no | Web "Open In..." controls: the Session-header split button opening the workspace directory in an installed application, and the document preview's default-application controls for one file |
 | `@deepseek-ai/dsh-client-ui-permission-presets` | no | Permission surfaces: a new-session default in General settings and a current-session /permission popup over the permissions projection |
 | `@deepseek-ai/dsh-client-ui-plan` | no | Plan mode controls, persistent transcript plan cards, and sidebar Markdown previews |
@@ -96,6 +108,7 @@ Every package below exports a Cordis plugin that a bundle patch can name in a Lo
 | `@deepseek-ai/dsh-client-ui-settings-plugin-inventory` | no | Read-only Cordis Loader inventory tab in Web Plugins settings |
 | `@deepseek-ai/dsh-client-ui-settings-plugins` | no | Built-in plugins settings section for the dsh web client: the Settings navigation entry and the tab chrome feature-owned tabs register into |
 | `@deepseek-ai/dsh-client-ui-settings-shell` | no | Settings page of the shell executor on the dsh web client's Plugins page: the command timeout and the per-stream output cap of the shell namespace |
+| `@deepseek-ai/dsh-client-ui-settings-speech` | no | Settings page of the speech synthesis Remote on the dsh web client's Plugins page: provider readiness, the voice selection, the reading speed, and a preview |
 | `@deepseek-ai/dsh-client-ui-settings-subagent` | no | Settings page of Subagent delegation on the dsh web client's Plugins page: recursion depth, parallel capacity, and the models agents may choose for subagents |
 | `@deepseek-ai/dsh-client-ui-settings-web-search` | no | Settings page of the DeepSeek web-search provider on the dsh web client's Plugins page: its API key, endpoint, and per-request search budget |
 | `@deepseek-ai/dsh-client-ui-shortcuts` | no | Keyboard shortcut reference, recording, and local preference editing |
@@ -114,6 +127,15 @@ Every package below exports a Cordis plugin that a bundle patch can name in a Lo
 | `@deepseek-ai/dsh-client-ui-workflow-run` | no | Durable workflow-run Conversation Node and nested member disclosure for dsh web |
 | `@deepseek-ai/dsh-client-ui-workspace` | no | Workspace picker plugin: one WorkspacePicker registered into the sidebar and empty-state workspace slots |
 
+## code-index
+
+| Package | Config | Description |
+|---|---|---|
+| `@deepseek-ai/dsh-code-index` | no | Abstract code-index capability seam (ctx.codeIndex) for the DeepSeek Harness — single-provider registry with a branded reservation, a normalized lexical code-search request and ranked result page, and the CodeIndexError taxonomy |
+| `@deepseek-ai/dsh-code-index-hybrid` | yes | Opt-in hybrid code-index provider for the DeepSeek Harness code seam (ctx.codeIndex) — structure-aware block chunking, BM25 over node:sqlite FTS5, and vectors from a deployment-supplied OpenAI-compatible embeddings endpoint, fused by reciprocal-rank fusion |
+| `@deepseek-ai/dsh-code-index-sqlite` | yes | SQLite FTS5 code-index provider for the DeepSeek Harness code seam (ctx.codeIndex) — walks a configured workspace root into a derived BM25-ranked line-chunk index over node:sqlite and answers normalized lexical code-search queries |
+| `@deepseek-ai/dsh-tool-code-index` | yes | Model-facing search_codebase tool over the DeepSeek Harness code-index seam (ctx.codeIndex) — one read-only lexical code search with optional glob and language filters, bounded BM25-ranked result rendering, and a graceful unavailable answer when no provider is mounted |
+
 ## compaction
 
 | Package | Config | Description |
@@ -128,6 +150,19 @@ Every package below exports a Cordis plugin that a bundle patch can name in a Lo
 | Package | Config | Description |
 |---|---|---|
 | `@deepseek-ai/dsh-computer-use` | no | Exclusive named computer-use provider registration |
+
+## connector
+
+| Package | Config | Description |
+|---|---|---|
+| `@deepseek-ai/dsh-connector` | no | Bidirectional IM connector seam (ctx.connector): verified platform messages into the webhook runtime, Session events out to bound channels |
+| `@deepseek-ai/dsh-connector-approval` | yes | Approval bridge for the connector seam: platform interactive-card callbacks answer approval requests as durable resolutions |
+| `@deepseek-ai/dsh-connector-dingtalk` | yes | DingTalk callback adapter for the connector seam: signed robot-message callbacks into Sessions, session-webhook text replies out |
+| `@deepseek-ai/dsh-connector-discord` | yes | Discord Gateway adapter for the connector seam: gateway text and component interactions into Sessions, bot-token text and action-row pushes out |
+| `@deepseek-ai/dsh-connector-feishu` | yes | Feishu (Lark) callback adapter for the connector seam: verified event callbacks into Sessions, tenant-token text pushes out |
+| `@deepseek-ai/dsh-connector-slack` | yes | Slack callback adapter for the connector seam: signed Events API callbacks into Sessions, bot-token text and Block Kit pushes out |
+| `@deepseek-ai/dsh-connector-telegram` | yes | Telegram callback adapter for the connector seam: secret-token webhook updates into Sessions, bot-token text and inline-keyboard pushes out |
+| `@deepseek-ai/dsh-connector-wecom` | yes | WeCom callback adapter for the connector seam: signed, AES-decrypted callbacks into Sessions, token-cached text and template-card pushes out |
 
 ## context
 
@@ -170,7 +205,10 @@ Every package below exports a Cordis plugin that a bundle patch can name in a Lo
 
 | Package | Config | Description |
 |---|---|---|
+| `@deepseek-ai/dsh-documents` | no | Abstract document-creation capability seam (ctx.documents) for the DeepSeek Harness — single-provider registry with a branded reservation, a normalized create contract over Office formats and neutral content blocks, the DocumentCreateRequest/DocumentResult vocabulary, and the DocumentsError taxonomy |
+| `@deepseek-ai/dsh-office-create` | yes | LibreOffice-kit document-creation provider for ctx.documents — translates neutral content blocks into OpenDocument intermediates and exports DOCX/XLSX/PPTX through the kit converter (native engine with Node WASM fallback) |
 | `@deepseek-ai/dsh-office-to-pdf` | yes | Shared Office-to-PDF conversion with bounded queues and caching |
+| `@deepseek-ai/dsh-tool-document` | yes | Model-facing create_document tool for the DeepSeek Harness — creates DOCX/XLSX/PPTX through the documents seam, writes the bytes into the Session workspace, and declares the file through the shared deliverables/presented chain |
 
 ## experimental
 
@@ -178,6 +216,7 @@ Every package below exports a Cordis plugin that a bundle patch can name in a Lo
 |---|---|---|
 | `@deepseek-ai/dsh-experimental-agent-team` | yes | Implicit-root Agent Teams roster, durable peer mailbox, and shared task DAG |
 | `@deepseek-ai/dsh-experimental-api-speech-to-text` | yes | Authenticated experimental speech transcription for browser clients |
+| `@deepseek-ai/dsh-experimental-api-text-to-speech` | yes | Authenticated experimental speech synthesis for browser clients |
 | `@deepseek-ai/dsh-experimental-auto-review` | no | Per-tool LLM authorization review for the DeepSeek Harness Auto permission preset |
 | `@deepseek-ai/dsh-experimental-browser-use-chrome-devtools-mcp` | yes | Experimental per-Session Chromium browser tools through chrome-devtools-mcp |
 | `@deepseek-ai/dsh-experimental-browser-use-playwright-mcp` | yes | Experimental per-Session Chromium browser tools through @playwright/mcp |
@@ -190,6 +229,9 @@ Every package below exports a Cordis plugin that a bundle patch can name in a Lo
 | `@deepseek-ai/dsh-experimental-ptc-runtime-python` | yes | CPython subprocess implementation of the DeepSeek Harness PTC execution seam |
 | `@deepseek-ai/dsh-experimental-speech-to-text` | yes | Experimental speech recognition with independently selectable providers |
 | `@deepseek-ai/dsh-experimental-speech-to-text-sensevoice` | yes | Local SenseVoice ONNX transcription with a managed sherpa-onnx process |
+| `@deepseek-ai/dsh-experimental-text-to-speech` | yes | Experimental speech synthesis with independently selectable providers |
+| `@deepseek-ai/dsh-experimental-text-to-speech-kokoro` | yes | Local Kokoro ONNX synthesis with a managed sherpa-onnx process |
+| `@deepseek-ai/dsh-experimental-text-to-speech-openvoice` | yes | Local OpenVoice v2 voice-cloning synthesis through an externally managed service |
 | `@deepseek-ai/dsh-experimental-tool-agent-team` | yes | Scoped model-facing Agent Teams tools over ctx.agentTeams |
 
 ## extensions
@@ -219,6 +261,12 @@ Every package below exports a Cordis plugin that a bundle patch can name in a Lo
 | `@deepseek-ai/dsh-tool-fs-search` | yes | Model-facing filesystem discovery tools (glob, grep) backed by the packaged ripgrep binary (@vscode/ripgrep) |
 | `@deepseek-ai/dsh-tool-str-replace-editor` | yes | Model-facing view, create, literal replace, and line insert tool over the Harness filesystem service |
 
+## git
+
+| Package | Config | Description |
+|---|---|---|
+| `@deepseek-ai/dsh-tool-git-track` | no | Model-facing worktree and pull-request tracking tools for DeepSeek Harness agent sessions, backed by a durable storage domain |
+
 ## goal
 
 | Package | Config | Description |
@@ -232,6 +280,7 @@ Every package below exports a Cordis plugin that a bundle patch can name in a Lo
 
 | Package | Config | Description |
 |---|---|---|
+| `@deepseek-ai/dsh-context-checkpoint` | yes | Pinned-context checkpoint guard: reminds the model to re-obtain pinned context that compaction removed |
 | `@deepseek-ai/dsh-repeat-tool-reminder` | yes | Repeat-tool-call guard plugin: advisory reminders when an agent loops on identical tool calls |
 | `@deepseek-ai/dsh-tool-call-timeout-policy` | no | Tool-call timeout policy: a tools/execute wrapper that arms a per-tool deadline on exec.signal and returns TOOL_TIMEOUT when it wins |
 
@@ -255,6 +304,14 @@ Every package below exports a Cordis plugin that a bundle patch can name in a Lo
 | `@deepseek-ai/dsh-host-product-telemetry-otel` | yes | Explicit product usage events exported through OpenTelemetry HTTP logs |
 | `@deepseek-ai/dsh-host-webserver` | yes | Web route-registration plugin: HTTP and upgrade routes, index transform taps, and static dist fallback; knows no harness concepts |
 
+## image
+
+| Package | Config | Description |
+|---|---|---|
+| `@deepseek-ai/dsh-image` | no | Abstract image-generation capability seam (ctx.image) for the DeepSeek Harness — single-provider registry with a branded reservation, a normalized generate contract over text prompts and raw image bytes, the ImageGenerateRequest/ImageResult vocabulary, and the ImageError taxonomy |
+| `@deepseek-ai/dsh-image-http` | yes | OpenAI-compatible HTTP image-generation provider for the DeepSeek Harness image seam (ctx.image) — posts text prompts as JSON to a deployment-configured /images/generations endpoint requesting base64 answers, reads the bearer token from a named environment variable at call time, and surfaces endpoint failures as typed IMAGE_PROVIDER_FAILED errors with no local fallback |
+| `@deepseek-ai/dsh-tool-image` | yes | Model-facing generate_image tool over the DeepSeek Harness image seam (ctx.image) and attachment store (ctx.attachments) — prompt-normalized generation with the image durably committed as an attachment and returned beside a bounded text envelope, and a graceful unavailable answer when no provider or store is mounted |
+
 ## interaction
 
 | Package | Config | Description |
@@ -272,6 +329,14 @@ Every package below exports a Cordis plugin that a bundle patch can name in a Lo
 | `@deepseek-ai/dsh-jobs-local` | yes | Process-local implementation of the DeepSeek Harness background job registry seam |
 | `@deepseek-ai/dsh-tool-jobs` | yes | Model-facing background job control tools (job_output, job_list, job_kill) over the ctx.jobs registry |
 
+## knowledge
+
+| Package | Config | Description |
+|---|---|---|
+| `@deepseek-ai/dsh-knowledge` | no | Abstract knowledge-base capability seam (ctx.knowledge) for the DeepSeek Harness — single-provider registry with a branded reservation, normalized ingest/search/remove/list contracts, the KnowledgeRecord/KnowledgeHit vocabulary, and the KnowledgeError taxonomy |
+| `@deepseek-ai/dsh-knowledge-sqlite` | yes | SQLite knowledge-base provider for the DeepSeek Harness knowledge seam (ctx.knowledge) — a zero-dependency FTS5/BM25 lexical store over node:sqlite returning ranked documents with bounded excerpts, titled and optionally sourced |
+| `@deepseek-ai/dsh-tool-knowledge` | yes | Model-facing knowledge_ingest, knowledge_search, knowledge_remove, and knowledge_list tools over the DeepSeek Harness knowledge seam (ctx.knowledge) — argument-normalized shared knowledge-base documents with bounded rendered results, a safety-scanned ingest path, and a graceful unavailable answer when no provider is mounted |
+
 ## llm
 
 | Package | Config | Description |
@@ -282,6 +347,7 @@ Every package below exports a Cordis plugin that a bundle patch can name in a Lo
 | `@deepseek-ai/dsh-llm-deepseek-api-key` | yes | DeepSeek api-key provider authentication and discovery |
 | `@deepseek-ai/dsh-llm-pi-ai` | yes | pi-ai-backed DeepSeek adapter for the DeepSeek Harness LLM seam (design-verification twin of dsh-llm-deepseek) |
 | `@deepseek-ai/dsh-llm-retry` | yes | Provider-routed LLM request retry policy for the DeepSeek Harness |
+| `@deepseek-ai/dsh-llm-router` | yes | Signal-driven explicit model routing for the DeepSeek Harness |
 | `@deepseek-ai/dsh-plugin-package-inventory-deepseek` | yes | Active Loader-backed plugin package inventory for official DeepSeek LLM API requests |
 | `@deepseek-ai/dsh-token-meter` | yes | Replay-aware token measurement service (ctx.tokenMeter) for the DeepSeek Harness |
 
@@ -300,6 +366,25 @@ Every package below exports a Cordis plugin that a bundle patch can name in a Lo
 | `@deepseek-ai/dsh-mcp-client` | yes | MCP client bridge: connects to MCP servers and registers their tools on ctx.tools |
 | `@deepseek-ai/dsh-mcp-resources` | no | Scoped MCP resource discovery and reading through shared model tools |
 
+## memory
+
+| Package | Config | Description |
+|---|---|---|
+| `@deepseek-ai/dsh-memory` | no | Abstract long-term-memory capability seam (ctx.memory) for the DeepSeek Harness — single-provider registry with a branded reservation, normalized remember/recall/forget/list contracts, the MemoryRecord/MemoryHit vocabulary, and the MemoryError taxonomy |
+| `@deepseek-ai/dsh-memory-profile` | yes | Runtime-context injection of saved collaboration-style memories (the memory seam's `style` namespace) so durable user preferences shape future sessions |
+| `@deepseek-ai/dsh-memory-reflection` | yes | Turn-end memory reflection: extracts durable user preferences and style guidance from completed turns through an auxiliary model call and writes them back through the memory seam, asking the user first by default (`write: 'ask'`) or writing directly (`write: 'auto'`) |
+| `@deepseek-ai/dsh-memory-sqlite` | yes | SQLite long-term-memory provider for the DeepSeek Harness memory seam (ctx.memory) — a zero-dependency FTS5/BM25 lexical store over node:sqlite with an optional external-embedding vector path fused by reciprocal-rank ranking, degrading to lexical on any embedding failure |
+| `@deepseek-ai/dsh-tool-memory` | yes | Model-facing memory_write, memory_search, and memory_forget tools over the DeepSeek Harness memory seam (ctx.memory) 鈥?argument-normalized long-term memory with bounded recall rendering and a graceful unavailable answer when no provider is mounted |
+
+## notification
+
+| Package | Config | Description |
+|---|---|---|
+| `@deepseek-ai/dsh-notification` | no | Abstract notification capability seam (ctx.notification) for the DeepSeek Harness — single-provider registry with one routed notify operation over provider-agnostic alerts and the NotificationError taxonomy |
+| `@deepseek-ai/dsh-notification-desktop` | no | Electron-shell notification provider for the DeepSeek Harness notification seam (ctx.notification) — reserves the seam and forwards every accepted alert over the Desktop Host IPC channel, where the Electron main process raises a native notification, failing at load without that channel |
+| `@deepseek-ai/dsh-notification-triggers` | yes | Alert-raising rules for the DeepSeek Harness notification seam (ctx.notification) — watches pending approvals, turn completion, scheduled deliveries, and goal activation, and raises provider-agnostic alerts through ctx.notification |
+| `@deepseek-ai/dsh-notification-web` | no | Browser-surface notification provider for the DeepSeek Harness notification seam (ctx.notification) — reserves the seam and republishes every accepted alert as the process-local notification/raised event for a forwarded-event allowlist to carry to a Client, where the browser surface presents it through the Web Notification API |
+
 ## plan
 
 | Package | Config | Description |
@@ -312,6 +397,7 @@ Every package below exports a Cordis plugin that a bundle patch can name in a Lo
 |---|---|---|
 | `@deepseek-ai/dsh-agent-preset` | yes | Declare an Agent capability composition in Cordis YAML |
 | `@deepseek-ai/dsh-agent-preset-registry` | yes | Declarative Agent preset registry and profile-backed editing |
+| `@deepseek-ai/dsh-output-style` | yes | Deployment-wide output style section for the DeepSeek Harness |
 | `@deepseek-ai/dsh-persona` | yes | Composition-authored deployment persona section for the DeepSeek Harness |
 
 ## ptc-runtime
@@ -337,6 +423,7 @@ Every package below exports a Cordis plugin that a bundle patch can name in a Lo
 
 | Package | Config | Description |
 |---|---|---|
+| `@deepseek-ai/dsh-heartbeat` | yes | Heartbeat patrol: a recurring session reminder that reads the heartbeat file and acts on its pending items |
 | `@deepseek-ai/dsh-schedule` | yes | Host-wide durable reminders with shared management and original-Session delivery |
 
 ## sdk
@@ -354,6 +441,7 @@ Every package below exports a Cordis plugin that a bundle patch can name in a Lo
 | `@deepseek-ai/dsh-session-persistence-jsonl` | yes | JSONL durable session persistence backend for the DeepSeek Harness |
 | `@deepseek-ai/dsh-session-projection` | no | Session-projection seam: the merge-extensible projection type table, the provider contract, and the ctx.sessionProjections registry serving whole current values of log-derived per-session state |
 | `@deepseek-ai/dsh-session-projection-cache` | yes | Persisted projection cache (ctx.sessionProjectionCache): durable per-session checkpoint records on the session_projcache storage domain (per-record layout), throttled write-behind, and the cached listing read |
+| `@deepseek-ai/dsh-session-rewind` | yes | Per-turn file-tool rewind with restore-to-turn-start semantics for the DeepSeek Harness |
 | `@deepseek-ai/dsh-session-stats` | no | Whole-log conversation counts and wall times projection (sessionStats) for the DeepSeek Harness |
 | `@deepseek-ai/dsh-session-telemetry-otel` | yes | OpenTelemetry backend for the DeepSeek Harness telemetry seam: hands captured session records to the OTel JS SDK's log pipeline |
 | `@deepseek-ai/dsh-session-title` | yes | Log-backed session title service and provider registry for the DeepSeek Harness |
@@ -435,6 +523,7 @@ Every package below exports a Cordis plugin that a bundle patch can name in a Lo
 | `@deepseek-ai/dsh-subagent-codex` | yes | One-shot Codex subagent provider over the official app-server protocol |
 | `@deepseek-ai/dsh-subagent-dsh-sdk` | yes | Out-of-process SDK subagent backend: drives a child DeepSeek Harness runtime subprocess over stdio JSON-RPC through the TypeScript SDK client |
 | `@deepseek-ai/dsh-subagent-fork-in-process` | yes | In-process fork subagent backend: runs a child agent seeded with a prefix of the parent's log |
+| `@deepseek-ai/dsh-subagent-qoder` | yes | One-shot Qoder CLI subagent provider over the official headless print mode |
 | `@deepseek-ai/dsh-subagent-spawn-in-process` | yes | In-process spawn subagent backend: runs a fresh child agent on ctx.agents |
 | `@deepseek-ai/dsh-tool-subagent` | yes | Model-facing subagent delegation tool over the ctx.subagents seam |
 | `@deepseek-ai/dsh-tool-subagent-control` | no | Globally named send_message, interrupt_agent, and list_agents tools over ctx.subagents continuations |
@@ -486,8 +575,18 @@ Every package below exports a Cordis plugin that a bundle patch can name in a Lo
 
 | Package | Config | Description |
 |---|---|---|
+| `@deepseek-ai/dsh-tool-github` | yes | Outbound GitHub commenting tool for DeepSeek Harness review Sessions |
 | `@deepseek-ai/dsh-webhook` | no | Fire-and-forget webhook rule runtime that creates Workspace-backed DeepSeek Harness Sessions |
 | `@deepseek-ai/dsh-webhook-github` | yes | Signed GitHub HTTP webhook adapter for the DeepSeek Harness webhook runtime |
+| `@deepseek-ai/dsh-webhook-outbox` | yes | Durable at-least-once webhook delivery queue with deduplication, retry, and replay |
+
+## wiki
+
+| Package | Config | Description |
+|---|---|---|
+| `@deepseek-ai/dsh-repo-wiki` | no | Abstract repo-wiki capability seam (ctx.repoWiki) for the DeepSeek Harness — single-provider registry with read-only access to generated repository wiki pages: one routed getPage, listPages, and outline over neutral page vocabulary |
+| `@deepseek-ai/dsh-repo-wiki-generator` | yes | Repo-wiki provider for the DeepSeek Harness — generates Markdown wiki pages from workspace sources through the configured LLM route, tracks per-page source fingerprints for staleness, stores them under .dsh/wiki/, and serves the read-only repo-wiki seam |
+| `@deepseek-ai/dsh-tool-repo-wiki` | yes | Model-facing read_wiki tool for the DeepSeek Harness — reads generated repository wiki pages (one page, the page list, or the heading outline) through the repo-wiki seam, returning an actionable unavailable answer when no provider is mounted |
 
 ## workflow
 

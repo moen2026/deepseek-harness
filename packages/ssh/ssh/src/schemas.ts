@@ -19,8 +19,8 @@ export const targetSchema = z.object({ targetKey: remotePath, displayPath: z.str
 export const infoSchema = z.object({ version: z.string(), type: z.enum(['file', 'directory', 'other']), size: z.number().nonnegative().optional() }).strict()
 /** Metadata that preserves a final symlink. */
 export const pathInfoSchema = infoSchema.extend({ type: z.enum(['file', 'directory', 'symlink', 'other']) })
-/** A resolved file-effect policy; the remote helper owns path canonicalization. */
-export const policySchema = z.object({ mode: z.enum(['read-only', 'workspace-write', 'danger-full-access']), workspaceRoot: remotePath, sessionId: z.string().optional() }).strict()
+/** A resolved file-effect-and-network policy; the remote helper owns path canonicalization. */
+export const policySchema = z.object({ mode: z.enum(['read-only', 'workspace-write', 'danger-full-access']), network: z.enum(['blocked', 'allowed']), workspaceRoot: remotePath, sessionId: z.string().optional() }).strict()
 /** Complete directory entries. */
 export const entriesSchema = z.array(z.object({ name: z.string(), type: z.enum(['file', 'directory', 'other']), target: targetSchema, version: z.string().optional(), size: z.number().nonnegative().optional() }).strict())
 /** Guarded write intent. */
@@ -29,6 +29,8 @@ export const intentSchema = z.discriminatedUnion('kind', [z.object({ kind: z.lit
 export const editSchema = z.object({ oldString: z.string(), newString: z.string(), replaceAll: z.boolean() }).strict()
 /** Atomic write observation. */
 export const writeResultSchema = z.object({ operation: z.enum(['create', 'update']), version: z.string(), before: z.string().nullable(), after: z.string() }).strict()
+/** Atomic binary-write observation. */
+export const writeBytesResultSchema = z.object({ operation: z.enum(['create', 'update']), version: z.string() }).strict()
 /** Atomic edit observation. */
 export const editResultSchema = z.object({ version: z.string(), before: z.string(), after: z.string() }).strict()
 /** Explicit child environment; null encodes an environment tombstone. */

@@ -22,7 +22,7 @@ The session group keeps conversations durable, restores released log formats, an
 <a id="packages"></a>
 ## Packages
 
-The group splits into four families: durable storage (persistence seam, backends, checkpoint policy), projections, titles, and telemetry. Each package README owns its contract and configuration.
+The group splits into five families: durable storage (persistence seam, backends, checkpoint policy), projections, titles, telemetry, and rewind. Each package README owns its contract and configuration.
 
 ### Persistence
 
@@ -64,6 +64,12 @@ The group splits into four families: durable storage (persistence seam, backends
 | [`session-telemetry/`](session-telemetry/README.md) | Captures session activity and hands records to a configured reporting backend | `ctx.sessionTelemetry` |
 | [`session-telemetry-otel/`](session-telemetry-otel/README.md) | Delivers telemetry through OpenTelemetry logs in `FEEDBACK_ONLY` or `DISABLED` mode | registers on `ctx.sessionTelemetry` |
 
+### Rewind
+
+| Package | Role | ctx key |
+|---|---|---|
+| [`session-rewind/`](session-rewind/README.md) | Captures each top-level turn's file-tool paths before their first change and restores one turn's pre-turn state | `ctx.sessionRewind` |
+
 Only one title provider may register at a time; without one, the title service keeps its deterministic fallback. The subsystem pages below are the backend-neutral references for each family.
 
 -----
@@ -75,6 +81,7 @@ Only one title provider may register at a time; without one, the title service k
 - [Session projections subsystem](../../docs/subsystems/session-projection.md) — the projection unit contract and drive semantics.
 - [Session titles subsystem](../../docs/subsystems/session-title.md) — title eligibility, fallback, and provider flow.
 - [Session telemetry subsystem](../../docs/subsystems/session-telemetry.md) — capture, redaction, and delivery modes.
+- [Session rewind subsystem](../../docs/subsystems/session-rewind.md) — per-turn file-tool restore points and the `workspace_rewind` tool.
 - [Session subsystem](../../docs/subsystems/session.md) — the live event log every package in this group persists or derives from.
 
 <a id="dev-note"></a>

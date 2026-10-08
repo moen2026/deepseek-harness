@@ -50,6 +50,14 @@ allowBuilds:
   electron-winstaller: false
   # Store-index rewriting only needs msgpackr's portable JavaScript codec.
   msgpackr-extract: false
+  # The Qoder CLI bundle is pure JavaScript driven directly through node; its
+  # lifecycle script only registers npm and ~/.qoder entry shims on the user
+  # PATH (including a Windows registry write), which this provider never
+  # relies on, so we deny it — install still succeeds.
+  '@qoder-ai/qodercli': false
+  # sharp's install script only validates the prebuilt @img platform package
+  # that pnpm already installs; qodercli loads that prebuild at runtime.
+  sharp: false
 
 minimumReleaseAgeExclude:
   # Office engines and their API are qualified and released together by the kit repository.

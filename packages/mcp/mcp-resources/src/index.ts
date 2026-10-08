@@ -6,8 +6,9 @@
 
 import { Service, type Context } from '@deepseek-ai/cordis'
 import { createScope, NamedEntries, ScopedLayers, scopeOf, type ScopeKey, type ScopeLayer } from '@deepseek-ai/dsh-scope'
+import { ToolCallId } from '@deepseek-ai/dsh-llm'
 import type { JsonValue } from '@deepseek-ai/dsh-util-values'
-import type { ToolExecution } from '@deepseek-ai/dsh-tools'
+import type { ToolExecution, ToolExecutionToken } from '@deepseek-ai/dsh-tools'
 import type {} from '@deepseek-ai/dsh-system-prompt'
 import { registerResourceTools } from './tools.ts'
 
@@ -123,6 +124,38 @@ export class McpResourceRuntime extends Service {
     const provider = this.layers.merge(exec.agent, layer => layer.servers).get(server)
     if (!provider) throw new Error(`MCP resource server "${server}" is unavailable in this agent's scope`)
     return provider.request(request, exec)
+  }
+
+  /**
+   * Names of the servers registered in the global layer, sorted. Agent-scoped
+   * registrations belong to their agent's tool view, not this global listing.
+   * @returns the sorted server names.
+   */
+  serverNames(): string[] {
+    return [...this.layers.merge(undefined, layer => layer.servers).keys()].sort()
+  }
+
+  /**
+   * Read one globally registered server's first resource page as the browser
+   * face sees it. The synthetic execution carries only the cancellation the
+   * provider reads; no registry pipeline stage observes it.
+   * @param server - the configured server namespace.
+   * @param signal - cancellation forwarded to the connection.
+   * @returns the server's lossless `resources/list` result.
+   * @throws when the server is not registered in the global layer.
+   */
+  listResources(server: string, signal: AbortSignal): Promise<JsonValue> {
+    const provider = this.layers.merge(undefined, layer => layer.servers).get(server)
+    if (provider === undefined) throw new Error(`MCP resource server "${server}" is not registered`)
+    const callId = ToolCallId(`mcp-browser:${globalThis.crypto.randomUUID()}`)
+    return provider.request({ method: 'resources/list' }, {
+      callId,
+      rootCallId: callId,
+      name: 'list_mcp_resources',
+      arguments: {},
+      signal,
+      token: Symbol('dsh.mcp.browser') as ToolExecutionToken,
+    })
   }
 }
 

@@ -1,0 +1,64 @@
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write packages/preset/output-style/README.md
+/:
+  en: b53b673d47c35526
+  zh: b53b673d47c35526
+/deepseek-ai-dsh-output-style:
+  en: 1b4b460dad819355
+  zh: c531b8ed2bc0b8a6
+/deepseek-ai-dsh-output-style/summary:
+  en: 9f0e7dc9c4706a37
+  zh: a83f0110cfb1f88a
+/deepseek-ai-dsh-output-style/table-of-contents:
+  en: d152484eb41ac6b4
+  zh: d152484eb41ac6b4
+/deepseek-ai-dsh-output-style/use-this-package:
+  en: 5c40051b9584d1a6
+  zh: 004f1edad2e4a8fb
+/deepseek-ai-dsh-output-style/use-this-package/configuration:
+  en: e11c3ce50dde8663
+  zh: c8d0346985db3f42
+/deepseek-ai-dsh-output-style/use-this-package/output-style-behavior:
+  en: 66dc02ef7f92e74f
+  zh: f5f7d6e5d1fff550
+/deepseek-ai-dsh-output-style/use-this-package/when-to-use-it:
+  en: cde78066df64d820
+  zh: 51d31a0ee5b2252c
+/deepseek-ai-dsh-output-style/understand-the-implementation:
+  en: 42b15ac6321706aa
+  zh: 42b15ac6321706aa
+/deepseek-ai-dsh-output-style/understand-the-implementation/how-the-row-registers:
+  en: 5510d7e4fa498244
+  zh: 4547ec1c9a91880c
+/deepseek-ai-dsh-output-style/understand-the-implementation/the-deployment-slot:
+  en: 6eec7623831deb05
+  zh: 17103d8d29a48077
+/deepseek-ai-dsh-output-style/understand-the-implementation/source-map:
+  en: 4b1b7c2691e001a2
+  zh: 5f02581fbc603cd6
+/deepseek-ai-dsh-output-style/further-exploration:
+  en: 5b77f80a8a509446
+  zh: a74d80148d48ac2a
+/deepseek-ai-dsh-output-style/model-experience:
+  en: 215e7ba838619b7b
+  zh: 215e7ba838619b7b
+/deepseek-ai-dsh-output-style/model-experience/the-output-style-section:
+  en: 3e9412207b190452
+  zh: 3e9412207b190452
+/deepseek-ai-dsh-output-style/model-experience/the-output-style-section/what-the-model-sees:
+  en: fd7d733b790ef524
+  zh: 3874cf88ec3c0b2f
+/deepseek-ai-dsh-output-style/model-experience/the-output-style-section/token-effect:
+  en: c6344a27e4375b51
+  zh: 10e18ee8286b4084
+/deepseek-ai-dsh-output-style/model-experience/the-output-style-section/kv-cache-effect:
+  en: 395665e905cf56f4
+  zh: 4843faa9eec6279f
+/deepseek-ai-dsh-output-style/known-limitations-and-deferred-work:
+  en: ecd578dd7e6ae3a8
+  zh: 8d37ce78d181a151
+/deepseek-ai-dsh-output-style/known-limitations-and-deferred-work/dev-note:
+  en: e67f633dc6fe7773
+  zh: e67f633dc6fe7773

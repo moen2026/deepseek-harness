@@ -1,0 +1,34 @@
+# Bilingual-pair consistency record for 2026-10-02-damon-web-client-parity-surfaces.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/proposed/feature/2026-10-02-damon-web-client-parity-surfaces.md
+/agent-note-damon-web-client-parity-surfaces:
+  en: 1d80fc7af22cc940
+  zh: 6a3da5d28c9045dd
+/agent-note-damon-web-client-parity-surfaces/problem:
+  en: 86c2f7881c14c9ee
+  zh: 7b78c88b28bcef64
+/agent-note-damon-web-client-parity-surfaces/proposal:
+  en: 779084b3002ab4c8
+  zh: db8987125f4f1aaa
+/agent-note-damon-web-client-parity-surfaces/proposal/knowledge-center-surface:
+  en: 4758c0ba4abbd768
+  zh: 4195572c70ddfd8b
+/agent-note-damon-web-client-parity-surfaces/proposal/memory-management-surface:
+  en: 0c39bc67f08a40dd
+  zh: 84cc1a3ac0209c54
+/agent-note-damon-web-client-parity-surfaces/proposal/mcp-status-and-resources-panel:
+  en: 5ce87bf18be4e82c
+  zh: e03bac209f1f12d5
+/agent-note-damon-web-client-parity-surfaces/proposal/composer-voice-input:
+  en: d4ecca87cc9b8a9e
+  zh: 8cd08e82bba72e76
+/agent-note-damon-web-client-parity-surfaces/alternatives-considered:
+  en: 6b9884203e61549e
+  zh: 1d4dab76f2d1c3c3
+/agent-note-damon-web-client-parity-surfaces/acceptance-criteria:
+  en: 64ca18771d5b9b07
+  zh: f2c5266d1f635b3e
+/agent-note-damon-web-client-parity-surfaces/risks:
+  en: 7732b48044711eef
+  zh: ca8f7ab60b55bf8c

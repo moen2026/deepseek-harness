@@ -1,0 +1,20 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "duration_ms": 4152,
+  "duration_api_ms": 3620,
+  "num_turns": 2,
+  "result": "ok",
+  "session_id": "0a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d",
+  "stop_reason": "stop_sequence",
+  "total_cost_usd": 0.0123,
+  "usage": {
+    "input_tokens": 120,
+    "cache_read_input_tokens": 0,
+    "output_tokens": 8
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "uuid": "f1e2d3c4-b5a6-4789-9abc-def012345678"
+}

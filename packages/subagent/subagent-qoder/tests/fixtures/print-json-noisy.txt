@@ -1,0 +1,3 @@
+Qoder CLI is setting up Git Bash for Windows.
+This one-time setup can take a minute.
+{"type":"result","subtype":"success","is_error":false,"num_turns":1,"result":"noise survived","session_id":"33333333-4444-4555-8666-777777777777","stop_reason":"stop_sequence","permission_denials":[]}

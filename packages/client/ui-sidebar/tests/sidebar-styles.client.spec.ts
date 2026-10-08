@@ -69,7 +69,10 @@ describe('SidebarRoot.module.css', () => {
     expect(declarations('.brandName')?.get('height')).toBe('24px')
     expect(declarations('.brandName')?.get('line-height')).toBe('24px')
     expect(declarations('.brandName')?.get('font-size')).toBe('18px')
-    expect(declarations('.fallbackBrandName')?.get('font-size')).toBe('17px')
-    expect(declarations('.fallbackBrandName')?.get('white-space')).toBe('nowrap')
+    // The word art is a currentColor-tinted mask, so it survives a theme switch.
+    expect(declarations('.brandWordmark')?.get('height')).toBe('17px')
+    expect(declarations('.brandWordmark')?.get('background-color')).toBe('currentColor')
+    expect(declarations('.brandWordmark')?.get('mask-size')).toBe('contain')
+    expect(declarations('.brandWordmark')?.get('mask-repeat')).toBe('no-repeat')
   })
 })

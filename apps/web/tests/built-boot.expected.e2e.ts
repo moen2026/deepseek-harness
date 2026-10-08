@@ -65,15 +65,11 @@ it('boots the built plugin graph and renders a fixture session end to end', asyn
     expect(document.querySelector('svg[viewBox="26 0 156 24"]')).not.toBeNull()
     expect(screen.queryByText('DSH Local Build')).toBeNull()
   } else {
-    expect(document.querySelector('svg[viewBox="0 0 23.16 17.04"]')).not.toBeNull()
-    const version = clientBuildValue('DSH_CLIENT_VERSION')
-    if (version === undefined) throw new Error('default client build record must carry DSH_CLIENT_VERSION')
-    const commit = clientBuildValue('DSH_CLIENT_COMMIT_HASH')
-    const buildVersion = version
-      + (commit === undefined ? '' : `-${commit}`)
-      + (clientBuildValue('DSH_CLIENT_GIT_DIRTY') === 'true' ? '-dirty' : '')
-    screen.getByText('DSH Local Build')
-    screen.getByText(buildVersion)
+    // The default build brands itself with baked art only: the mascot glyph and
+    // the currentColor word mask, and no build-version text.
+    expect(document.querySelector('svg[viewBox="0 0 100 100"]')).not.toBeNull()
+    expect(document.querySelector('[style*="mask-image"]')).not.toBeNull()
+    expect(screen.queryByText('DSH Local Build')).toBeNull()
   }
   // The compact layout dropped group session counts; the fixture workspace
   // group row renders immediately with its sessions beneath it.

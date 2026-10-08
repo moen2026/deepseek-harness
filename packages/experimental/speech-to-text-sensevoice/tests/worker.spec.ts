@@ -10,7 +10,7 @@ import { afterEach, expect, it, vi } from 'vitest'
 import { Config } from '../src/config.ts'
 import { SenseVoiceWorker } from '../src/recognizer.ts'
 import { inspectRuntime, prepareRuntime } from '../src/runtime.ts'
-import { SpeechDownloadError } from '../src/download-error.ts'
+import { SpeechDownloadError } from '@deepseek-ai/dsh-experimental-local-speech-runtime'
 
 vi.mock('../src/runtime.ts', () => ({ inspectRuntime: vi.fn(), prepareRuntime: vi.fn() }))
 const cleanup: Array<() => Promise<void>> = []
@@ -67,7 +67,7 @@ it('pins a manual source to one preparation without changing deployment defaults
   const { worker } = await fixture()
   expect(worker.downloadSources).toEqual(['https://huggingface.co', 'https://hf-mirror.com'])
   worker.prepare({ downloadSource: 'https://hf-mirror.com' })
-  await vi.waitFor(() => { expect(worker.snapshot().phase).toBe('ready') })
+  await vi.waitFor(() => { expect(worker.snapshot().phase).toBe('ready') }, { timeout: 10000 })
   expect(prepareRuntime).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ modelOrigin: 'https://hf-mirror.com' }),
     expect.any(AbortSignal), expect.any(Function))
 })

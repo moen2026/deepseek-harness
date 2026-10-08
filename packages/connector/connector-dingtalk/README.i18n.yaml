@@ -1,0 +1,40 @@
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write packages/connector/connector-dingtalk/README.md
+/:
+  en: 43c4c6ae06f8081d
+  zh: 637e311d340a1ec0
+/deepseek-ai-dsh-connector-dingtalk:
+  en: cdd6698b17f59871
+  zh: 13eae46a1ebff178
+/deepseek-ai-dsh-connector-dingtalk/summary:
+  en: 10f60a810b499164
+  zh: 5ea3fae702464db7
+/deepseek-ai-dsh-connector-dingtalk/table-of-contents:
+  en: 13859eda50366405
+  zh: 009465af2fbdb355
+/deepseek-ai-dsh-connector-dingtalk/configuration:
+  en: 4bacfdc550361979
+  zh: 9c7929005ef43a0f
+/deepseek-ai-dsh-connector-dingtalk/callback-contract:
+  en: 5a151f67489be12c
+  zh: 89098aeea48c1cf8
+/deepseek-ai-dsh-connector-dingtalk/inbound-messages:
+  en: d534e782463deac5
+  zh: ed9bca040f9820ac
+/deepseek-ai-dsh-connector-dingtalk/outbound-replies:
+  en: 612e396071490c49
+  zh: 2a996f9b5dce0def
+/deepseek-ai-dsh-connector-dingtalk/model-experience:
+  en: abe376e12952730f
+  zh: 9831db988f723c8f
+/deepseek-ai-dsh-connector-dingtalk/model-experience/kv-cache-effect:
+  en: e32b7fdf715270f1
+  zh: 78df27b2cfaed8a2
+/deepseek-ai-dsh-connector-dingtalk/known-limitations-and-deferred-work:
+  en: 3612d2220f819e31
+  zh: 22554256a698b51c
+/deepseek-ai-dsh-connector-dingtalk/known-limitations-and-deferred-work/dev-note:
+  en: cd9dd4a041ca520e
+  zh: 9fd648221ae335c4

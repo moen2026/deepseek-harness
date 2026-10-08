@@ -1,0 +1,17 @@
+# Opt-in hybrid code search: block-aware chunking plus BM25, with vectors from a
+# deployment-supplied OpenAI-compatible embeddings endpoint (for example Ollama
+# serving qwen3-embedding on http://127.0.0.1:11434/v1/embeddings). Source text
+# from the indexed workspace is sent to that endpoint, so point it only at a
+# service trusted with that source. Set DSH_EMBEDDING_URL before launching.
+- insert:
+    - id: code-index-hybrid
+      name: '@deepseek-ai/dsh-code-index-hybrid'
+      disabled: !!js (process.env.DSH_EMBEDDING_URL === undefined)
+      config:
+        path: !!js (process.env.DSH_CODE_INDEX_HYBRID_PATH ?? '.dsh/code-index-hybrid.sqlite')
+        root: !!js (process.env.DSH_CODE_INDEX_HYBRID_ROOT ?? process.cwd())
+        embedding:
+          url: !!js (process.env.DSH_EMBEDDING_URL ?? '')
+          model: !!js (process.env.DSH_EMBEDDING_MODEL ?? '')
+          authEnv: !!js (process.env.DSH_EMBEDDING_AUTH_ENV ?? 'DSH_EMBEDDING_AUTH_ENV')
+          dimension: !!js (Number(process.env.DSH_EMBEDDING_DIMENSION ?? 1024))

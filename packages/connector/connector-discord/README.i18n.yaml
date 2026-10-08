@@ -1,0 +1,40 @@
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write packages/connector/connector-discord/README.md
+/:
+  en: 9ff429e7220d5055
+  zh: 1fc937711f5903dc
+/deepseek-ai-dsh-connector-discord:
+  en: 2ea9ff886c299b60
+  zh: e3a6682e2131f566
+/deepseek-ai-dsh-connector-discord/summary:
+  en: 82d433895d1237db
+  zh: e02948a7b973e652
+/deepseek-ai-dsh-connector-discord/table-of-contents:
+  en: dd3cf80f1ef7613f
+  zh: 264bf04548263e76
+/deepseek-ai-dsh-connector-discord/configuration:
+  en: ae3e35ee8fc55015
+  zh: ef63e6b1289a66a0
+/deepseek-ai-dsh-connector-discord/gateway-contract:
+  en: cc91c5ca43cb5bca
+  zh: e5bec36649ba5837
+/deepseek-ai-dsh-connector-discord/inbound-messages:
+  en: 7eef02b8fe6bc400
+  zh: 209046bf2ece4ac6
+/deepseek-ai-dsh-connector-discord/outbound-replies:
+  en: cffddaa3db219a9a
+  zh: f217fe1d415ba1f4
+/deepseek-ai-dsh-connector-discord/model-experience:
+  en: abe376e12952730f
+  zh: 9831db988f723c8f
+/deepseek-ai-dsh-connector-discord/model-experience/kv-cache-effect:
+  en: eb1f3cbd24834a6e
+  zh: 43eb2f1e472ba308
+/deepseek-ai-dsh-connector-discord/known-limitations-and-deferred-work:
+  en: 37d1bde42fcc6b7b
+  zh: 6c5680e4a1fd9b88
+/deepseek-ai-dsh-connector-discord/known-limitations-and-deferred-work/dev-note:
+  en: 0ce0ccbb3d6c0c9f
+  zh: 17378d07c4febc57

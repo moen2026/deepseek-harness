@@ -5,9 +5,9 @@ import { describe, expect, it, onTestFinished, vi } from 'vitest'
 import { z } from 'zod'
 import { SshSandboxProvider } from '../src/index.ts'
 
-const policy: SandboxPolicy = { mode: 'workspace-write', workspaceRoot: '/remote/link/..' }
+const policy: SandboxPolicy = { mode: 'workspace-write', network: 'allowed', workspaceRoot: '/remote/link/..' }
 const completeFacts = {
-  argv: ['/usr/bin/bwrap', '--', 'true'], enforcement: 'full', denialSignatures: ['EROFS', 'EACCES'],
+  argv: ['/usr/bin/bwrap', '--', 'true'], enforcement: 'full', networkEnforcement: 'full', denialSignatures: ['EROFS', 'EACCES'],
   runnerFailureRules: [{ allowedExitCodes: [1], fatalSignatures: ['bwrap:'], informationalLines: ['notice'] }],
 }
 
@@ -52,7 +52,7 @@ describe('SSH sandbox provider', () => {
     expect(state.dispatch).toHaveBeenCalledTimes(2)
   })
 
-  it.each([null, { ...completeFacts, argv: [] }, { ...completeFacts, enforcement: 'unknown' }, { ...completeFacts, runnerFailureRules: [{ fatalSignatures: 1 }] }])(
+  it.each([null, { ...completeFacts, argv: [] }, { ...completeFacts, enforcement: 'unknown' }, { ...completeFacts, networkEnforcement: 'unknown' }, { ...completeFacts, runnerFailureRules: [{ fatalSignatures: 1 }] }])(
     'refuses malformed backend observations before exposing argv', async (raw) => {
       const state = await setup(raw)
       await expect(state.ctx.sandbox.confine(['true'], policy)).rejects.toBeInstanceOf(SandboxUnavailableError)

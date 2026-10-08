@@ -1,0 +1,58 @@
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write packages/notification/notification-web/README.md
+/:
+  en: fdb06569dc44b673
+  zh: 163519a9d6d2d213
+/deepseek-ai-dsh-notification-web:
+  en: 7f0a6f7ea4a954cb
+  zh: 4860138130beaa1b
+/deepseek-ai-dsh-notification-web/summary:
+  en: 3aa5879d4aa052e7
+  zh: cf90095f1bcdfb02
+/deepseek-ai-dsh-notification-web/table-of-contents:
+  en: d152484eb41ac6b4
+  zh: 071ea728d1fb7ad6
+/deepseek-ai-dsh-notification-web/use-this-package:
+  en: 26687624e5e1a976
+  zh: 03e2178ce5b9d32c
+/deepseek-ai-dsh-notification-web/use-this-package/when-to-choose-it:
+  en: cc8e4ae8936c299c
+  zh: 0fc069bfc8ae9391
+/deepseek-ai-dsh-notification-web/use-this-package/composing-a-notification-stack:
+  en: 30b1678d31221783
+  zh: 9b9e16c10224ee70
+/deepseek-ai-dsh-notification-web/use-this-package/the-republished-event:
+  en: 735a55d8148ed671
+  zh: 2473e3d185f89a3f
+/deepseek-ai-dsh-notification-web/use-this-package/failures-and-recovery:
+  en: 018b39886846dc12
+  zh: 2471d2b2efea93b9
+/deepseek-ai-dsh-notification-web/understand-the-implementation:
+  en: 8a5efa64f5b12f88
+  zh: 4065cbd29437dbba
+/deepseek-ai-dsh-notification-web/understand-the-implementation/design-philosophy:
+  en: 468e5eb8d827c812
+  zh: ef6a5957546b45ca
+/deepseek-ai-dsh-notification-web/understand-the-implementation/source-map:
+  en: a00f076d42be1669
+  zh: 92d2f51c0760f20b
+/deepseek-ai-dsh-notification-web/understand-the-implementation/the-two-hop-path:
+  en: e2fa0a6c3d5da442
+  zh: 5233b2e3f77c48c9
+/deepseek-ai-dsh-notification-web/further-exploration:
+  en: d7a2deaa70b4254b
+  zh: d1c143d66b02d677
+/deepseek-ai-dsh-notification-web/model-experience:
+  en: 9bffb976ee51f304
+  zh: 2d3f418c716524f6
+/deepseek-ai-dsh-notification-web/model-experience/kv-cache-effect:
+  en: e264cc0cc135e37c
+  zh: 5344a99946ba11ab
+/deepseek-ai-dsh-notification-web/known-limitations-and-deferred-work:
+  en: 9932067d86f82628
+  zh: 9d3236790d43dccd
+/deepseek-ai-dsh-notification-web/known-limitations-and-deferred-work/dev-note:
+  en: e67f633dc6fe7773
+  zh: 9c6918ce849f6c93

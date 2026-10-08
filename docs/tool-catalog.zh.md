@@ -37,7 +37,17 @@
 | `@deepseek-ai/dsh-tool-terminal` | `terminal_close`、`terminal_list`、`terminal_open`、`terminal_read`、`terminal_send`、`terminal_signal` | `ctx.tools`、`ctx.terminals`、`ctx.systemPrompt`、`ctx.jobs at call time for run_in_background` | `tool/call`、`tool/result` | - | 这 6 个终端工具需要选择启用，用于补充一次性 bash／文件系统工具。`terminal_send(run_in_background: true)` 会注册到 `ctx.jobs`；schema 不包含 TUI、具名按键序列、BEL、调整尺寸、自动启动和跨 agent 共享。 |
 | `@deepseek-ai/dsh-tool-goal` | `create_goal`、`get_goal`、`update_goal` | `ctx.tools`、`ctx.agents`、`ctx.goals`、`ctx.systemPrompt`、`a calling Agent in an authorized open turn` | `tool/call`、`goal/change for mutations`、`tool/result` | - | create、edit、pause 和 resume 要求直接来自人类的根权限；complete 和 blocked 也接受确切的当前 Goal Round。blocked 的默认下限是 3 个获准的 Round。 |
 | `@deepseek-ai/dsh-schedule` | `schedule_create`、`schedule_delete`、`schedule_list`、`schedule_update` | `ctx.tools`、`ctx.schedule`、live 根 Agent | `tool/call`、Schedule storage domain 创建、更新或删除、`tool/result` | - | Schedule 服务加载期间，在 live 根 Agent scope 内注册。接受 after_seconds、显式绝对 at、有界固定速率 every_seconds、带显式 IANA 时区的每日与每周本地时间，以及作为五字段表达式的 cron。管理使用宿主 storage domain；到期消息会恢复原 Session。 |
+| `@deepseek-ai/dsh-heartbeat` | `heartbeat_disable`、`heartbeat_enable` | `ctx.tools`、`ctx.schedule`、一个调用 Agent 会话 | `tool/call`、Schedule storage domain 创建或删除、`tool/result` | - | heartbeat 插件加载期间，在 live 根 Agent scope 内注册。heartbeat_enable 为每个会话创建一条周期 Schedule 提醒，其 prompt 携带完整巡逻语义（读取工作区心跳文件，处理其待办项，或回答 HEARTBEAT_OK）；heartbeat_disable 删除该会话的心跳任务。 |
+| `@deepseek-ai/dsh-session-rewind` | `workspace_rewind` | `ctx.tools`、一个有捕获轮次记录的调用 Agent 会话 | `tool/call`、`tool/result`、经 sessionRewind restore 的 workspace 文件写入 | - | 在根上下文注册一次；工具在 Agent scope 之外回答 unavailable。捕获自顶层轮的 turn/start 开始，排除 subagent 会话，且只覆盖 write、edit 与有修改作用的 str_replace_editor 文件工具——通过 shell 命令做出的编辑永远不会被捕获。 |
+| `@deepseek-ai/dsh-tool-github` | `github_comment` | `ctx.tools`、`ctx.credentials` | `tool/call`、`tool/result` | - | 可选出站能力：部署把它与 webhook 规则一同挂载（见 github-review 示例 overlay）并配置 credential-ref token；缺失时调用返回可操作的 unavailable 应答，而不是让会话失败。 |
 | `@deepseek-ai/dsh-tool-lsp` | `lsp` | `ctx.tools`、`ctx.lsp`、`ctx.systemPrompt` | `tool/call`、`tool/result` | - | lsp 工具将提供方选择和语言服务器子进程置于 ctx.lsp 之后，因此其模型可见 schema 在更换提供方时保持稳定。运行时要求已注册提供方，例如 `@deepseek-ai/dsh-lsp-stdio`；如果没有提供方，查询会返回结构化 `LSP_UNAVAILABLE` 错误，而不会改变 schema。 |
+| `@deepseek-ai/dsh-tool-code-index` | `search_codebase` | `ctx.tools`、`ctx.codeIndex`、`ctx.systemPrompt` | `tool/call`、`tool/result` | - | search_codebase 工具将语料构建与排序置于 ctx.codeIndex 之后，因此其模型可见 schema 在更换提供方时保持稳定。运行时要求已注册提供方，例如 `@deepseek-ai/dsh-code-index-sqlite`；如果没有提供方，搜索会返回可操作的不可用应答，而不是让会话失败。 |
+| `@deepseek-ai/dsh-tool-memory` | `memory_forget`、`memory_search`、`memory_write` | `ctx.tools`、`ctx.memory`、`ctx.systemPrompt` | `tool/call`、`tool/result` | - | memory_write/memory_search/memory_forget 工具将存储、排名与任何嵌入置于 ctx.memory 之后，因此其模型可见 schema 在更换提供方时保持稳定。运行时要求已注册提供方，例如 `@deepseek-ai/dsh-memory-sqlite`；如果没有提供方，操作会返回可操作的不可用应答，而不是让会话失败。除非部署配置其自身的嵌入端点，否则召回为词法。 |
+| `@deepseek-ai/dsh-tool-knowledge` | `knowledge_ingest`, `knowledge_list`, `knowledge_remove`, `knowledge_search` | `ctx.tools`、`ctx.knowledge`、`ctx.systemPrompt` | `tool/call`、`tool/result` | - | knowledge_ingest/knowledge_search/knowledge_remove/knowledge_list 工具将存储、分块与排名置于 ctx.knowledge 之后，因此其模型可见 schema 在更换提供方时保持稳定。运行时要求已注册提供方，例如 `@deepseek-ai/dsh-knowledge-sqlite`；如果没有提供方，操作会返回可操作的不可用应答，而不是让会话失败。 |
+| `@deepseek-ai/dsh-tool-audio` | `transcribe_audio` | `ctx.tools`、`ctx.audio`、`ctx.fs`、`ctx.systemPrompt` | `tool/call`、`tool/result` | - | transcribe_audio 工具将转写端点及其凭据置于 ctx.audio 之后，因此其模型可见 schema 在更换提供方时保持稳定。运行时要求已注册提供方，例如 `@deepseek-ai/dsh-audio-http`；如果没有提供方，调用会返回可操作的不可用应答，而不是让会话失败。 |
+| `@deepseek-ai/dsh-tool-image` | `generate_image` | `ctx.tools`、`ctx.image`、`ctx.attachments`、`ctx.systemPrompt` | `tool/call`、`tool/result` | - | generate_image 工具将生成端点及其凭据置于 ctx.image 之后，因此其模型可见 schema 在更换提供方时保持稳定。运行时要求已注册提供方（例如 `@deepseek-ai/dsh-image-http`）且已挂载 attachment 存储；如果没有，调用会返回可操作的不可用应答，而不是让会话失败。 |
+| `@deepseek-ai/dsh-tool-document` | `create_document` | `ctx.tools`、`ctx.documents`、`ctx.fs`、`ctx.systemPrompt`、`ctx.sessionProjections` | `tool/call`、`tool/result`、`fs/observed`、`deliverables/presented`（成功最终结果后） | - | create_document 工具将文档引擎置于 ctx.documents 之后，因此其模型可见 schema 在更换提供方时保持稳定。运行时要求已注册提供方（例如 `@deepseek-ai/dsh-office-create`）；如果没有，调用会返回可操作的不可用应答，而不是让会话失败。 |
+| `@deepseek-ai/dsh-tool-repo-wiki` | `read_wiki` | `ctx.tools`、`ctx.repoWiki`、`ctx.systemPrompt` | `tool/call`、`tool/result` | - | read_wiki 工具将 wiki 存储与生成置于 ctx.repoWiki 之后，因此其模型可见 schema 在更换提供方时保持稳定。运行时要求已注册提供方（例如 `@deepseek-ai/dsh-repo-wiki-generator`）；如果没有，调用会返回可操作的不可用应答，而不是让会话失败。 |
 | `@deepseek-ai/dsh-tool-ralph` | `ralph` | `ctx.tools`、`ctx.workflowEngine`、`ctx.subagents`、`ctx.systemPrompt`、`a calling Agent (exec.agent parents every fresh round)` | `tool/call`、`tool/result`、`workflow and child session events during execution` | - | 固定的前台工作流会在每个 Round 启动一个全新的结构化子级；模型只能选择不可变目标和可选的 Round 上限。 |
 | `@deepseek-ai/dsh-tool-skill` | `skill` | `ctx.tools`、`ctx.agents`、`ctx.skills` | `tool/call`、`tool/result`、`user/message replacement catalogs via agent.inject()` | - | - |
 | `@deepseek-ai/dsh-tool-session-query` | `session_event_read`、`session_event_search`、`session_event_trace`、`session_search`、`session_trace` | `ctx.tools`、`ctx.systemPrompt`、`ctx.sessionQuery`、`a calling Agent for workspace authority` | `tool/call`、`tool/result` | - | 这 5 个只读工具会隐藏提供方游标，并根据不可变的调用 agent 会话为每个结果授权。该包需要选择启用；需要强制截止时间或限制行内输出的组合还会挂载通用超时或 spill 策略。 |
@@ -46,6 +56,7 @@
 | `@deepseek-ai/dsh-tool-jobs` | `job_kill`、`job_list`、`job_output` | `ctx.tools`、`ctx.jobs`、`ctx.systemPrompt` | `tool/call`、`tool/result`、`user/message via agent.inject() for background completion notices` | - | 与任务种类无关的后台任务控制器：后台 bash 命令、PTY 发送和 subagent 都通过相同的 3 个工具读取、列出和终止。加载该插件会挂接控制器，从而启用生产方的 `ctx.jobs.start()`。 |
 | `@deepseek-ai/dsh-experimental-tool-agent-team` | `interrupt_agent`、`list_agents`、`send_message`、`spawn_teammate`、`team_task_create`、`team_task_get`、`team_task_list`、`team_task_update`、`wait_agent` | `ctx.tools`、`ctx.systemPrompt`、`ctx.agentTeams`、`an exact live Team member Agent` | `tool/call`、`team/member`、`team/message/queued`、`team/message/delivered`、`team/task`、`tool/result` | - | 这 9 个工具限定于隐式 Team Lead 与持久 teammate 作用域。随产品发布的 dsh-base bundle 默认禁用该包；文档中的 Agent Teams profile patch 会启用它，并禁用旧 continuable child 的同名控制工具。 |
 | `@deepseek-ai/dsh-tool-todo` | `todo_write` | `ctx.tools`、`owning Agent session` | `tool/call`、`todo/write`、`tool/result` | - | todo_write 是会话所有的状态；UI 将最新的 todo/write 事件渲染为检查清单。`allowParallelInProgress` 是没有默认值的必填项，因此本目录明确选择 `true`，对应描述允许同时存在多个 `in_progress` 项。选择 `false` 的部署会获得同一工具，但描述会要求只能有 1 个活动任务。 |
+| `@deepseek-ai/dsh-tool-git-track` | `pull_request_track`、`worktree_track` | `ctx.tools`、`ctx.storageDomain`、`owning Agent session` | `tool/call`、`Git-track storage domain create or update`、`tool/result` | - | worktree_track 与 pull_request_track 每次调用把一条记录 upsert 进 session_git_track 存储域，以属主会话与路径或 URL 为键，并返回调用会话的当前列表；记录仅是簿记，绝不运行 git 或联系托管平台。 |
 | `@deepseek-ai/dsh-tool-workflow` | `workflow` | `ctx.tools`、`ctx.workflowEngine`、`ctx.systemPrompt`、`a calling Agent (exec.agent parents the script children)` | `tool/call`、`tool/result` | - | - |
 | `@deepseek-ai/dsh-tool-workspace-dependencies` | `load_workspace_dependencies` | `ctx.tools` | `tool/call`, `tool/result` | - | - |
 | `@deepseek-ai/dsh-tool-web` | `web_fetch`、`web_search` | `ctx.tools`、`ctx.web`、`ctx.systemPrompt` | `tool/call`、`tool/result` | - | web_search 和 web_fetch 将提供方选择置于 ctx.web 之后，使模型可见 schema 在更换后端时保持稳定。 |
@@ -1550,8 +1561,6 @@ create、edit、pause 和 resume 要求直接来自人类的根权限；complete
 
 选择启用的 Schedule 服务加载期间，在 live 根 Agent scope 内注册。接受 after_seconds、显式绝对 at、有界固定速率 every_seconds、带显式 IANA 时区的每日与每周本地时间，以及作为五字段表达式的 cron。管理使用宿主 storage domain；到期消息会恢复原 Session。
 
-<a id="deepseek-aidsh-tool-lsp"></a>
-
 ### `schedule_update`
 
 原地修改一条提醒并保留其 id。提供新的 title、prompt，或至多一个时间参数；未提供的字段保持原值。需要相对延迟时请新建一条提醒。
@@ -1680,13 +1689,114 @@ Source: [`packages/schedule/schedule/src/tools.ts`](../packages/schedule/schedul
 
 Schedule 服务加载期间，在 live 根 Agent scope 内注册。接受 after_seconds、显式绝对 at、有界固定速率 every_seconds、带显式 IANA 时区的每日与每周本地时间，以及作为五字段表达式的 cron。管理使用宿主 storage domain；到期消息会恢复原 Session。
 
+<a id="deepseek-aidsh-heartbeat"></a>
+
+## `@deepseek-ai/dsh-heartbeat`
+
+### `heartbeat_disable`
+
+通过删除其周期提醒来停止本会话的心跳巡逻。已投递的心跳提醒不会被撤回。
+
+```json
+{
+  "type": "object",
+  "properties": {}
+}
+```
+
+Source: [`packages/schedule/heartbeat/src/index.ts`](../packages/schedule/heartbeat/src/index.ts)
+
+### `heartbeat_enable`
+
+在本会话中启动心跳巡逻：会创建一条周期提醒，使本会话周期性收到一次心跳，读取心跳文件（默认 HEARTBEAT.md）并处理其待办项。每个会话至多一条巡逻；请先调用 heartbeat_disable 再更改间隔。
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "interval_seconds": {
+      "type": "number",
+      "description": "Heartbeat interval in whole seconds, at least 60. Omission uses the deployment default."
+    }
+  }
+}
+```
+
+Source: [`packages/schedule/heartbeat/src/index.ts`](../packages/schedule/heartbeat/src/index.ts)
+
+heartbeat 插件加载期间，在 live 根 Agent scope 内注册。heartbeat_enable 为每个会话创建一条周期 Schedule 提醒，其 prompt 携带完整巡逻语义（读取工作区心跳文件，处理其待办项，或回答 HEARTBEAT_OK）；heartbeat_disable 删除该会话的心跳任务。
+
+<a id="deepseek-aidsh-session-rewind"></a>
+
+## `@deepseek-ai/dsh-session-rewind`
+
+### `workspace_rewind`
+
+把本会话的文件工具在一个轮次中改动的文件恢复到轮前内容：被编辑的文件写回，轮内创建的文件删除，rewind 记录无法覆盖的路径（超过捕获上限）被跳过并报告。turn 是要重现轮前状态的轮次编号。被覆盖的路径即使后续轮又编辑过也会被写回，因此恢复过去的轮次前先与用户确认。通过 shell 命令做出的编辑永远不会被捕获也永远不会被恢复。该轮没有记录时返回 unknown_turn 应答；rewind 记录只与所属会话一样存活于本 Host 进程内。
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "turn": {
+      "type": "number",
+      "description": "The turn whose pre-turn state to reproduce."
+    }
+  },
+  "required": [
+    "turn"
+  ]
+}
+```
+
+来源：[`packages/session/session-rewind/src/index.ts`](../packages/session/session-rewind/src/index.ts)
+
+在根上下文注册一次；工具在 Agent scope 之外回答 unavailable。捕获自顶层轮的 turn/start 开始，排除 subagent 会话，且只覆盖 write、edit 与有修改作用的 str_replace_editor 文件工具——通过 shell 命令做出的编辑永远不会被捕获。
+
+<a id="deepseek-aidsh-tool-github"></a>
+
+## `@deepseek-ai/dsh-tool-github`
+
+### `github_comment`
+
+通过 GitHub REST API 在一个 GitHub issue 或 pull request 上发表一条 Markdown 评论。repository 是 "owner/repo"，number 是 issue 或 pull request 编号，body 是评论正文（支持 GitHub Flavored Markdown）。部署显式挂载本工具及其 token 凭据；未配置 token 时调用返回 unavailable 应答而不是报错。发表是外部的、可见的副作用——当主控工作流未强制发表时，先与用户确认评论内容。
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "repository": {
+      "type": "string",
+      "description": "Repository as \"owner/repo\"."
+    },
+    "number": {
+      "type": "number",
+      "description": "The issue or pull request number to comment on."
+    },
+    "body": {
+      "type": "string",
+      "description": "Markdown comment body (GitHub Flavored Markdown is supported)."
+    }
+  },
+  "required": [
+    "repository",
+    "number",
+    "body"
+  ]
+}
+```
+
+来源：[`packages/webhook/tool-github/src/index.ts`](../packages/webhook/tool-github/src/index.ts)
+
+可选出站能力：部署把它与 webhook 规则一同挂载（见 github-review 示例 overlay）并配置 credential-ref token；缺失时调用返回可操作的 unavailable 应答，而不是让会话失败。
+
 <a id="deepseek-aidsh-tool-lsp"></a>
 
 ## `@deepseek-ai/dsh-tool-lsp`
 
 ### `lsp`
 
-查询语言服务器，以精确导航代码。operation 可取 goToDefinition、findReferences、goToImplementation 或 hover。line 和 character 是从 1 开始的 UTF-16 光标坐标。findReferences 包含声明。
+查询语言服务器，以精确导航代码。operation 可取 goToDefinition、findReferences、goToImplementation、hover 或 diagnostics。line 和 character 是从 1 开始的 UTF-16 光标坐标，除 diagnostics 外均为必填；diagnostics 是文件级的（报告文件当前的疑难，不需要光标）。findReferences 包含声明。
 
 ```json
 {
@@ -1694,12 +1804,13 @@ Schedule 服务加载期间，在 live 根 Agent scope 内注册。接受 after_
   "properties": {
     "operation": {
       "type": "string",
-      "description": "goToDefinition, findReferences, goToImplementation, or hover.",
+      "description": "goToDefinition, findReferences, goToImplementation, hover, or diagnostics.",
       "enum": [
         "goToDefinition",
         "findReferences",
         "goToImplementation",
-        "hover"
+        "hover",
+        "diagnostics"
       ]
     },
     "file_path": {
@@ -1708,18 +1819,16 @@ Schedule 服务加载期间，在 live 根 Agent scope 内注册。接受 after_
     },
     "line": {
       "type": "number",
-      "description": "One-based line of the cursor."
+      "description": "One-based line of the cursor. Required except for diagnostics."
     },
     "character": {
       "type": "number",
-      "description": "One-based UTF-16 column of the cursor."
+      "description": "One-based UTF-16 column of the cursor. Required except for diagnostics."
     }
   },
   "required": [
     "operation",
-    "file_path",
-    "line",
-    "character"
+    "file_path"
   ]
 }
 ```
@@ -1727,6 +1836,480 @@ Schedule 服务加载期间，在 live 根 Agent scope 内注册。接受 after_
 来源：[`packages/lsp/tool-lsp/src/index.ts`](../packages/lsp/tool-lsp/src/index.ts)
 
 lsp 工具将提供方选择和语言服务器子进程置于 ctx.lsp 之后，因此其模型可见 schema 在更换提供方时保持稳定。运行时要求已注册提供方，例如 `@deepseek-ai/dsh-lsp-stdio`；如果没有提供方，查询会返回结构化 `LSP_UNAVAILABLE` 错误，而不会改变 schema。
+
+<a id="deepseek-aidsh-tool-code-index"></a>
+
+## `@deepseek-ai/dsh-tool-code-index`
+
+### `search_codebase`
+
+对工作区已索引源码进行词法全文搜索，返回带片段的排序行范围。query 是要匹配的必填文本。可选地用 glob（如 packages/**/*.ts）与 language（如 typescript）缩小范围；limit 限制命中数量。当未配置 code-index 提供方时，返回可操作的不可用消息。
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "query": {
+      "type": "string",
+      "description": "Text or tokens to match against indexed source chunks."
+    },
+    "glob": {
+      "type": "string",
+      "description": "Optional glob limiting which file paths are searched (e.g. packages/**/*.ts)."
+    },
+    "language": {
+      "type": "string",
+      "description": "Optional syntax id restricting results (e.g. typescript, python, go)."
+    },
+    "limit": {
+      "type": "number",
+      "description": "Optional maximum number of ranked hits to return."
+    }
+  },
+  "required": [
+    "query"
+  ]
+}
+```
+
+来源：[`packages/code-index/tool-code-index/src/index.ts`](../packages/code-index/tool-code-index/src/index.ts)
+
+search_codebase 工具将语料构建与排序置于 ctx.codeIndex 之后，因此其模型可见 schema 在更换提供方时保持稳定。运行时要求已注册提供方，例如 `@deepseek-ai/dsh-code-index-sqlite`；如果没有提供方，搜索会返回可操作的不可用应答，而不是让会话失败。
+
+<a id="deepseek-aidsh-tool-memory"></a>
+
+## `@deepseek-ai/dsh-tool-memory`
+
+### `memory_forget`
+
+按 id 删除一条已存储的记忆。当用户要求你忘记之前记住的某事时使用。id 是由先前 memory_write 或 memory_search 返回的记录标识。报告是否移除了某条记忆，并在未配置记忆提供方时返回可操作的不可用消息。
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "The identity of the memory to forget."
+    }
+  },
+  "required": [
+    "id"
+  ]
+}
+```
+
+来源：[`packages/memory/tool-memory/src/index.ts`](../packages/memory/tool-memory/src/index.ts)
+
+### `memory_search`
+
+召回匹配查询的已存储记忆，按 best-first 排序返回，带 id、text、tags、scope、namespace、confidence 与 score。当过往上下文可能相关时使用。query 是要匹配的必填文本。可选地按 tags、scope、namespace 与 min_confidence 过滤，并用 limit 限制结果数量。过期记忆永不返回。当未配置记忆提供方时，返回可操作的不可用消息。
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "query": {
+      "type": "string",
+      "description": "Text or tokens to match against stored memories."
+    },
+    "tags": {
+      "type": "array",
+      "description": "Optional tags restricting recall to memories carrying them.",
+      "items": {
+        "type": "string"
+      }
+    },
+    "scope": {
+      "type": "string",
+      "description": "Optional scope restricting recall to one partition of the store."
+    },
+    "namespace": {
+      "type": "string",
+      "description": "Optional namespace restricting recall to memories classified with it.",
+      "enum": [
+        "preference",
+        "fact",
+        "style"
+      ]
+    },
+    "min_confidence": {
+      "type": "number",
+      "description": "Optional lowest recorded confidence eligible; memories without one are excluded."
+    },
+    "limit": {
+      "type": "number",
+      "description": "Optional maximum number of ranked hits to return."
+    }
+  },
+  "required": [
+    "query"
+  ]
+}
+```
+
+来源：[`packages/memory/tool-memory/src/index.ts`](../packages/memory/tool-memory/src/index.ts)
+
+### `memory_write`
+
+向长期记忆持久一条持久事实或偏好并返回其 id。当用户要求你记住某事时使用。text 是必填的自由格式内容。可选地附加 tags（分类标签）、scope（如某个项目的分区）、namespace（preference、fact 或 style）、0 到 1 之间的 confidence，以及 ttl_ms（正值毫秒数，期满后该记忆不再被召回）。当未配置记忆提供方时，返回可操作的不可用消息。
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "text": {
+      "type": "string",
+      "description": "The fact or preference to remember, as free text."
+    },
+    "tags": {
+      "type": "array",
+      "description": "Optional classification tags stored with the memory and filterable on recall.",
+      "items": {
+        "type": "string"
+      }
+    },
+    "scope": {
+      "type": "string",
+      "description": "Optional scope (for example a project or workspace) partitioning the store."
+    },
+    "namespace": {
+      "type": "string",
+      "description": "Optional namespace classifying the memory: preference (how the user wants work done), fact (durable project facts), or style (collaboration-style guidance).",
+      "enum": [
+        "preference",
+        "fact",
+        "style"
+      ]
+    },
+    "confidence": {
+      "type": "number",
+      "description": "Optional confidence in this memory, from 0 through 1."
+    },
+    "ttl_ms": {
+      "type": "number",
+      "description": "Optional time-to-live in milliseconds; after it elapses the memory is no longer recalled."
+    }
+  },
+  "required": [
+    "text"
+  ]
+}
+```
+
+来源：[`packages/memory/tool-memory/src/index.ts`](../packages/memory/tool-memory/src/index.ts)
+
+memory_write/memory_search/memory_forget 工具将存储、排名与任何嵌入置于 ctx.memory 之后，因此其模型可见 schema 在更换提供方时保持稳定。运行时要求已注册提供方，例如 `@deepseek-ai/dsh-memory-sqlite`；如果没有提供方，操作会返回可操作的不可用应答，而不是让会话失败。除非部署配置其自身的嵌入端点，否则召回为词法。
+
+<a id="deepseek-aidsh-tool-knowledge"></a>
+
+## `@deepseek-ai/dsh-tool-knowledge`
+
+### `knowledge_ingest`
+
+将一篇带标题的文档持久到共享知识库并返回其 id。当工作产出可复用的发现时使用——例如研究摘要、已决定的方案或值得保存的环境事实。title 是简短的人工标题；text 是文档正文。可选附加 tags（分类标签）与 source（出处，如 URL 或路径）。未配置知识提供方时返回可操作的不可用消息。
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "A short human title for the document."
+    },
+    "text": {
+      "type": "string",
+      "description": "The document body to persist, as free text."
+    },
+    "tags": {
+      "type": "array",
+      "description": "Optional classification tags stored with the document and filterable on search and listing.",
+      "items": {
+        "type": "string"
+      }
+    },
+    "source": {
+      "type": "string",
+      "description": "Optional provenance (a URL, path, or other citation) stored verbatim."
+    }
+  },
+  "required": [
+    "title",
+    "text"
+  ]
+}
+```
+
+来源：[`packages/knowledge/tool-knowledge/src/index.ts`](../packages/knowledge/tool-knowledge/src/index.ts)
+
+### `knowledge_list`
+
+列出已存储的知识文档，最近优先，带 id、标题、tags 与 source。当查询尚未成形时用于浏览知识库。可选按 tags 过滤并用 limit 限制数量。未配置知识提供方时返回可操作的不可用消息。
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "tags": {
+      "type": "array",
+      "description": "Optional tags restricting the listing to documents carrying them.",
+      "items": {
+        "type": "string"
+      }
+    },
+    "limit": {
+      "type": "number",
+      "description": "Optional maximum number of documents to return."
+    }
+  }
+}
+```
+
+来源：[`packages/knowledge/tool-knowledge/src/index.ts`](../packages/knowledge/tool-knowledge/src/index.ts)
+
+### `knowledge_remove`
+
+按 id 删除一篇已存储的知识文档。当某篇存储文档过时或有误时使用。id 是先前 knowledge_ingest 或 knowledge_search 返回的文档标识。报告是否删除了文档，并在未配置知识提供方时返回可操作的不可用消息。
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "The identity of the document to remove."
+    }
+  },
+  "required": [
+    "id"
+  ]
+}
+```
+
+来源：[`packages/knowledge/tool-knowledge/src/index.ts`](../packages/knowledge/tool-knowledge/src/index.ts)
+
+### `knowledge_search`
+
+在共享知识库中搜索匹配查询的文档，按 best-first 排序返回，带 id、标题、摘录、tags、source 与 score。当先前存储的知识可能相关时使用。query 是要匹配的必填文本。可选按 tags 过滤并用 limit 限制结果数量。未配置知识提供方时返回可操作的不可用消息。
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "query": {
+      "type": "string",
+      "description": "Text or tokens to match against document titles and bodies."
+    },
+    "tags": {
+      "type": "array",
+      "description": "Optional tags restricting search to documents carrying them.",
+      "items": {
+        "type": "string"
+      }
+    },
+    "limit": {
+      "type": "number",
+      "description": "Optional maximum number of ranked hits to return."
+    }
+  },
+  "required": [
+    "query"
+  ]
+}
+```
+
+来源：[`packages/knowledge/tool-knowledge/src/index.ts`](../packages/knowledge/tool-knowledge/src/index.ts)
+
+knowledge_ingest/knowledge_search/knowledge_remove/knowledge_list 工具将存储、分块与排名置于 ctx.knowledge 之后，因此其模型可见 schema 在更换提供方时保持稳定。运行时要求已注册提供方，例如 `@deepseek-ai/dsh-knowledge-sqlite`；如果没有提供方，操作会返回可操作的不可用应答，而不是让会话失败。
+
+<a id="deepseek-aidsh-tool-audio"></a>
+
+## `@deepseek-ai/dsh-tool-audio`
+
+### `transcribe_audio`
+
+转写工作区中的音频文件（MP3、WAV、M4A、AAC、OGG、Opus、FLAC 或 WebM）并返回识别文本。file_path 必填；language 与 prompt 是可选修饰。未配置转写提供方时返回可操作的不可用消息。
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "file_path": {
+      "type": "string",
+      "description": "Path to the audio file, resolved by the filesystem backend."
+    },
+    "language": {
+      "type": "string",
+      "description": "Optional ISO 639-1 language hint for the transcription."
+    },
+    "prompt": {
+      "type": "string",
+      "description": "Optional free-text hint (for example known terms) steering the transcription."
+    }
+  },
+  "required": [
+    "file_path"
+  ]
+}
+```
+
+来源：[`packages/audio/tool-audio/src/index.ts`](../packages/audio/tool-audio/src/index.ts)
+
+transcribe_audio 工具将转写端点及其凭据置于 ctx.audio 之后，因此其模型可见 schema 在更换提供方时保持稳定。运行时要求已注册提供方，例如 `@deepseek-ai/dsh-audio-http`；如果没有提供方，调用会返回可操作的不可用应答，而不是让会话失败。
+
+<a id="deepseek-aidsh-tool-image"></a>
+
+## `@deepseek-ai/dsh-tool-image`
+
+### `generate_image`
+
+根据文本提示生成图像并返回图像本身。prompt 为必填；size 是可选的细化参数，例如 "1024x1024"。未配置图像提供方时返回可操作的不可用消息。
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "prompt": {
+      "type": "string",
+      "description": "The text prompt describing the image to generate."
+    },
+    "size": {
+      "type": "string",
+      "description": "Optional requested image size (for example \"1024x1024\"); the provider interprets the hint."
+    }
+  },
+  "required": [
+    "prompt"
+  ]
+}
+```
+
+来源：[`packages/image/tool-image/src/index.ts`](../packages/image/tool-image/src/index.ts)
+
+generate_image 工具将生成端点及其凭据置于 ctx.image 之后，因此其模型可见 schema 在更换提供方时保持稳定。运行时要求已注册提供方（例如 `@deepseek-ai/dsh-image-http`）且已挂载 attachment 存储；如果没有，调用会返回可操作的不可用应答，而不是让会话失败。
+
+## `@deepseek-ai/dsh-tool-document`
+
+### `create_document`
+
+根据标题和内容块创建 Office 文档（DOCX、XLSX 或 PPTX），写入工作区，并作为交付物呈现给用户。未配置 documents 提供方时返回可操作的不可用消息。
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "format": {
+      "type": "string",
+      "description": "The Office format to create.",
+      "enum": [
+        "docx",
+        "xlsx",
+        "pptx"
+      ]
+    },
+    "title": {
+      "type": "string",
+      "description": "The document title."
+    },
+    "file_path": {
+      "type": "string",
+      "description": "Workspace path for the new document; an existing file at that path is never overwritten."
+    },
+    "blocks": {
+      "type": "array",
+      "description": "Content blocks in document order: heading, text, bullets, table, or chartPlaceholder objects.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "heading",
+              "text",
+              "bullets",
+              "table",
+              "chartPlaceholder"
+            ]
+          },
+          "text": {
+            "type": "string",
+            "description": "heading/text: the block text."
+          },
+          "level": {
+            "type": "integer",
+            "description": "heading only: 1-based outline level (default 1)."
+          },
+          "items": {
+            "type": "array",
+            "description": "bullets only: the bullet items.",
+            "items": {
+              "type": "string"
+            }
+          },
+          "rows": {
+            "type": "array",
+            "description": "table only: rectangular rows; the first row is the header.",
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "label": {
+            "type": "string",
+            "description": "chartPlaceholder only: what the reserved chart will show."
+          }
+        },
+        "required": [
+          "kind"
+        ]
+      }
+    }
+  },
+  "required": [
+    "format",
+    "title",
+    "file_path",
+    "blocks"
+  ]
+}
+```
+
+来源：[`packages/document/tool-document/src/index.ts`](../packages/document/tool-document/src/index.ts)
+
+create_document 工具将文档引擎置于 ctx.documents 之后，因此其模型可见 schema 在更换提供方时保持稳定。运行时要求已注册提供方（例如 `@deepseek-ai/dsh-office-create`）；如果没有，调用会返回可操作的不可用应答，而不是让会话失败。
+
+<a id="deepseek-aidsh-tool-repo-wiki"></a>
+
+## `@deepseek-ai/dsh-tool-repo-wiki`
+
+### `read_wiki`
+
+读取 harness 生成的仓库 wiki。不带参数时列出每一页（path、title、staleness）。带 path 时返回一页的完整 Markdown 内容——或带 outline=true 时返回其标题结构。stale 页面是指生成源在生成之后已变化的页面。未配置 repo-wiki 提供方时返回可操作的不可用消息。
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "path": {
+      "type": "string",
+      "description": "Wiki page path to read (as listed without arguments); omit to list every page."
+    },
+    "outline": {
+      "type": "boolean",
+      "description": "With path, return the page's heading outline instead of its full content."
+    }
+  }
+}
+```
+
+来源：[`packages/wiki/tool-repo-wiki/src/index.ts`](../packages/wiki/tool-repo-wiki/src/index.ts)
+
+read_wiki 工具将 wiki 存储与生成置于 ctx.repoWiki 之后，因此其模型可见 schema 在更换提供方时保持稳定。运行时要求已注册提供方（例如 `@deepseek-ai/dsh-repo-wiki-generator`）；如果没有，调用会返回可操作的不可用应答，而不是让会话失败。
+
+<a id="deepseek-aidsh-tool-ralph"></a>
 
 <a id="deepseek-aidsh-tool-ralph"></a>
 
@@ -2565,6 +3148,74 @@ lsp 工具将提供方选择和语言服务器子进程置于 ctx.lsp 之后，�
 来源：[`packages/todo/tool-todo/src/index.ts`](../packages/todo/tool-todo/src/index.ts)
 
 todo_write 是会话所有的状态；UI 将最新的 todo/write 事件渲染为检查清单。`allowParallelInProgress` 是没有默认值的必填项，因此本目录明确选择 `true`，对应描述允许同时存在多个 `in_progress` 项。选择 `false` 的部署会获得同一工具，但描述会要求只能有 1 个活动任务。
+
+<a id="deepseek-aidsh-tool-git-track"></a>
+
+## `@deepseek-ai/dsh-tool-git-track`
+
+### `pull_request_track`
+
+记录本会话打开的 pull request，使该关联跨后续轮次与上下文压缩存续；在得知 pull request URL 后立即调用，并在其标题或头分支变化时用同一 URL 再次调用。记录仅是簿记：绝不创建、更改或删除任何内容。
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "url": {
+      "type": "string",
+      "description": "Canonical pull-request URL."
+    },
+    "number": {
+      "type": "number",
+      "description": "Hosting-platform pull-request number."
+    },
+    "title": {
+      "type": "string",
+      "description": "Pull-request title."
+    },
+    "branch": {
+      "type": "string",
+      "description": "Head branch of the pull request."
+    }
+  },
+  "required": [
+    "url"
+  ]
+}
+```
+
+来源：[`packages/git/tool-git-track/src/index.ts`](../packages/git/tool-git-track/src/index.ts)
+
+### `worktree_track`
+
+记录本会话创建或使用的 git worktree，使该关联跨后续轮次与上下文压缩存续；在 `git worktree add` 成功后立即调用，并在其分支变化时用同一路径再次调用。记录仅是簿记：绝不创建、更改或删除任何内容。
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "path": {
+      "type": "string",
+      "description": "Absolute path of the worktree directory."
+    },
+    "branch": {
+      "type": "string",
+      "description": "Branch checked out in the worktree."
+    },
+    "base": {
+      "type": "string",
+      "description": "Ref the worktree branched from."
+    }
+  },
+  "required": [
+    "path"
+  ]
+}
+```
+
+来源：[`packages/git/tool-git-track/src/index.ts`](../packages/git/tool-git-track/src/index.ts)
+
+worktree_track 与 pull_request_track 每次调用把一条记录 upsert 进 session_git_track 存储域，以属主会话与路径或 URL 为键，并返回调用会话的当前列表；记录仅是簿记，绝不运行 git 或联系托管平台。
 
 <a id="deepseek-aidsh-tool-workflow"></a>
 

@@ -341,6 +341,8 @@ The Remote `schedule.list({ sessionId })`, model `schedule_list`, and Session-he
 
 The Web bundle mounts `ui-schedule` with the Host capability. The [client package](../../packages/client/ui-schedule/README.md) owns the catalog, empty state, and deletion controls. The page separately filters all, active, and inactive tasks, retains inactive details and an original-Session control in the detail tab strip, and requires explicit confirmed deletion. Rules and Delivery records separate task settings from lazily paged saved receipts. Neither a receipt nor inactive status confirms model execution.
 
+Heartbeat patrols ride the same delivery. The [heartbeat package](../../packages/schedule/heartbeat/README.md) registers `heartbeat_enable` and `heartbeat_disable`, which manage one recurring task per Session whose prompt carries the whole patrol semantic — read the workspace heartbeat file, act on its pending items, update the file, or answer `HEARTBEAT_OK` when nothing is pending.
+
 ## Timing edits
 
 `schedule.update({ sessionId, id, expected, change })` edits an active task without activating its Session. `expected` is the complete observed `ScheduleRecord`, not a catalog entry with extra metadata. The Host compares it to the current record inside the same FIFO used by dispatch and deletion. Normal delivery can advance the target during editing; that stale snapshot returns `schedule_conflict` instead of overwriting the current rule. Missing or mismatched bindings return `schedule_not_found`, and inactive tasks return `schedule_ended`.
@@ -537,6 +539,24 @@ Durable task set changed; clients refetch global task and Session-active catalog
  * @mode emit
  */
 'schedule/changed'(): void
+```
+
+Source: [`packages/schedule/schedule/src/types.ts`](../../packages/schedule/schedule/src/types.ts)
+
+<a id="scheduledelivered--emit"></a>
+
+#### `schedule/delivered` — emit
+
+One admitted reminder reached its Session and its commit landed; surface consumers may alert the operator. Raised once per committed member.
+
+```ts cordis-catalog
+/**
+ * One admitted reminder reached its Session and its commit landed; surface
+ * consumers may alert the operator. Raised once per committed member.
+ * @mode emit
+ * @param payload - delivered task identity, its Session, and the delivery instant.
+ */
+'schedule/delivered'(payload: ScheduleDelivered): void
 ```
 
 Source: [`packages/schedule/schedule/src/types.ts`](../../packages/schedule/schedule/src/types.ts)

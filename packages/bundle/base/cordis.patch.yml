@@ -431,6 +431,11 @@
       config:
         allowParallelInProgress: true
 
+    # Session-owned records of the worktrees the agent creates and the pull
+    # requests it opens; each record is bookkeeping only.
+    - id: tool-git-track
+      name: '@deepseek-ai/dsh-tool-git-track'
+
     # Persisted same-session goals reach the model and the slash menu here; the
     # domain, driver, and `/goal` command are above.
     - id: tool-goal
@@ -490,6 +495,12 @@
 
     - id: mcp-resources
       name: '@deepseek-ai/dsh-mcp-resources'
+
+    # Read-only MCP discovery Remote face over the resource runtime: the Web
+    # MCP panel reads server, tool, and resource inventory through it; it owns
+    # no connection path.
+    - id: mcp-browser
+      name: '@deepseek-ai/dsh-mcp-resources/browser'
 
     # ── rows every mode mounts, whose values each overlay may state ──────────────
 

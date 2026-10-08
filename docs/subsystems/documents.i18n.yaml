@@ -1,0 +1,10 @@
+# Bilingual-pair consistency record for documents.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write docs/subsystems/documents.md
+/document-creation:
+  en: ddcbd85030a40807
+  zh: a498f820786d5d10
+/document-creation/operations-and-created-documents:
+  en: d0acf5ad465a8d22
+  zh: c6a1ec85850c58bf

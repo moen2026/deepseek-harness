@@ -7,6 +7,7 @@ import type { StartedToolCall, ToolResultNode } from '@deepseek-ai/dsh-client-ui
 import { makeTranslate } from '@deepseek-ai/dsh-client-test-runtime'
 import { zh as commonZh } from '@deepseek-ai/dsh-client-locale/src/locales/zh.ts'
 import { localizeAutoReviewDenial, normalizeAutoReviewReason } from '../src/client/tool/models/auto-review-denial.ts'
+import { devServerPreview } from '../src/client/tool/models/dev-server-model.ts'
 import {
   classifyTool, formatToolBody, resultText, toolRowModel,
 } from '../src/client/tool/models/tool-call-model.ts'
@@ -86,6 +87,21 @@ describe('tool-call-model', () => {
     const m = toolRowModel('pwsh', running())
     expect(m.variant).toBe('bash')
     expect(t(m.titleKey)).toBe('运行命令')
+  })
+
+  it('classifies both computer-use provider prefixes as one variant', () => {
+    // Both upstream catalogs are discovered at runtime, so the row classifies
+    // by wire-name prefix over either provider's public name.
+    expect(classifyTool('cua_driver_native__click')).toBe('computer-use')
+    expect(classifyTool('mcp__cua-driver-mcp__screenshot')).toBe('computer-use')
+    expect(classifyTool('mcp__other-server__click')).toBe('others')
+    const m = toolRowModel('cua_driver_native__click', running({
+      name: 'cua_driver_native__click', argsRaw: '{"window_title":"Settings","x":120,"y":80}',
+    }))
+    expect(m.variant).toBe('computer-use')
+    expect(t(m.titleKey)).toBe('电脑操作')
+    // The acted-on surface names the row; coordinates stay in the expandable body.
+    expect(m.summary).toBe('Settings')
   })
 
   it('derives state across running/ok/error/interrupted', () => {
@@ -595,5 +611,64 @@ describe('GenericToolCard', () => {
     ))).toBe(false)
     expect(view.queryByText('Tool execution rejected by user')).toBeNull()
     expect(view.queryByText(/"path"/)).toBeNull()
+  })
+})
+
+describe('dev-server preview', () => {
+  const props = (toolName: string, block: StartedToolCall | ToolResultNode): GenericToolCardProps => ({
+    loadImage: vi.fn(() => Promise.reject(new Error('not used'))),
+    useDisclosure, callId: 'c1', toolName, ...('kind' in block ? { phase: 'result' as const, block: block } : { phase: block.phase, block: block }), openFile: vi.fn(), t,
+  })
+  const shellResult = (text: string, args: Record<string, unknown>): ToolResultNode =>
+    result({ content: [{ type: 'text', text }], call: { name: 'bash', argsRaw: JSON.stringify(args) } })
+
+  it('detects the dev server a background bash call printed', () => {
+    const view = render(<GenericToolCard {...props('bash', shellResult(
+      'job b1 started\nLocal: http://localhost:5173/\n\n[exit code: 0]',
+      { command: 'npm run dev', description: 'Start dev server', run_in_background: true },
+    ))} />)
+    expect(view.container.querySelector('[data-variant="bash"]')!.querySelector('[class*="summarySuffix"]')?.textContent)
+      .toBe('localhost:5173')
+    fireEvent.click(view.getByRole('button'))
+    const link = view.getByRole('link')
+    expect(link.getAttribute('href')).toBe('http://localhost:5173/')
+    expect(link.textContent).toContain('打开预览')
+  })
+
+  it('detects an IPv6 loopback banner on a foreground terminal card', () => {
+    const view = render(<GenericToolCard {...props('bash', shellResult(
+      'Server listening at http://[::1]:3000',
+      { command: 'node server.js', description: 'Start server' },
+    ))} />)
+    expect(view.container.querySelector('[class*="summarySuffix"]')?.textContent).toBe('[::1]:3000')
+    fireEvent.click(view.getByRole('button'))
+    expect(view.getByRole('link').getAttribute('href')).toBe('http://[::1]:3000')
+  })
+
+  it('ignores external URLs, non-process tools, and failing calls', () => {
+    const external = render(<GenericToolCard {...props('bash', shellResult(
+      'see http://example.com:8080', { command: 'curl', description: 'Fetch' },
+    ))} />)
+    expect(external.container.querySelector('[class*="summarySuffix"]')).toBeNull()
+    external.unmount()
+
+    const other = render(<GenericToolCard {...props('unknown_tool', result({
+      content: [{ type: 'text', text: 'visit http://localhost:5173' }],
+      call: { name: 'unknown_tool', argsRaw: '{"note":"x"}' },
+    }))} />)
+    fireEvent.click(other.getByRole('button'))
+    expect(other.queryByRole('link')).toBeNull()
+    other.unmount()
+
+    const failed = shellResult('Local: http://localhost:5173/', { command: 'npm run dev', description: 'Start dev server' })
+    const failedView = render(<GenericToolCard {...props('bash', { ...failed, isError: true })} />)
+    expect(failedView.container.querySelector('[class*="summarySuffix"]')).toBeNull()
+  })
+
+  it('rejects an out-of-range or truncated port', () => {
+    expect(devServerPreview('http://localhost:0')).toBeUndefined()
+    expect(devServerPreview('http://localhost:99999')).toBeUndefined()
+    // Six digits never match a partial prefix, so the URL stays out entirely.
+    expect(devServerPreview('http://localhost:123456')).toBeUndefined()
   })
 })

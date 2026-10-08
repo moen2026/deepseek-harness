@@ -14,8 +14,8 @@ it('ships install metadata with the built web application', async () => {
   // so only an absent `id`, which defaults to the resolved `start_url`, gives
   // each mount its own identity. `public-mount.e2e.ts` reads the resolved form.
   expect(manifest).toEqual({
-    name: 'DeepSeek Harness',
-    short_name: 'DSH',
+    name: 'Damon',
+    short_name: 'Damon',
     start_url: './',
     scope: './',
     display: 'fullscreen',
@@ -34,8 +34,10 @@ it('ships fixed-color favicons selected by document media queries', async () => 
   expect(index).toContain('<link rel="icon" type="image/svg+xml" href="./favicon.svg" media="(prefers-color-scheme: light)" />')
   const light = await readFile(join(DIST_ROOT, 'favicon.svg'), 'utf8')
   const dark = await readFile(join(DIST_ROOT, 'favicon-dark.svg'), 'utf8')
+  // The mark carries its own gradient, so both schemes serve the same bytes; it
+  // stays fixed-color because a favicon cannot read the document's theme.
   expect(light).not.toContain('<style>')
-  expect(light).toContain('fill="#000"')
-  expect(dark).toContain('fill="#fff"')
-  expect(dark.replace('fill="#fff"', 'fill="#000"')).toBe(light)
+  expect(light).not.toContain('currentColor')
+  expect(light).toContain('stop-color="#38bdf8"')
+  expect(dark).toBe(light)
 })

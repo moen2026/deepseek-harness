@@ -292,27 +292,24 @@
   letter-spacing: 0.04em;
 }
 
-.fallbackBrandName {
-  font-size: 17px;
-  letter-spacing: 0px;
-  white-space: nowrap;
-}
-
-.localBuildBrand {
+/* The Damon word art ships as a baked alpha mask (white paper inverted into
+   transparency; see brand/bake-damon-wordmark.ps1), so `currentColor` tints it
+   and it stays legible under both themes. The mask image itself arrives as an
+   inline style because the artwork is a bundled import. The 17px ink height
+   matches the 24px brand mark, whose glyph fills the same span, and the aspect
+   ratio is the crop's own (2101 x 464). */
+.brandWordmark {
+  display: block;
   flex: none;
-  display: inline-flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: center;
-  gap: 1px;
-  height: 24px;
-  white-space: nowrap;
-}
-
-.localBuildTitle {
-  font-size: 12px;
-  line-height: 13px;
-  letter-spacing: 0;
+  height: 17px;
+  aspect-ratio: 2101 / 464;
+  background-color: currentColor;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
 }
 
 .iconButton {
@@ -370,26 +367,19 @@
   justify-content: center;
 }
 
+/* Both sidebar brand marks sit in fixed-height rows (24 / 36px), so keep the
+   mascot hitbox flush: the shared default padding would grow the mark's box
+   and shift the surrounding geometry. Inherit the hover target from the glyph
+   box itself instead. */
+.brandMark,
+.railMark {
+  --dsh-mascot-hit-pad: 0px;
+}
+
 /* Rail icons ride the primary ink (figma rail spec); expanded keeps the
    secondary icon-button ink. */
 .collapsed .iconButton {
   color: var(--dsw-alias-label-primary);
-}
-
-.buildVersion {
-  flex: none;
-  display: inline-flex;
-  align-items: center;
-  height: 10px;
-  padding: 0 3px;
-  border-radius: 2px;
-  color: var(--dsw-alias-label-primary-inverted);
-  background: var(--dsw-alias-label-primary);
-  font-family: var(--ds-font-family-code);
-  font-size: 6px;
-  font-weight: 500;
-  line-height: 10px;
-  white-space: nowrap;
 }
 
 /* New Session: 38px bar, 12px radius (figma 133:7634 geometry, squared-off

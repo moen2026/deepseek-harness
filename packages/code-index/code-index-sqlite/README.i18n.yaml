@@ -1,0 +1,52 @@
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write packages/code-index/code-index-sqlite/README.md
+/:
+  en: e49cd9c30f61e520
+  zh: 1da4062cd2d0ee95
+/deepseek-ai-dsh-code-index-sqlite:
+  en: 9926b0319c18a4f5
+  zh: 2a8c7516c2ecc222
+/deepseek-ai-dsh-code-index-sqlite/summary:
+  en: e9c020c9ab7f28f9
+  zh: 426067b2919b51ff
+/deepseek-ai-dsh-code-index-sqlite/table-of-contents:
+  en: d152484eb41ac6b4
+  zh: 09388d293f9be9cb
+/deepseek-ai-dsh-code-index-sqlite/use-this-package:
+  en: f3e814369a7fcef0
+  zh: 660266d64ae1a842
+/deepseek-ai-dsh-code-index-sqlite/use-this-package/minimal-configuration:
+  en: 2d37c99ea1266d55
+  zh: c4bee412b61ff77c
+/deepseek-ai-dsh-code-index-sqlite/use-this-package/what-a-search-does:
+  en: 0662ec854101ef3f
+  zh: 81a770f4b17fe7b5
+/deepseek-ai-dsh-code-index-sqlite/use-this-package/observable-success-and-failures:
+  en: a24b61e5b569c44a
+  zh: ff3b37e05e6492c4
+/deepseek-ai-dsh-code-index-sqlite/understand-the-implementation:
+  en: 8a5efa64f5b12f88
+  zh: 451548c05c045c22
+/deepseek-ai-dsh-code-index-sqlite/understand-the-implementation/design-philosophy:
+  en: d02fc778e397e4f2
+  zh: 263569bc6def3d31
+/deepseek-ai-dsh-code-index-sqlite/understand-the-implementation/source-map:
+  en: c3011788c769de52
+  zh: 8f50de408a12f6a0
+/deepseek-ai-dsh-code-index-sqlite/further-exploration:
+  en: 67bc2d3d31cb2644
+  zh: 680e6f98b7a84cd4
+/deepseek-ai-dsh-code-index-sqlite/model-experience:
+  en: be113cc09802394d
+  zh: 973b6ad6f055afad
+/deepseek-ai-dsh-code-index-sqlite/model-experience/kv-cache-effect:
+  en: cfdc3305eb8c9449
+  zh: 9ee72b27c306dec6
+/deepseek-ai-dsh-code-index-sqlite/known-limitations-and-deferred-work:
+  en: 93cfbc62ca604b33
+  zh: 9d4b521dc88970f8
+/deepseek-ai-dsh-code-index-sqlite/known-limitations-and-deferred-work/dev-note:
+  en: e67f633dc6fe7773
+  zh: 3bb0c20c93f16f98

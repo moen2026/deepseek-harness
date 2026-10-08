@@ -43,6 +43,14 @@
 | [extensions.md](extensions.zh.md) | 带版本的动态 Cordis 插件与包、Host/Client 激活、审批、运行时检查和生命周期清理 |
 | [filesystem.md](filesystem.zh.md) | 文件系统 seam：`FsTarget`、读/写/编辑结果、观测到的文件状态、`FsErrorCode` |
 | [lsp.md](lsp.zh.md) | LSP 导航 seam：`LspQueryRequest`/`Result`、`LspProvider`/`Service`、四种操作、`LspError` |
+| [code-index.md](code-index.zh.md) | code-index（代码索引）seam：`CodeSearchRequest`/`CodeSearchPage`、`CodeIndexProvider`/`Service`、单一 `search` 操作、`CodeIndexError` |
+| [knowledge.md](knowledge.zh.md) | knowledge（知识库）seam：`KnowledgeDraft`/`KnowledgeRecord`、检索与列举类型、`KnowledgeProvider`/`Service`、四种操作、`KnowledgeError` |
+| [memory.md](memory.zh.md) | memory（长期记忆）seam：`MemoryDraft`/`MemoryRecord`、召回与列举类型、`MemoryProvider`/`Service`、四种操作、`MemoryError` |
+| [audio.md](audio.zh.md) | audio（音频）seam：`AudioTranscribeRequest`/`AudioTranscript`、`AudioProvider`/`Service`、单一 `transcribe` 操作、`AudioError` |
+| [image.md](image.zh.md) | image（图像）seam：`ImageGenerateRequest`/`ImageResult`、`ImageProvider`/`Service`、单一 `generate` 操作、`ImageError` |
+| [documents.md](documents.zh.md) | documents（文档生成）seam：`DocumentCreateRequest`/`DocumentResult`、`DocumentsProvider`/`Service`、单一 `create` 操作、`DocumentsError` |
+| [repo-wiki.md](repo-wiki.zh.md) | repo-wiki（仓库 Wiki）seam：`WikiPageSummary`/`WikiPage`/`WikiOutlineEntry`/`WikiListing`、`RepoWikiProvider`/`Service`、三个只读路由、`RepoWikiError` |
+| [notification.md](notification.zh.md) | notification（通知）seam：`NotificationRequest`/`NotificationUrgency`、`NotificationProvider`/`Service`、单一 `notify` 操作、`NotificationError` |
 | [skills.md](skills.zh.md) | skill（技能）服务：发现优先级、`SkillSummary`/`SkillDefinition`、会话前缀目录、面向模型的 `skill` 加载 |
 | [compaction.md](compaction.zh.md) | 压缩（compaction）seam：`compaction/*` 会话事件、`CompactionResult`、`CompactionEngine` 接口 |
 | [subagent.md](subagent.zh.md) | subagent seam：命名提供方注册表、`SubagentStartRequest`/`Result`/`Run`、启动时与运行时能力拆分 |
@@ -57,6 +65,7 @@
 | [invariants.md](invariants.zh.md) | 运行时不变式注册表：选择配置 `Config`、`InvariantInstaller`/`InvariantFailure`、空配套插件约定 |
 | [web-server.md](web-server.zh.md) | HTTP 载体：`WebRouteKind`/`WebRoute`、匹配顺序、可认领的回退席位、index 渲染挂接点 |
 | [webhook.md](webhook.zh.md) | 通过身份验证的提供方交付、任意程序化规则，以及发起 Workspace 会话创建后不等待结果 |
+| [connector.md](connector.zh.md) | 多 provider IM 频道、入站消息续写每个 channel 的确定性 Session、出站推送与进程内 channel 绑定 |
 | [storage.md](storage.zh.md) | 存储子系统：后端约定（`StorageBackend`）、`StorageForms`、`DomainSpec`/`Domain`、`domain/changed` |
 | [workspace.md](workspace.zh.md) | 工作区注册表：`Workspace`/`WorkspaceId`、注册与解析、与会话 `cwd` 的关系 |
 | [web-client.md](web-client.zh.md) | 浏览器架构：启动、Remote 通信、配对的 Client model、UI 适配器、Conversation 组装、slot 与重连语义 |
@@ -66,6 +75,7 @@
 | [sidebar-right.md](sidebar-right.zh.md) | 右侧 Sidebar：资源地址与导航地址、tab 类型注册与路由、`ctx.sidebarRight` 导航服务、pane-tab slot 与 owner props、资源模型及 Workspace Files 服务 |
 | [conversation.md](conversation.zh.md) | 目标无关的会话事件组装：上下文标识、位置数据、回放路径、视图构建器与目标自有的渲染节点 |
 | [session-projection.md](session-projection.zh.md) | 投影 seam：`SessionProjectionMap`、纯函数 `ProjectionDefinition` 单元、`ProjectionSnapshot` 的一致切面、变更馈送 |
+| [session-rewind.md](session-rewind.zh.md) | 逐轮文件工具还原点、内容寻址捕获存储与 `workspace_rewind` 恢复语义 |
 | [session-telemetry.md](session-telemetry.zh.md) | 对外会话上报能力 seam：`SessionTelemetryRecord`/`SessionTelemetrySeverity`、`SessionTelemetrySink` 约定和 `session-telemetry/record` 脱敏 waterfall（瀑布式事件） |
 | [product-telemetry.md](product-telemetry.zh.md) | 显式产品分析事件提交与 OTLP/HTTP 传输 |
 

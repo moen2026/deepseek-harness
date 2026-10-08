@@ -563,6 +563,7 @@ describe('per-call sandbox policy resolution', () => {
     // The policy preserves Session cwd spelling; its enforcing provider owns canonicalization.
     expect(bash.requests[0]?.sandboxPolicy).toEqual({
       mode: 'read-only',
+      network: 'allowed',
       workspaceRoot: sessionCwd,
       sessionId: 'policy-session',
     })
@@ -573,6 +574,7 @@ describe('per-call sandbox policy resolution', () => {
     await call(ctx, 'pwsh', { command: 'Write-Output hi', description: 'say hi' })
     expect(bash.requests[0]?.sandboxPolicy).toEqual({
       mode: 'read-only',
+      network: 'allowed',
       workspaceRoot: process.cwd(),
     })
 

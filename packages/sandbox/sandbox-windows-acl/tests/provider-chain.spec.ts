@@ -13,8 +13,8 @@ import { Context } from '@deepseek-ai/cordis'
 import type { SandboxPolicy } from '@deepseek-ai/dsh-sandbox'
 import { LocalSandboxProvider } from '@deepseek-ai/dsh-sandbox-local'
 
-const RO: SandboxPolicy = { mode: 'read-only', workspaceRoot: '/ws' }
-const WW: SandboxPolicy = { mode: 'workspace-write', workspaceRoot: '/ws' }
+const RO: SandboxPolicy = { mode: 'read-only', network: 'allowed', workspaceRoot: '/ws' }
+const WW: SandboxPolicy = { mode: 'workspace-write', network: 'allowed', workspaceRoot: '/ws' }
 
 async function setup(internals: LocalSandboxProvider['internals']) {
   const ctx = new Context()

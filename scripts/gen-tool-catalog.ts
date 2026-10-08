@@ -15,6 +15,8 @@ import AgentRegistry from '@deepseek-ai/dsh-agent'
 import type { Agent } from '@deepseek-ai/dsh-agent'
 import { createScope } from '@deepseek-ai/dsh-scope'
 import SessionStore, { SessionId } from '@deepseek-ai/dsh-session'
+import * as SessionRewind from '@deepseek-ai/dsh-session-rewind'
+import * as ToolGithub from '@deepseek-ai/dsh-tool-github'
 import SessionProjectionRegistry from '@deepseek-ai/dsh-session-projection'
 import SqliteSessionQueryEngine from '@deepseek-ai/dsh-session-query-sqlite'
 import GoalService from '@deepseek-ai/dsh-goal'
@@ -54,8 +56,24 @@ import TerminalSessionService from '@deepseek-ai/dsh-terminal'
 import * as ToolPty from '@deepseek-ai/dsh-tool-terminal'
 import * as ToolGoal from '@deepseek-ai/dsh-tool-goal'
 import * as ToolSchedule from '@deepseek-ai/dsh-schedule'
+import Heartbeat from '@deepseek-ai/dsh-heartbeat'
+import * as ToolGitTrack from '@deepseek-ai/dsh-tool-git-track'
 import Lsp from '@deepseek-ai/dsh-lsp'
 import * as ToolLsp from '@deepseek-ai/dsh-tool-lsp'
+import CodeIndex from '@deepseek-ai/dsh-code-index'
+import * as ToolCodeIndex from '@deepseek-ai/dsh-tool-code-index'
+import Memory from '@deepseek-ai/dsh-memory'
+import * as ToolMemory from '@deepseek-ai/dsh-tool-memory'
+import Knowledge from '@deepseek-ai/dsh-knowledge'
+import * as ToolKnowledge from '@deepseek-ai/dsh-tool-knowledge'
+import { Audio } from '@deepseek-ai/dsh-audio'
+import * as ToolAudio from '@deepseek-ai/dsh-tool-audio'
+import { Image } from '@deepseek-ai/dsh-image'
+import * as ToolImage from '@deepseek-ai/dsh-tool-image'
+import Documents from '@deepseek-ai/dsh-documents'
+import * as ToolDocument from '@deepseek-ai/dsh-tool-document'
+import RepoWiki from '@deepseek-ai/dsh-repo-wiki'
+import * as ToolRepoWiki from '@deepseek-ai/dsh-tool-repo-wiki'
 import * as ToolSkill from '@deepseek-ai/dsh-tool-skill'
 import * as ToolSessionQuery from '@deepseek-ai/dsh-tool-session-query'
 import * as ToolJobs from '@deepseek-ai/dsh-tool-jobs'
@@ -468,6 +486,54 @@ const TOOL_PACKAGES: ToolPackage[] = [
       + 'Management uses the Host storage domain; due messages resume the original Session.',
   },
   {
+    pkg: '@deepseek-ai/dsh-heartbeat',
+    dir: 'heartbeat',
+    source: 'packages/schedule/heartbeat/src/index.ts',
+    requires: ['ctx.tools', 'ctx.schedule', 'a calling Agent session'],
+    writes: ['tool/call', 'Schedule storage domain create or delete', 'tool/result'],
+    async mount(ctx) {
+      // Schema harvest never creates a reminder; the service stub only satisfies injection.
+      ctx.provide('schedule', {} as ToolSchedule.ScheduleService)
+      await ctx.plugin(Heartbeat)
+    },
+    note:
+      'Registered in live root Agent scopes while the heartbeat plugin is loaded. '
+      + 'heartbeat_enable creates one recurring Schedule reminder per Session whose prompt carries the '
+      + 'whole patrol semantic (read the workspace heartbeat file, act on its pending items, or answer '
+      + 'HEARTBEAT_OK); heartbeat_disable deletes the Session\'s heartbeat tasks.',
+  },
+  {
+    pkg: '@deepseek-ai/dsh-session-rewind',
+    dir: 'session-rewind',
+    source: 'packages/session/session-rewind/src/index.ts',
+    requires: ['ctx.tools', 'a calling Agent session with captured turns'],
+    writes: ['tool/call', 'tool/result', 'workspace file writes through the sessionRewind restore'],
+    async mount(ctx) {
+      // Schema harvest never captures or restores; stores start on turn/start only.
+      await ctx.plugin(SessionRewind)
+    },
+    note:
+      'Registered once in the root context; the tool answers unavailable outside an Agent scope. '
+      + 'Captures start per top-level turn on turn/start, exclude subagent sessions, and cover the '
+      + 'write, edit, and str_replace_editor file tools only — shell-command edits are never captured.',
+  },
+  {
+    pkg: '@deepseek-ai/dsh-tool-github',
+    dir: 'tool-github',
+    source: 'packages/webhook/tool-github/src/index.ts',
+    requires: ['ctx.tools', 'ctx.credentials'],
+    writes: ['tool/call', 'tool/result'],
+    async mount(ctx) {
+      // Schema harvest never resolves a token or posts a comment.
+      ctx.provide('credentials', { resolve: () => Promise.resolve(undefined) } as never)
+      await ctx.plugin(ToolGithub, { tokenEnv: 'DSH_GITHUB_TOOL_CATALOG', apiBaseUrl: 'https://api.github.com', timeoutMs: 30_000 })
+    },
+    note:
+      'Opt-in outbound capability: deployments mount it next to webhook rules (see the github-review '
+      + 'example overlay) and configure a credential-ref token; without one a call returns an actionable '
+      + 'unavailable answer rather than failing the session.',
+  },
+  {
     pkg: '@deepseek-ai/dsh-tool-lsp',
     dir: 'tool-lsp',
     source: 'packages/lsp/tool-lsp/src/index.ts',
@@ -480,6 +546,106 @@ const TOOL_PACKAGES: ToolPackage[] = [
     },
     note:
       'The lsp tool keeps provider selection and language-server subprocesses behind ctx.lsp, so its model-visible schema stays stable across providers. Requires a registered provider (e.g. `@deepseek-ai/dsh-lsp-stdio`) at runtime; without one, a query returns the structured `LSP_UNAVAILABLE` error rather than changing the schema.',
+  },
+  {
+    pkg: '@deepseek-ai/dsh-tool-code-index',
+    dir: 'tool-code-index',
+    source: 'packages/code-index/tool-code-index/src/index.ts',
+    requires: ['ctx.tools', 'ctx.codeIndex', 'ctx.systemPrompt'],
+    writes: ['tool/call', 'tool/result'],
+    async mount(ctx) {
+      // The tool registers from the seam alone; the schema does not depend on any provider.
+      await ctx.plugin(CodeIndex)
+      await ctx.plugin(ToolCodeIndex)
+    },
+    note:
+      'The search_codebase tool keeps corpus construction and ranking behind ctx.codeIndex, so its model-visible schema stays stable across providers. Requires a registered provider (e.g. `@deepseek-ai/dsh-code-index-sqlite`) at runtime; without one, a search returns an actionable unavailable answer rather than failing the session.',
+  },
+  {
+    pkg: '@deepseek-ai/dsh-tool-memory',
+    dir: 'tool-memory',
+    source: 'packages/memory/tool-memory/src/index.ts',
+    requires: ['ctx.tools', 'ctx.memory', 'ctx.systemPrompt'],
+    writes: ['tool/call', 'tool/result'],
+    async mount(ctx) {
+      // The tools register from the seam alone; the schemas do not depend on any provider.
+      await ctx.plugin(Memory)
+      await ctx.plugin(ToolMemory)
+    },
+    note:
+      'The memory_write/memory_search/memory_forget tools keep storage, ranking, and any embedding behind ctx.memory, so their model-visible schemas stay stable across providers. Requires a registered provider (e.g. `@deepseek-ai/dsh-memory-sqlite`) at runtime; without one, an operation returns an actionable unavailable answer rather than failing the session. Recall is lexical unless the deployment configures its own embedding endpoint.',
+  },
+  {
+    pkg: '@deepseek-ai/dsh-tool-knowledge',
+    dir: 'tool-knowledge',
+    source: 'packages/knowledge/tool-knowledge/src/index.ts',
+    requires: ['ctx.tools', 'ctx.knowledge', 'ctx.systemPrompt'],
+    writes: ['tool/call', 'tool/result'],
+    async mount(ctx) {
+      // The tools register from the seam alone; the schemas do not depend on any provider.
+      await ctx.plugin(Knowledge)
+      await ctx.plugin(ToolKnowledge)
+    },
+    note:
+      'The knowledge_ingest/knowledge_search/knowledge_remove/knowledge_list tools keep storage, chunking, and ranking behind ctx.knowledge, so their model-visible schemas stay stable across providers. Requires a registered provider (e.g. `@deepseek-ai/dsh-knowledge-sqlite`) at runtime; without one, an operation returns an actionable unavailable answer rather than failing the session.',
+  },
+  {
+    pkg: '@deepseek-ai/dsh-tool-audio',
+    dir: 'tool-audio',
+    source: 'packages/audio/tool-audio/src/index.ts',
+    requires: ['ctx.tools', 'ctx.audio', 'ctx.fs', 'ctx.systemPrompt'],
+    writes: ['tool/call', 'tool/result'],
+    async mount(ctx) {
+      // The tool registers from the seam alone; the schema does not depend on any provider.
+      await ctx.plugin(LocalFileSystem)
+      await ctx.plugin(Audio)
+      await ctx.plugin(ToolAudio)
+    },
+    note:
+      'The transcribe_audio tool keeps the transcription endpoint and its credentials behind ctx.audio, so its model-visible schema stays stable across providers. Requires a registered provider (e.g. `@deepseek-ai/dsh-audio-http`) at runtime; without one, a call returns an actionable unavailable answer rather than failing the session.',
+  },
+  {
+    pkg: '@deepseek-ai/dsh-tool-image',
+    dir: 'tool-image',
+    source: 'packages/image/tool-image/src/index.ts',
+    requires: ['ctx.tools', 'ctx.image', 'ctx.attachments', 'ctx.systemPrompt'],
+    writes: ['tool/call', 'tool/result'],
+    async mount(ctx) {
+      // The tool registers from the seam alone; the schema does not depend on any provider.
+      await ctx.plugin(Image)
+      await ctx.plugin(ToolImage)
+    },
+    note:
+      'The generate_image tool keeps the generation endpoint and its credentials behind ctx.image, so its model-visible schema stays stable across providers. Requires a registered provider (e.g. `@deepseek-ai/dsh-image-http`) and a mounted attachment store at runtime; without one, a call returns an actionable unavailable answer rather than failing the session.',
+  },
+  {
+    pkg: '@deepseek-ai/dsh-tool-document',
+    dir: 'tool-document',
+    source: 'packages/document/tool-document/src/index.ts',
+    requires: ['ctx.tools', 'ctx.documents', 'ctx.fs', 'ctx.systemPrompt', 'ctx.sessionProjections'],
+    writes: ['tool/call', 'tool/result', 'fs/observed', 'deliverables/presented after a successful final result'],
+    async mount(ctx) {
+      // The tool registers from the seam alone; the schema does not depend on any provider.
+      await ctx.plugin(LocalFileSystem)
+      await ctx.plugin(Documents)
+      await ctx.plugin(ToolDocument)
+    },
+    note:
+      'The create_document tool keeps the document engine behind ctx.documents, so its model-visible schema stays stable across providers. Requires a registered provider (e.g. `@deepseek-ai/dsh-office-create`) at runtime; without one, a call returns an actionable unavailable answer rather than failing the session.',
+  },
+  {
+    pkg: '@deepseek-ai/dsh-tool-repo-wiki',
+    dir: 'tool-repo-wiki',
+    source: 'packages/wiki/tool-repo-wiki/src/index.ts',
+    requires: ['ctx.tools', 'ctx.repoWiki', 'ctx.systemPrompt'],
+    writes: ['tool/call', 'tool/result'],
+    async mount(ctx) {
+      // The tool registers from the seam alone; the schema does not depend on any provider.
+      await ctx.plugin(RepoWiki)
+      await ctx.plugin(ToolRepoWiki)
+    },
+    note:
+      'The read_wiki tool keeps wiki storage and generation behind ctx.repoWiki, so its model-visible schema stays stable across providers. Requires a registered provider (e.g. `@deepseek-ai/dsh-repo-wiki-generator`) at runtime; without one, a call returns an actionable unavailable answer rather than failing the session.',
   },
   {
     pkg: '@deepseek-ai/dsh-tool-ralph',
@@ -629,6 +795,20 @@ const TOOL_PACKAGES: ToolPackage[] = [
     },
     note:
       'todo_write is session-owned state; UIs render the latest todo/write event as a checklist. `allowParallelInProgress` is required with no default, so the catalog states its choice: `true`, whose description invites several `in_progress` items. A deployment choosing `false` receives the same tool with a description asking for exactly one active task.',
+  },
+  {
+    pkg: '@deepseek-ai/dsh-tool-git-track',
+    dir: 'tool-git-track',
+    source: 'packages/git/tool-git-track/src/index.ts',
+    requires: ['ctx.tools', 'ctx.storageDomain', 'owning Agent session'],
+    writes: ['tool/call', 'Git-track storage domain create or update', 'tool/result'],
+    async mount(ctx) {
+      // Schema harvest never reads or writes records; a stub satisfies the injection.
+      ctx.provide('storageDomain', { open: () => Promise.resolve({ table: () => ({ get: () => undefined }), close: () => Promise.resolve() }) } as never)
+      await ctx.plugin(ToolGitTrack)
+    },
+    note:
+      'worktree_track and pull_request_track upsert one record per call into the session_git_track storage domain, keyed by the owning session and the path or URL, and return the current list of the calling session; recording is bookkeeping only and never runs git or contacts a forge.',
   },
   {
     pkg: '@deepseek-ai/dsh-tool-workflow',

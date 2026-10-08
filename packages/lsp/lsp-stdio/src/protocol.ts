@@ -1,6 +1,7 @@
 /**
  * The subset of LSP wire types this generic host reads and writes: initialize capabilities, the four
- * request results (`Location`, `LocationLink`, `Hover`), and the `textDocumentSync` shapes used to
+ * request results (`Location`, `LocationLink`, `Hover`), the `Diagnostic`/`PublishDiagnosticsParams`/
+ * `DocumentDiagnosticReport` shapes behind `diagnostics`, and the `textDocumentSync` forms used to
  * decide transient-open support. Types only. Fields absent from a real server payload stay optional;
  * the translation layer normalizes them into the seam's closed unions.
  * @module @deepseek-ai/dsh-lsp-stdio/protocol
@@ -64,6 +65,27 @@ export interface WireTextDocumentSyncOptions {
 /** A `ServerCapabilities.provider` slot: a boolean or an options object (both mean "supported"). */
 export type WireProviderCapability = boolean | Record<string, unknown> | undefined
 
+/** A `Diagnostic`: a range, an optional severity (`1` Error … `4` Hint), and a message. */
+export interface WireDiagnostic {
+  readonly range: WireRange
+  readonly severity?: number
+  readonly code?: string | number | null
+  readonly source?: string
+  readonly message: string
+}
+
+/** A `PublishDiagnosticsParams`: the push-form diagnostics for one document. */
+export interface WirePublishDiagnosticsParams {
+  readonly uri: string
+  readonly diagnostics?: readonly WireDiagnostic[]
+}
+
+/** A pull `DocumentDiagnosticReport` (`{ kind, items }`); `relatedDocuments` is not handled here. */
+export interface WireDocumentDiagnosticReport {
+  readonly kind?: string
+  readonly items?: readonly WireDiagnostic[]
+}
+
 /** The `ServerCapabilities` fields this host inspects. */
 export interface WireServerCapabilities {
   readonly positionEncoding?: string
@@ -72,6 +94,7 @@ export interface WireServerCapabilities {
   readonly referencesProvider?: WireProviderCapability
   readonly implementationProvider?: WireProviderCapability
   readonly hoverProvider?: WireProviderCapability
+  readonly diagnosticProvider?: WireProviderCapability
 }
 
 /** The `initialize` result envelope. */

@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Read aloud",
+    "description": "Read messages aloud with local Kokoro synthesis; first use requires installing dependencies"
+  }
+}

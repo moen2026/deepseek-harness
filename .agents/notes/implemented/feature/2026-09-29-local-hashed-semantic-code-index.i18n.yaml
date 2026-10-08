@@ -1,0 +1,19 @@
+# Bilingual-pair consistency record for 2026-09-29-local-hashed-semantic-code-index.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-09-29-local-hashed-semantic-code-index.md
+/agent-note-local-hashed-subtoken-semantic-ranking-for-the-code-index:
+  en: 39a7bc25c061b806
+  zh: 26d8accf58113efe
+/agent-note-local-hashed-subtoken-semantic-ranking-for-the-code-index/problem:
+  en: 858ed39cbbd28da9
+  zh: 1a2c1aa98c485506
+/agent-note-local-hashed-subtoken-semantic-ranking-for-the-code-index/decision:
+  en: daf9df79d28c0330
+  zh: e6fee1a60979c7dc
+/agent-note-local-hashed-subtoken-semantic-ranking-for-the-code-index/alternatives-considered:
+  en: 691ad9b92c301561
+  zh: b5accd6000e3efed
+/agent-note-local-hashed-subtoken-semantic-ranking-for-the-code-index/consequences:
+  en: 622d34bd24025d94
+  zh: 5c8a155d740e5eb0

@@ -134,7 +134,7 @@ describe('SidebarRoot shell', () => {
     expect(b.toggleSidebar).toHaveBeenCalledOnce()
   })
 
-  it('renders generic brand fallbacks when no package fills the slots', () => {
+  it('renders the word-art brand fallback when no package fills the slots', () => {
     vi.stubEnv('DSH_CLIENT_COMMIT_HASH', '0123456')
     vi.stubEnv('DSH_CLIENT_GIT_DIRTY', 'true')
     vi.stubEnv('DSH_CLIENT_VERSION', '1.2.3-rc.4')
@@ -148,17 +148,24 @@ describe('SidebarRoot shell', () => {
         options?.fallback ?? null) as SidebarRootComponentProps['renderSlot']}
     />)
 
-    expect(screen.getByText('DSH Local Build')).toBeTruthy()
-    expect(screen.getByText('1.2.3-rc.4-0123456-dirty')).toBeTruthy()
+    // The brand name is baked art, so it carries no text and no build metadata.
+    const wordmark = container.querySelector('[class*="brandWordmark"]')!
+    expect(wordmark).toBeTruthy()
+    expect(wordmark.textContent).toBe('')
+    expect(screen.queryByText('DSH Local Build')).toBeNull()
+    expect(screen.queryByText(/0123456/)).toBeNull()
     expect(container.querySelector('svg')).not.toBeNull()
   })
 
   it.each([
-    [{ DSH_CLIENT_VERSION: '1.2.3' }, '1.2.3'],
-    [{ DSH_CLIENT_COMMIT_HASH: 'abcdef0', DSH_CLIENT_VERSION: '1.2.3' }, '1.2.3-abcdef0'],
-  ])('omits unavailable build-version suffixes from %j', (environment, expected) => {
-    for (const [name, value] of Object.entries(environment)) vi.stubEnv(name, value)
-    render(<SidebarRoot
+    ['1.2.3', undefined, undefined],
+    ['1.2.3', 'abcdef0', undefined],
+    ['1.2.3-rc.4', '0123456', 'true'],
+  ])('keeps build metadata %s-%s-%s out of the brand row', (version, commit, dirty) => {
+    vi.stubEnv('DSH_CLIENT_VERSION', version)
+    if (commit !== undefined) vi.stubEnv('DSH_CLIENT_COMMIT_HASH', commit)
+    if (dirty !== undefined) vi.stubEnv('DSH_CLIENT_GIT_DIRTY', dirty)
+    const { container } = render(<SidebarRoot
       collapsed={false} width={300}
       useSessions={neverHook} useSessionStatus={useSessionStatus} useSessionRetainInfo={neverHook}
       usePanelInfo={usePanelInfo} selectPanel={() => {}} usePanels={selector => selector([])} useShortcuts={selector => selector([])}
@@ -168,12 +175,12 @@ describe('SidebarRoot shell', () => {
         options?.fallback ?? null) as SidebarRootComponentProps['renderSlot']}
     />)
 
-    expect(screen.getByText('DSH Local Build')).toBeTruthy()
-    expect(screen.getByText(expected)).toBeTruthy()
+    expect(container.querySelector('[class*="brandWordmark"]')).toBeTruthy()
+    expect(container.textContent).not.toMatch(/1\.2\.3|abcdef0|dirty/)
   })
 
-  it('retains the local-build fallback without complete build metadata', () => {
-    render(<SidebarRoot
+  it('falls back to the word art without any build metadata', () => {
+    const { container } = render(<SidebarRoot
       collapsed={false} width={300}
       useSessions={neverHook} useSessionStatus={useSessionStatus} useSessionRetainInfo={neverHook}
       usePanelInfo={usePanelInfo} selectPanel={() => {}} usePanels={selector => selector([])} useShortcuts={selector => selector([])}
@@ -183,7 +190,7 @@ describe('SidebarRoot shell', () => {
         options?.fallback ?? null) as SidebarRootComponentProps['renderSlot']}
     />)
 
-    expect(screen.getByText('DSH Local Build')).toBeTruthy()
+    expect(container.querySelector('[class*="brandWordmark"]')).toBeTruthy()
   })
 
   it('hands the region its wide flag and clamps expandSidebar to the collapsed state', () => {

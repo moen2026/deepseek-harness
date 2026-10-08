@@ -1,0 +1,14 @@
+# Opt-in reference for Supabase's official MCP server
+# (https://supabase.com/docs/guides/getting-started/mcp). Install the package
+# globally first, and set SUPABASE_ACCESS_TOKEN to a personal access token
+# scoped to the projects this agent may touch before launching.
+- insert:
+    - id: saas-supabase
+      name: '@deepseek-ai/dsh-mcp-client'
+      config:
+        serverName: supabase
+        transport: stdio
+        command: mcp-server-supabase
+        args: []
+        env:
+          SUPABASE_ACCESS_TOKEN: !!js (process.env.SUPABASE_ACCESS_TOKEN ?? '')

@@ -26,7 +26,7 @@ function lastContent(snapshot: ChatSnapshot, turn: number, skipWarning: boolean)
 
 /** Turn-local actions and feature tail over the Location index, independent of Assistant placement. */
 export const TurnTailNodeView = memo(function TurnTailNodeView({
-  node, openFile, forkAt, renderSlot, t, useChat, usePerformanceUsage,
+  node, openFile, forkAt, retryTurn, renderSlot, t, useChat, usePerformanceUsage,
 }: TurnTailNodeViewProps) {
   const detailed = usePerformanceUsage(mode => mode) === 'detailed'
   const data = node.data
@@ -44,6 +44,7 @@ export const TurnTailNodeView = memo(function TurnTailNodeView({
     : undefined
   if (turn === undefined) return null
   const closing = data.closing
+  const unavailable = data.branchUnavailable || hasLaterChatNode
   const owner: TurnTailOwnerProps = { turn, seq: closing?.finalNode.seq ?? data.seq, openFile }
   const tail = renderSlot('conversation.chat.turnTail', owner)
   if (closing === null) return tail === null ? null : <div className={css.root} data-turn-tail={data.turn}>{tail}</div>
@@ -67,7 +68,10 @@ export const TurnTailNodeView = memo(function TurnTailNodeView({
         // The branch action owns boundary resolution: it sends the real
         // turn/end seq it already has, and the Host cuts exactly there.
         onBranch={() => { forkAt(data.seq) }}
-        branchUnavailable={data.branchUnavailable || hasLaterChatNode}
+        onRetry={() => { retryTurn(data.turn) }}
+        retryUnavailable={unavailable}
+        branchUnavailable={unavailable}
+        speakable
         className={css.actions}
         extraActions={assistantActions}
         usageAction={detailed && data.tokenUsage !== undefined
