@@ -2155,7 +2155,7 @@ The transcribe_audio tool keeps the transcription endpoint and its credentials b
 
 ### `generate_image`
 
-Generate an image from a text prompt and return the image itself. prompt is required; size is an optional refinement such as "1024x1024". Returns an actionable unavailable message when no image provider is configured.
+Generate an image from a text prompt and return the image itself. prompt is required; size is an optional refinement such as "1024x1024", and referenceImages are optional publicly reachable URLs of reference images the provider may use to guide the generation. Returns an actionable unavailable message when no image provider is configured.
 
 ```json
 {
@@ -2168,6 +2168,13 @@ Generate an image from a text prompt and return the image itself. prompt is requ
     "size": {
       "type": "string",
       "description": "Optional requested image size (for example \"1024x1024\"); the provider interprets the hint."
+    },
+    "referenceImages": {
+      "type": "array",
+      "description": "Optional publicly reachable URLs of reference images guiding the generation (image-to-image); a provider that does not accept reference images ignores them.",
+      "items": {
+        "type": "string"
+      }
     }
   },
   "required": [

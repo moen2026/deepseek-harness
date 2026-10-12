@@ -3,14 +3,14 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write packages/image/tool-image/README.md
 /:
-  en: da87f5d7444e19ea
-  zh: e6b27b2adebbf1b0
+  en: 7ac7016ee52b3a38
+  zh: 29ee9fb0b8839e7c
 /deepseek-ai-dsh-tool-image:
   en: 820897a8394c0027
   zh: aa09e19c1f6d6bb0
 /deepseek-ai-dsh-tool-image/summary:
-  en: 262ce12d214d0930
-  zh: c8fd8f5b29d39dbe
+  en: e7cb9a72271577d5
+  zh: 11cb26de6f4791a7
 /deepseek-ai-dsh-tool-image/table-of-contents:
   en: d152484eb41ac6b4
   zh: ffab54373e9e61f0
@@ -18,8 +18,8 @@
   en: 3418a16572888f7d
   zh: eb5831ee593344f0
 /deepseek-ai-dsh-tool-image/use-this-package/the-tool:
-  en: b6e4f8056b0ec7e6
-  zh: a47cee72eadec3e8
+  en: c9c9ab7760deda47
+  zh: 8fba726a4b0f1012
 /deepseek-ai-dsh-tool-image/use-this-package/what-the-model-gets-back:
   en: ebde7f9cf0d112e1
   zh: e394b8eb1d984b00
@@ -33,14 +33,14 @@
   en: 6574e484bce0e60b
   zh: ed9ff40a4beda08b
 /deepseek-ai-dsh-tool-image/understand-the-implementation/design-notes:
-  en: c0035c8ada8bae7a
-  zh: 255a691721162b03
+  en: e6c1803328309441
+  zh: 9b8f8b237a8c8da2
 /deepseek-ai-dsh-tool-image/understand-the-implementation/source-map:
   en: eb2b5e1263b396c6
   zh: 1de79d8a83ba1d9f
 /deepseek-ai-dsh-tool-image/further-exploration:
-  en: 4f92849ab49957e4
-  zh: c521612b109ba081
+  en: 0c86f74222515870
+  zh: aa0035ed720a93f2
 /deepseek-ai-dsh-tool-image/model-experience:
   en: 215e7ba838619b7b
   zh: a311da3843709f90
@@ -87,8 +87,8 @@
   en: 8dafa00fd9733662
   zh: 0247f0b45739dbf7
 /deepseek-ai-dsh-tool-image/model-experience/ui-presentation/what-the-model-sees:
-  en: ea29a4c1a056af7b
-  zh: c1d395bad2442295
+  en: 81f138a8c82760be
+  zh: 0e76ad6d47c361ba
 /deepseek-ai-dsh-tool-image/model-experience/ui-presentation/token-effect:
   en: fd077e60d2f06116
   zh: 1a978c011c00870d
@@ -96,8 +96,8 @@
   en: eabdce686776b12b
   zh: 4ff2a832a1b3760f
 /deepseek-ai-dsh-tool-image/known-limitations-and-deferred-work:
-  en: 69e57e4e3b454dc6
-  zh: 14b6aefbec16ba25
+  en: ac8bc1a75134b6f4
+  zh: eda66cf2e328a7d1
 /deepseek-ai-dsh-tool-image/known-limitations-and-deferred-work/dev-note:
   en: e67f633dc6fe7773
   zh: cdd2a143b725accd

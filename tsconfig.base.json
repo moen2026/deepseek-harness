@@ -427,6 +427,7 @@
       "@deepseek-ai/dsh-http-proxy": ["./packages/util/http-proxy/src"],
       "@deepseek-ai/dsh-image": ["./packages/image/image/src"],
       "@deepseek-ai/dsh-image-http": ["./packages/image/image-http/src"],
+      "@deepseek-ai/dsh-image-wuyinkeji": ["./packages/image/image-wuyinkeji/src"],
       "@deepseek-ai/dsh-jobs": ["./packages/jobs/jobs/src"],
       "@deepseek-ai/dsh-jobs/invariant": ["./packages/jobs/jobs/src/invariant.ts"],
       "@deepseek-ai/dsh-jobs-local": ["./packages/jobs/jobs-local/src"],

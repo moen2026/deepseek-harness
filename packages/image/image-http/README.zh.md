@@ -80,7 +80,7 @@ kind: "package-reference"
 
 - [dsh-image](../image/README.zh.md) — 本提供方注册的 seam。
 - [dsh-tool-image](../tool-image/README.zh.md) — 消费生成图像的面向模型工具。
-- [image 组地图](../README.zh.md) — 三包家族及其相关文档。
+- [image 组地图](../README.zh.md) — 四包家族及其相关文档。
 
 -----
 

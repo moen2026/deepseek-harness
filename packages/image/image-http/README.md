@@ -78,7 +78,7 @@ A missing credential variable, a transport failure, a non-2xx response, a non-JS
 
 - [dsh-image](../image/README.md) — the seam this provider registers on.
 - [dsh-tool-image](../tool-image/README.md) — the model-facing tool that consumes generated images.
-- [image group map](../README.md) — the three-package family and its related documentation.
+- [image group map](../README.md) — the four-package family and its related documentation.
 
 -----
 

@@ -3,14 +3,14 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write packages/image/image/README.md
 /:
-  en: d8ae35ca0b8fe1cb
-  zh: 8213ecb41f1debdf
+  en: e536b0e744e0f36b
+  zh: 7a8adfb79343533f
 /deepseek-ai-dsh-image:
   en: 80d67431831880d7
   zh: a508afd71383a126
 /deepseek-ai-dsh-image/summary:
-  en: 6433eb9e3d52fab9
-  zh: 14ca62acf327db8f
+  en: 97a61d8b40b92ccb
+  zh: 960d527dd2660322
 /deepseek-ai-dsh-image/table-of-contents:
   en: d152484eb41ac6b4
   zh: ffab54373e9e61f0
@@ -24,8 +24,8 @@
   en: 98a6468ff2173a16
   zh: 964f1f3958486f07
 /deepseek-ai-dsh-image/use-this-package/the-operation:
-  en: 8ca1eff6a0bb5595
-  zh: 9d34f846aeb1f60e
+  en: cdbac629ee715c37
+  zh: 1a079eaf846345fb
 /deepseek-ai-dsh-image/use-this-package/failures-and-recovery:
   en: 5dadac9f0cfe0b3b
   zh: 4ad646abdb59ee65
@@ -42,8 +42,8 @@
   en: 20f6211681c606ca
   zh: 25299adeee98b3eb
 /deepseek-ai-dsh-image/further-exploration:
-  en: 2c4e1b2d3f360227
-  zh: c00751422b47906b
+  en: 7cf08b85851f83c8
+  zh: 77048cc38f2be836
 /deepseek-ai-dsh-image/model-experience:
   en: e98a3c53d43bc3b9
   zh: e44d7ed3b178bd14

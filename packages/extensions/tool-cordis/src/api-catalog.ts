@@ -5910,7 +5910,7 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   },
   {
     name: 'ImageGenerateRequest',
-    declaration: 'export interface ImageGenerateRequest {\n    readonly prompt: string;\n    readonly size?: string;\n    readonly n?: number;\n}',
+    declaration: 'export interface ImageGenerateRequest {\n    readonly prompt: string;\n    readonly size?: string;\n    readonly n?: number;\n    readonly referenceImages?: readonly string[];\n}',
   },
   {
     name: 'ImageMediaType',

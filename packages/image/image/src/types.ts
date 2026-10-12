@@ -44,6 +44,11 @@ export interface ImageGenerateRequest {
   readonly size?: string
   /** Optional number of images to generate (default 1, maximum 10); providers may cap it. */
   readonly n?: number
+  /**
+   * Optional publicly reachable URLs of reference images guiding the generation
+   * (image-to-image); providers that do not accept reference images ignore them.
+   */
+  readonly referenceImages?: readonly string[]
 }
 
 /** One generated image: the raw bytes plus the media type they decode as. */

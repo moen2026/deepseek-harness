@@ -237,6 +237,18 @@
                   url: !!js process.env.DSH_IMAGE_URL
                   model: !!js process.env.DSH_IMAGE_MODEL || 'dall-e-3'
                   authEnv: !!js process.env.DSH_IMAGE_AUTH_ENV || 'DSH_IMAGE_API_KEY'
+              # The `dsh-image-wuyinkeji` provider backs the same seam with the
+              # public async task APIs (GPT-Image-2.5, or NanoBanana2Lite through
+              # `DSH_WUYINKEJI_MODEL`); it enables itself from
+              # `DSH_WUYINKEJI_API_KEY` (or a renamed credential variable through
+              # `DSH_WUYINKEJI_AUTH_ENV`) and yields to `DSH_IMAGE_URL` so the two
+              # providers never claim the single-provider seam together.
+              - id: image-wuyinkeji
+                name: '@deepseek-ai/dsh-image-wuyinkeji'
+                disabled: !!js process.env[process.env.DSH_WUYINKEJI_AUTH_ENV || 'DSH_WUYINKEJI_API_KEY'] === undefined || process.env.DSH_IMAGE_URL !== undefined
+                config:
+                  authEnv: !!js process.env.DSH_WUYINKEJI_AUTH_ENV || 'DSH_WUYINKEJI_API_KEY'
+                  model: !!js process.env.DSH_WUYINKEJI_MODEL || 'gpt-image-2.5'
               - id: tool-image
                 name: '@deepseek-ai/dsh-tool-image'
           # Office document creation. The `dsh-documents` service and

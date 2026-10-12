@@ -21,6 +21,20 @@ describe('parseGenerateImageArgs', () => {
     expect(() => parseGenerateImageArgs({ prompt: 'a cat', size: 3 })).toThrow(/size/)
     expect(() => parseGenerateImageArgs('nope')).toThrow(/object/)
   })
+
+  it('trims reference-image URLs and omits an absent list', () => {
+    expect(parseGenerateImageArgs({ prompt: 'a cat', referenceImages: [' https://a.example/x.png '] }))
+      .toEqual({ prompt: 'a cat', referenceImages: ['https://a.example/x.png'] })
+    expect(parseGenerateImageArgs({ prompt: 'a cat' }).referenceImages).toBeUndefined()
+  })
+
+  it('rejects a malformed reference-image list', () => {
+    expect(() => parseGenerateImageArgs({ prompt: 'a cat', referenceImages: [] })).toThrow(/non-empty array/)
+    expect(() => parseGenerateImageArgs({ prompt: 'a cat', referenceImages: 'https://a.example/x.png' }))
+      .toThrow(/non-empty array/)
+    expect(() => parseGenerateImageArgs({ prompt: 'a cat', referenceImages: [3] })).toThrow(/non-empty strings/)
+    expect(() => parseGenerateImageArgs({ prompt: 'a cat', referenceImages: ['  '] })).toThrow(/non-empty strings/)
+  })
 })
 
 describe('formatGeneratedImage', () => {
@@ -54,6 +68,15 @@ describe('presentGenerateImageCall', () => {
     expect(presentGenerateImageCall({ prompt: 'a cat' }))
       .toEqual({ card: 'generic', kind: 'other', title: 'Generate image: a cat' })
     expect(presentGenerateImageCall({ prompt: 'x'.repeat(80) }).title.length).toBeLessThanOrEqual(60)
+  })
+
+  it('appends the reference-image count within the title bound', () => {
+    expect(presentGenerateImageCall({ prompt: 'a cat', referenceImages: ['https://a.example/x.png'] }).title)
+      .toBe('Generate image: a cat (+1 reference image)')
+    expect(presentGenerateImageCall({ prompt: 'a cat', referenceImages: ['a', 'b', 'c'] }).title)
+      .toBe('Generate image: a cat (+3 reference images)')
+    expect(presentGenerateImageCall({ prompt: 'x'.repeat(80), referenceImages: ['a', 'b'] }).title.length)
+      .toBeLessThanOrEqual(60)
   })
 })
 
@@ -142,15 +165,17 @@ describe('generate_image tool', () => {
     const provider = stubProvider()
     const { ctx, store } = await mountTool(provider)
 
-    const result = await execute(ctx, 'generate_image', { prompt: 'a cat', size: '1024x1024' })
+    const referenceImages = ['https://ref.example/a.png']
+    const result = await execute(ctx, 'generate_image', { prompt: 'a cat', size: '1024x1024', referenceImages })
     expect(result.isError).toBe(false)
     const text = asText(result.content)
     expect(text).toContain('image/png image generated')
     expect(text).toContain('a red cat')
 
-    const request = provider.lastRequest as { prompt?: string; size?: string }
+    const request = provider.lastRequest as { prompt?: string; size?: string; referenceImages?: readonly string[] }
     expect(request.prompt).toBe('a cat')
     expect(request.size).toBe('1024x1024')
+    expect(request.referenceImages).toEqual(referenceImages)
     expect(store?.saved).toHaveLength(1)
     expect(store?.saved[0]?.name).toBe('generated.png')
 

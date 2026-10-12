@@ -1,0 +1,52 @@
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write packages/image/image-wuyinkeji/README.md
+/:
+  en: bafa096a4e3bf18c
+  zh: 51ae6cd7e632259e
+/deepseek-ai-dsh-image-wuyinkeji:
+  en: 452f0d7736c8d165
+  zh: b9904e7a4a0bcf35
+/deepseek-ai-dsh-image-wuyinkeji/summary:
+  en: 2505364b4a5cc881
+  zh: dc702e97b0d9389d
+/deepseek-ai-dsh-image-wuyinkeji/table-of-contents:
+  en: d152484eb41ac6b4
+  zh: ffab54373e9e61f0
+/deepseek-ai-dsh-image-wuyinkeji/use-this-package:
+  en: bbff250eba0f1b89
+  zh: 0a618f05cc88ee2b
+/deepseek-ai-dsh-image-wuyinkeji/use-this-package/when-to-choose-it:
+  en: 00dd36c75561c7a7
+  zh: 1d1e2f066d489a38
+/deepseek-ai-dsh-image-wuyinkeji/use-this-package/configuration:
+  en: 1653fddf5f68114a
+  zh: bdcdc5c3ad8195c1
+/deepseek-ai-dsh-image-wuyinkeji/use-this-package/failures-and-recovery:
+  en: f76f31bcceb2c180
+  zh: 16ffba2a9caae3d8
+/deepseek-ai-dsh-image-wuyinkeji/understand-the-implementation:
+  en: 42b15ac6321706aa
+  zh: 8d8e9843515830f6
+/deepseek-ai-dsh-image-wuyinkeji/understand-the-implementation/design-philosophy:
+  en: 194b7b54f2032417
+  zh: ca1f0ea4a06f0e16
+/deepseek-ai-dsh-image-wuyinkeji/understand-the-implementation/source-map:
+  en: 956a5c2f04213fda
+  zh: 8176dff4fa2103cf
+/deepseek-ai-dsh-image-wuyinkeji/further-exploration:
+  en: 3ebe3ce8d18df416
+  zh: 19d7cd0b6569d021
+/deepseek-ai-dsh-image-wuyinkeji/model-experience:
+  en: b5ba5bed5e7c2034
+  zh: 970957bc3f32bf5e
+/deepseek-ai-dsh-image-wuyinkeji/model-experience/kv-cache-effect:
+  en: 6947158f3e271b4a
+  zh: ce7f21ced5aea80d
+/deepseek-ai-dsh-image-wuyinkeji/known-limitations-and-deferred-work:
+  en: 2f1bdc5ad8f042b9
+  zh: 81b88a2c9cd6360e
+/deepseek-ai-dsh-image-wuyinkeji/known-limitations-and-deferred-work/dev-note:
+  en: e67f633dc6fe7773
+  zh: cdd2a143b725accd

@@ -14,6 +14,8 @@ export interface GenerateImageArgs {
   readonly prompt: string
   /** Optional requested image size (for example `1024x1024`). */
   readonly size?: string
+  /** Optional publicly reachable reference-image URLs passed through to the provider. */
+  readonly referenceImages?: readonly string[]
 }
 
 /** One serializable generated-image item projected into the tool's output schema. */
@@ -40,17 +42,38 @@ export function parseGenerateImageArgs(args: unknown): GenerateImageArgs {
   if (typeof args !== 'object' || args === null) {
     throw new Error('generate_image: arguments must be an object')
   }
-  const raw = args as { prompt?: unknown; size?: unknown }
+  const raw = args as { prompt?: unknown; size?: unknown; referenceImages?: unknown }
   if (typeof raw.prompt !== 'string' || raw.prompt.trim() === '') {
     throw new Error('generate_image: prompt must be a non-empty string')
   }
   if (raw.size !== undefined && (typeof raw.size !== 'string' || raw.size.trim() === '')) {
     throw new Error('generate_image: size must be a non-empty string when provided')
   }
+  const referenceImages = parseReferenceImages(raw.referenceImages)
   return {
     prompt: raw.prompt.trim(),
     ...typeof raw.size === 'string' ? { size: raw.size.trim() } : {},
+    ...referenceImages === undefined ? {} : { referenceImages },
   }
+}
+
+/**
+ * Normalize the raw `referenceImages` argument under the same rule as `size`: a
+ * provided value must be a non-empty array of non-empty strings.
+ * @param value - the raw argument value.
+ * @returns the trimmed URLs, or `undefined` when the argument is absent.
+ */
+function parseReferenceImages(value: unknown): readonly string[] | undefined {
+  if (value === undefined) return undefined
+  if (!Array.isArray(value) || value.length === 0) {
+    throw new Error('generate_image: referenceImages must be a non-empty array of URL strings when provided')
+  }
+  return value.map((item: unknown): string => {
+    if (typeof item !== 'string' || item.trim() === '') {
+      throw new Error('generate_image: referenceImages must contain only non-empty strings')
+    }
+    return item.trim()
+  })
 }
 
 /**
@@ -78,12 +101,20 @@ export function formatGeneratedImage(item: GeneratedImageItem, maxChars: number)
 export const UNAVAILABLE_TEXT =
   'Image generation is not available: no provider is configured. Configure a generation endpoint (an OpenAI-compatible /images/generations service) to generate images; otherwise continue without image generation.'
 
+/** Longest recorded total title `presentGenerateImageCall` emits, in characters. */
+const MAX_CALL_TITLE_CHARS = 60
+
 /**
  * Render the `presentCall` summary for a generation request.
- * @param args - the raw tool arguments, carrying the prompt.
+ * @param args - the raw tool arguments, carrying the prompt and any reference images.
  * @returns the user-facing call presentation.
  */
-export function presentGenerateImageCall(args: { prompt: string }): { card: 'generic'; kind: 'other'; title: string } {
-  const label = args.prompt.length > 40 ? `${args.prompt.slice(0, 40)}…` : args.prompt
-  return { card: 'generic', kind: 'other', title: `Generate image: ${label}` }
+export function presentGenerateImageCall(
+  args: { prompt: string; referenceImages?: readonly string[] },
+): { card: 'generic'; kind: 'other'; title: string } {
+  const references = args.referenceImages?.length ?? 0
+  const suffix = references === 0 ? '' : ` (+${references} reference image${references === 1 ? '' : 's'})`
+  const budget = MAX_CALL_TITLE_CHARS - 'Generate image: '.length - suffix.length
+  const label = args.prompt.length > budget ? `${args.prompt.slice(0, budget - 1)}…` : args.prompt
+  return { card: 'generic', kind: 'other', title: `Generate image: ${label}${suffix}` }
 }

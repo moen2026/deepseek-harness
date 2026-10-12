@@ -1,5 +1,5 @@
 ---
-description: "面向模型的 generate_image 工具，基于 ctx.image seam 与 ctx.attachments：将文本提示发送到保留的提供方，把生成字节持久提交为图像附件，并在有界文本信封旁返回图像；未挂载提供方或存储时返回可操作的不可用应答，供组合图像生成的用户与维护者使用。"
+description: "面向模型的 generate_image 工具，基于 ctx.image seam 与 ctx.attachments：将文本提示（加可选的尺寸与参考图提示）发送到保留的提供方，把生成字节持久提交为图像附件，并在有界文本信封旁返回图像；未挂载提供方或存储时返回可操作的不可用应答，供组合图像生成的用户与维护者使用。"
 kind: "package-reference"
 ---
 
@@ -10,7 +10,7 @@ kind: "package-reference"
 <a id="summary"></a>
 ## 概述
 
-`dsh-tool-image` 在 `ctx.image` 上给模型一个工具：`generate_image` 将文本提示（加可选尺寸提示）发送给保留的提供方，把生成字节持久提交为图像附件，并在有界文本信封旁返回图像，让模型与用户都看到创建的内容。没有挂载提供方时它返回可操作的"图像不可用"消息而不是使会话失败。部署无法存储的媒体类型在进入持久历史之前以可操作错误呈现。本包运行时只注入 `tools`、`image` 与 `systemPrompt`，不导入任何提供方。
+`dsh-tool-image` 在 `ctx.image` 上给模型一个工具：`generate_image` 将文本提示（加可选的尺寸与参考图提示）发送给保留的提供方，把生成字节持久提交为图像附件，并在有界文本信封旁返回图像，让模型与用户都看到创建的内容。没有挂载提供方时它返回可操作的"图像不可用"消息而不是使会话失败。部署无法存储的媒体类型在进入持久历史之前以可操作错误呈现。本包运行时只注入 `tools`、`image` 与 `systemPrompt`，不导入任何提供方。
 
 <a id="table-of-contents"></a>
 ## 目录
@@ -31,7 +31,7 @@ kind: "package-reference"
 
 ### 工具
 
-`generate_image` 接收必填的 `prompt` 加可选的 `size`（例如 `"1024x1024"`）。它修剪输入、丢弃空白精修，在触碰 seam 之前把空白 `prompt` 或非字符串 `size` 作为可操作的参数错误拒绝。提供方选择、端点、凭据与模型都在模型输入之外；它们属于挂载的提供方。
+`generate_image` 接收必填的 `prompt` 加可选的 `size`（例如 `"1024x1024"`）与可选的 `referenceImages`（公网可达的参考图 URL，用于图生图引导）。它修剪输入、丢弃空白精修，在触碰 seam 之前把空白 `prompt`、非字符串 `size` 或畸形 `referenceImages` 列表作为可操作的参数错误拒绝。不接受参考图的提供方会忽略它们。提供方选择、端点、凭据与模型都在模型输入之外；它们属于挂载的提供方。
 
 ### 模型得到什么
 
@@ -69,7 +69,7 @@ kind: "package-reference"
 - **可用性是数据，不是崩溃。** `execute` 捕获代码为 `IMAGE_UNAVAILABLE` 的 `ImageError` 并返回 `unavailable` 状态；其余错误重新抛出，真正损坏的提供方仍然可见。
 - **有界渲染。** `formatGeneratedImage` 限制进入对话的内容；图像字节本身由相邻图像块承载，绝不进入文本信封。
 - **并发安全的生成。** `generate_image` 返回 `isConcurrencySafe: () => true` —— 生成无状态且内容寻址的附件写入幂等。
-- **通用卡片呈现。** `presentGenerateImageCall` 渲染 `{ card: 'generic', kind: 'other', title }`，标题为有界提示标签。
+- **通用卡片呈现。** `presentGenerateImageCall` 渲染 `{ card: 'generic', kind: 'other', title }`，标题为有界提示标签，并附上参考图数量。
 
 ### 源码地图
 
@@ -89,8 +89,9 @@ kind: "package-reference"
 当包级契约不够时阅读这些页面。它们从面向模型面走向 seam 与提供方。
 
 - [dsh-image](../image/README.zh.md) — 本工具查询的 seam。
-- [dsh-image-http](../image-http/README.zh.md) — 应答生成的提供方。
-- [image 组地图](../README.zh.md) — 三包家族及其相关文档。
+- [dsh-image-http](../image-http/README.zh.md) — OpenAI 兼容的应答生成提供方。
+- [dsh-image-wuyinkeji](../image-wuyinkeji/README.zh.md) — 经速创异步图像任务 API（GPT-Image-2.5 或 NanoBanana2Lite）应答生成的异步任务提供方。
+- [image 组地图](../README.zh.md) — 四包家族及其相关文档。
 
 -----
 
@@ -149,7 +150,7 @@ ok 结果在 `<type>image</type>` 信封旁渲染图像块本身（生成的图�
 
 #### What the model sees
 
-无。客户端渲染通用卡片——`{ card: 'generic', kind: 'other', title }`——标题为 `Generate image: <prompt label>`；图像本身经工具持有的图像槽渲染，与 `read_image` 结果一致。
+无。客户端渲染通用卡片——`{ card: 'generic', kind: 'other', title }`——标题为 `Generate image: <prompt label>`，请求携带参考图时附上参考图数量；图像本身经工具持有的图像槽渲染，与 `read_image` 结果一致。
 
 #### Token effect
 
@@ -168,6 +169,7 @@ ok 结果在 `<type>image</type>` 信封旁渲染图像块本身（生成的图�
 
 - **提供方门控的可用性** —— 未挂载图像提供方时工具总是返回不可用消息；它自身从不生成任何内容，部署必须挂载 `dsh-image-http`（或其他提供方）才能得到真实图像。
 - **存储门控的持久化** —— 未挂载 attachment 存储时工具在生成之前返回不可用应答，生成字节总有持久归处。
+- **参考图取决于提供方** —— 工具将 `referenceImages` 作为请求字段透传；端点是否接受是挂载提供方的策略，不接受参考图的提供方不会发送它们。
 - **每次调用一张图** —— 多图请求是多次调用；结果只建模单个附件。
 
 <a id="dev-note"></a>

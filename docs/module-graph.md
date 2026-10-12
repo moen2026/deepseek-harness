@@ -338,6 +338,7 @@ flowchart TD
   subgraph group_image["packages/image"]
     pkg_image["image"]
     pkg_image_http["image-http"]
+    pkg_image_wuyinkeji["image-wuyinkeji"]
     pkg_tool_image["tool-image"]
   end
   subgraph group_interaction["packages/interaction"]
@@ -569,6 +570,8 @@ flowchart TD
   pkg_experimental_computer_use_cua_driver_mcp --> pkg_computer_use
   pkg_image_http --> pkg_image
   pkg_image_http --> pkg_llm
+  pkg_image_wuyinkeji --> pkg_image
+  pkg_image_wuyinkeji --> pkg_llm
   pkg_knowledge_sqlite --> pkg_knowledge
   pkg_knowledge_sqlite --> pkg_llm
   pkg_memory_sqlite --> pkg_llm
@@ -1740,6 +1743,7 @@ flowchart TD
 | [`office-create`](../packages/document/office-create) | `document` | [`documents`](../packages/document/documents) |
 | [`experimental-computer-use-cua-driver-mcp`](../packages/experimental/computer-use-cua-driver-mcp) | `experimental` | [`computer-use`](../packages/computer-use/computer-use) |
 | [`image-http`](../packages/image/image-http) | `image` | [`image`](../packages/image/image), [`llm`](../packages/llm/llm) |
+| [`image-wuyinkeji`](../packages/image/image-wuyinkeji) | `image` | [`image`](../packages/image/image), [`llm`](../packages/llm/llm) |
 | [`knowledge-sqlite`](../packages/knowledge/knowledge-sqlite) | `knowledge` | [`knowledge`](../packages/knowledge/knowledge), [`llm`](../packages/llm/llm) |
 | [`memory-sqlite`](../packages/memory/memory-sqlite) | `memory` | [`llm`](../packages/llm/llm), [`memory`](../packages/memory/memory) |
 | [`notification-desktop`](../packages/notification/notification-desktop) | `notification` | [`notification`](../packages/notification/notification) |

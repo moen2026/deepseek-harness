@@ -921,7 +921,7 @@ const SERVICE_ROLES: ServiceRole[] = [
     pkg: 'image',
     title: 'Image-generation seam',
     mode: 'seam',
-    implementations: ['image-http'],
+    implementations: ['image-http', 'image-wuyinkeji'],
     consumers: ['tool-image'],
     note: 'Single-provider reservation plus one routed generate operation over text prompts and raw image bytes; endpoint, model, and credentials stay deployment-owned, and DSH never selects a generation model.',
   },

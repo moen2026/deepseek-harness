@@ -1,5 +1,5 @@
 ---
-description: "The image-generation capability seam (ctx.image): a single-provider reservation registry and one order-independent route — generate — over text prompts and raw image bytes, for users and maintainers composing or extending text-to-image for agents."
+description: "The image-generation capability seam (ctx.image): a single-provider reservation registry and one order-independent route — generate — over text prompts with optional reference-image URLs and raw image bytes, for users and maintainers composing or extending text-to-image for agents."
 kind: "package-reference"
 ---
 
@@ -9,7 +9,7 @@ English | [中文](README.zh.md)
 
 ## Summary
 
-Use `dsh-image` to give agents text-to-image generation: one `generate` route takes a text prompt plus optional size and count refinements and returns the provider's image bytes with their media type, so a backend's endpoint, model, and credentials never change the request or the result. A single provider reserves the seam exclusively, and registration is atomic: an invalid or conflicting claim publishes nothing. Combine it with a provider such as `dsh-image-http` and the model-facing `dsh-tool-image`; alone it answers no request and throws `IMAGE_UNAVAILABLE`. It selects no generation model on the caller's behalf.
+Use `dsh-image` to give agents text-to-image generation: one `generate` route takes a text prompt plus optional size, count, and reference-image refinements and returns the provider's image bytes with their media type, so a backend's endpoint, model, and credentials never change the request or the result. A single provider reserves the seam exclusively, and registration is atomic: an invalid or conflicting claim publishes nothing. Combine it with a provider such as `dsh-image-http` and the model-facing `dsh-tool-image`; alone it answers no request and throws `IMAGE_UNAVAILABLE`. It selects no generation model on the caller's behalf.
 
 ## Table of Contents
 
@@ -49,7 +49,7 @@ The endpoint, model, and credential variable are configured in the provider pack
 
 ### The operation
 
-`generate(request, signal?)` takes an `ImageGenerateRequest` — a required text `prompt` plus optional `size` and `n` — and returns an `ImageResult` of raw image `data` bytes with the `mediaType` they decode as and an optional provider-reported `revisedPrompt`. The seam applies no timeout or size cap, so there is no `resolve()` step; consumers own those bounds and commit the bytes durably through the attachment service.
+`generate(request, signal?)` takes an `ImageGenerateRequest` — a required text `prompt` plus optional `size`, `n`, and `referenceImages` (publicly reachable URLs of reference images that guide the generation) — and returns an `ImageResult` of raw image `data` bytes with the `mediaType` they decode as and an optional provider-reported `revisedPrompt`. The seam applies no timeout or size cap, so there is no `resolve()` step; consumers own those bounds and commit the bytes durably through the attachment service.
 
 ### Failures and recovery
 
@@ -95,8 +95,9 @@ Registration and disposal run through `ctx.effect()`, so the provider route live
 Read these pages when the package-level contract is not enough. They move from the shared generation model to the provider and the tool.
 
 - [dsh-image-http](../image-http/README.md) — the OpenAI-compatible HTTP provider that registers against this seam.
+- [dsh-image-wuyinkeji](../image-wuyinkeji/README.md) — the async-task provider that registers against this seam.
 - [dsh-tool-image](../tool-image/README.md) — the model-facing tool over this seam.
-- [image group map](../README.md) — the three-package family and its related documentation.
+- [image group map](../README.md) — the four-package family and its related documentation.
 
 -----
 

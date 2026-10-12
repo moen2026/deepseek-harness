@@ -764,7 +764,10 @@ export interface Config {
   includeGlobs?: string[]
   /** Glob patterns (`*`/`?`) excluding relative paths from indexing. */
   excludeGlobs?: string[]
-  /** Fuse BM25 with the local hashed-subtoken semantic ranking; the vector path is pure-JS, offline, and deterministic. Defaults to `true`. */
+  /**
+   * Fuse BM25 with the local hashed-subtoken semantic ranking; the vector path is pure-JS,
+   * offline, and deterministic. Defaults to `true`.
+   */
   semantic?: boolean
 }
 
@@ -1993,6 +1996,39 @@ export interface Config {
 }
 ```
 <!-- END GENERATED config-catalog:@deepseek-ai/dsh-image-http -->
+
+<!-- BEGIN GENERATED config-catalog:@deepseek-ai/dsh-image-wuyinkeji -->
+<a id="deepseek-aidsh-image-wuyinkeji"></a>
+
+## `@deepseek-ai/dsh-image-wuyinkeji`
+
+- `inject`: `image`
+- `source`: [`packages/image/image-wuyinkeji/src/index.ts:59`](../packages/image/image-wuyinkeji/src/index.ts)
+
+```ts config-catalog
+/** Provider configuration: the endpoint base, the credential variable name, and the timing knobs. */
+export interface Config {
+  /** Endpoint base URL; the submit and detail paths are appended. Defaults to the public API. */
+  baseURL?: string
+  /** Model selecting the submission endpoint, ratio vocabulary, and reference-image forwarding. Defaults to `gpt-image-2.5`. */
+  model?: WuyinkejiModel
+  /** Name of the environment variable holding the API key; never the key itself. */
+  authEnv: string
+  /**
+   * Aspect ratio sent when a request carries no `size`, expressed in the selected
+   * model's vocabulary (for example `1024*1024`); omitted = endpoint default.
+   */
+  aspectRatio?: string
+  /** Delay between result-detail polls in milliseconds. Defaults to 3000. */
+  pollIntervalMs?: number
+  /** Overall timeout covering submission, polling, and download in milliseconds. Defaults to 120000. */
+  timeoutMs?: number
+}
+
+/** One supported Wuyinkeji image model. */
+export type WuyinkejiModel = typeof WUYINKEJI_MODELS[number]
+```
+<!-- END GENERATED config-catalog:@deepseek-ai/dsh-image-wuyinkeji -->
 
 <!-- BEGIN GENERATED config-catalog:@deepseek-ai/dsh-invariants -->
 <a id="deepseek-aidsh-invariants"></a>

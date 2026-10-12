@@ -3,23 +3,23 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write packages/image/README.md
 /:
-  en: 477e36da89ea5e11
-  zh: e86ac7e20ab9e728
+  en: 8c0504542b0beb31
+  zh: 2febdb231b2db1ec
 /image-image-generation-for-agents:
   en: c9c16f5f8bb3b228
   zh: a539faafa4859486
 /image-image-generation-for-agents/summary:
-  en: 3871e788fff3a4ae
-  zh: 9ff769273b76c532
+  en: 40959dd3addf7845
+  zh: 35dfbfd835495f4e
 /image-image-generation-for-agents/table-of-contents:
   en: 1eb35b015a6c423f
   zh: 5b78a1325d3533ef
 /image-image-generation-for-agents/packages:
-  en: 0142880ec6e9dc11
-  zh: 98a9deee2104c743
+  en: d2e72516e81e8f43
+  zh: 63cb9d6a8c6764f2
 /image-image-generation-for-agents/related-documentation:
-  en: dcf34cd62341cf3b
-  zh: c3a28cb29bd683bb
+  en: f6a88f52d7965630
+  zh: dd1c3664e9db475b
 /image-image-generation-for-agents/dev-note:
   en: 5de1d6304e00c58f
   zh: 47ebf9b358918a83

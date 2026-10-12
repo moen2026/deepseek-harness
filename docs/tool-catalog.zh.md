@@ -2163,7 +2163,7 @@ transcribe_audio 工具将转写端点及其凭据置于 ctx.audio 之后，因�
 
 ### `generate_image`
 
-根据文本提示生成图像并返回图像本身。prompt 为必填；size 是可选的细化参数，例如 "1024x1024"。未配置图像提供方时返回可操作的不可用消息。
+根据文本提示生成图像并返回图像本身。prompt 为必填；size 是可选的细化参数，例如 "1024x1024"；referenceImages 是可选公网可达的参考图 URL，提供方可据此引导生成。未配置图像提供方时返回可操作的不可用消息。
 
 ```json
 {
@@ -2176,6 +2176,13 @@ transcribe_audio 工具将转写端点及其凭据置于 ctx.audio 之后，因�
     "size": {
       "type": "string",
       "description": "Optional requested image size (for example \"1024x1024\"); the provider interprets the hint."
+    },
+    "referenceImages": {
+      "type": "array",
+      "description": "Optional publicly reachable URLs of reference images guiding the generation (image-to-image); a provider that does not accept reference images ignores them.",
+      "items": {
+        "type": "string"
+      }
     }
   },
   "required": [

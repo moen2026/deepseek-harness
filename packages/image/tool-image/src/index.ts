@@ -131,10 +131,15 @@ export function apply(ctx: Context, config: Config): void {
   ctx.tools.register(defineTool({
     name: 'generate_image',
     description:
-      'Generate an image from a text prompt and return the image itself. prompt is required; size is an optional refinement such as "1024x1024". Returns an actionable unavailable message when no image provider is configured.',
+      'Generate an image from a text prompt and return the image itself. prompt is required; size is an optional refinement such as "1024x1024", and referenceImages are optional publicly reachable URLs of reference images the provider may use to guide the generation. Returns an actionable unavailable message when no image provider is configured.',
     parameters: {
       prompt: { type: 'string', required: true, description: 'The text prompt describing the image to generate.' },
       size: { type: 'string', description: 'Optional requested image size (for example "1024x1024"); the provider interprets the hint.' },
+      referenceImages: {
+        type: 'array',
+        items: { type: 'string' },
+        description: 'Optional publicly reachable URLs of reference images guiding the generation (image-to-image); a provider that does not accept reference images ignores them.',
+      },
     },
     output: {
       schema: {
@@ -180,6 +185,7 @@ export function apply(ctx: Context, config: Config): void {
         const result = await ctx.image.generate({
           prompt: input.prompt,
           ...input.size === undefined ? {} : { size: input.size },
+          ...input.referenceImages === undefined ? {} : { referenceImages: input.referenceImages },
         }, exec.signal)
         // Persist before returning: the image block must reference a durably
         // committed object by the time the tool/result event is appended.

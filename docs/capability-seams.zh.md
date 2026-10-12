@@ -314,6 +314,7 @@ flowchart LR
   pkg_image["image"]
   svc_image["ctx.image<br/>Image-generation seam"]
   pkg_image_http["image-http"]
+  pkg_image_wuyinkeji["image-wuyinkeji"]
   pkg_tool_image["tool-image"]
   pkg_documents["documents"]
   svc_documents["ctx.documents<br/>Document-creation seam"]
@@ -412,6 +413,7 @@ flowchart LR
   pkg_host_webserver --> svc_webServer
   pkg_image --> svc_image
   pkg_image_http --> svc_image
+  pkg_image_wuyinkeji --> svc_image
   pkg_inspector --> svc_inspector
   pkg_invariants --> svc_invariants
   pkg_jobs --> svc_jobs
@@ -783,7 +785,7 @@ flowchart LR
 | `ctx.memory` | `seam` | [`memory`](../packages/memory/memory) | [`memory-sqlite`](../packages/memory/memory-sqlite) | [`memory-profile`](../packages/memory/memory-profile), [`memory-reflection`](../packages/memory/memory-reflection), [`tool-memory`](../packages/memory/tool-memory) | - | 单提供方保留加四条路由操作（remember、recall、forget、list）；存储布局、排名与任何向量检索是提供方的私事，DSH 从不选择嵌入提供方。 |
 | `ctx.memoryBrowser` | `core` | [`memory`](../packages/memory/memory) | - | - | - | Web 面板对 `memory` seam 的读取与移除界面；记忆的写入与召回仍是模型侧操作，因此浏览器不能写入记忆内容。 |
 | `ctx.audio` | `seam` | [`audio`](../packages/audio/audio) | [`audio-http`](../packages/audio/audio-http) | [`tool-audio`](../packages/audio/tool-audio) | - | 单提供方保留加一条针对原始音频字节的 transcribe 路由；端点、模型与凭据由部署持有，DSH 从不选择转写模型。 |
-| `ctx.image` | `seam` | [`image`](../packages/image/image) | [`image-http`](../packages/image/image-http) | [`tool-image`](../packages/image/tool-image) | - | 单提供方保留加一条针对文本提示与原始图像字节的 generate 路由；端点、模型与凭据由部署持有，DSH 从不选择生成模型。 |
+| `ctx.image` | `seam` | [`image`](../packages/image/image) | [`image-http`](../packages/image/image-http), [`image-wuyinkeji`](../packages/image/image-wuyinkeji) | [`tool-image`](../packages/image/tool-image) | - | 单提供方保留加一条针对文本提示与原始图像字节的 generate 路由；端点、模型与凭据由部署持有，DSH 从不选择生成模型。 |
 | `ctx.documents` | `seam` | [`documents`](../packages/document/documents) | [`office-create`](../packages/document/office-create) | [`tool-document`](../packages/document/tool-document) | - | 单提供方保留加一条针对中立内容块与成品 Office 字节的 create 路由；引擎、中间格式与版式策略始终是提供方的私有关注点。 |
 | `ctx.repoWiki` | `seam` | [`repo-wiki`](../packages/wiki/repo-wiki) | [`repo-wiki-generator`](../packages/wiki/repo-wiki-generator) | [`tool-repo-wiki`](../packages/wiki/tool-repo-wiki) | - | 单提供方保留加一条对生成的 Markdown wiki 页面的只读路由；存储布局与生成流水线始终是提供方的私有关注点，源已变化的页面以过期元数据读回而不是触发自动重写。 |
 | `ctx.notification` | `seam` | [`notification`](../packages/notification/notification) | [`notification-desktop`](../packages/notification/notification-desktop), [`notification-web`](../packages/notification/notification-web) | [`notification-triggers`](../packages/notification/notification-triggers) | - | 单提供方保留加一条针对提供方无关告警的 notify 路由；展示提供方是部署级选择，告警的发出时机由触发规则持有。 |

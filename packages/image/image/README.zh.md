@@ -1,5 +1,5 @@
 ---
-description: "图像生成能力 seam（ctx.image）：单提供方保留注册表加一条顺序无关路由——generate——面向文本提示与原始图像字节，供组合或扩展面向 Agent 的文生图能力的用户与维护者使用。"
+description: "图像生成能力 seam（ctx.image）：单提供方保留注册表加一条顺序无关路由——generate——面向文本提示（可附参考图 URL）与原始图像字节，供组合或扩展面向 Agent 的文生图能力的用户与维护者使用。"
 kind: "package-reference"
 ---
 
@@ -10,7 +10,7 @@ kind: "package-reference"
 <a id="summary"></a>
 ## 概述
 
-使用 `dsh-image` 赋予 Agent 文生图能力：一条 `generate` 路由接收文本提示加可选的尺寸与数量精修，返回提供方的图像字节及其媒体类型，后端的端点、模型与凭据永远不会改变请求或结果。单一提供方排他保留 seam，注册是原子的：无效或冲突的声明不发布任何内容。与提供方（如 `dsh-image-http`）和面向模型的 `dsh-tool-image` 组合使用；单独时它不回答任何请求并抛出 `IMAGE_UNAVAILABLE`。它绝不代表调用方选择生成模型。
+使用 `dsh-image` 赋予 Agent 文生图能力：一条 `generate` 路由接收文本提示加可选的尺寸、数量与参考图精修，返回提供方的图像字节及其媒体类型，后端的端点、模型与凭据永远不会改变请求或结果。单一提供方排他保留 seam，注册是原子的：无效或冲突的声明不发布任何内容。与提供方（如 `dsh-image-http`）和面向模型的 `dsh-tool-image` 组合使用；单独时它不回答任何请求并抛出 `IMAGE_UNAVAILABLE`。它绝不代表调用方选择生成模型。
 
 <a id="table-of-contents"></a>
 ## 目录
@@ -51,7 +51,7 @@ seam 需要提供方和 consumer 才能工作。最小组合挂载服务、HTTP 
 
 ### 操作
 
-`generate(request, signal?)` 接收 `ImageGenerateRequest`——必填的文本 `prompt` 加可选的 `size` 与 `n`——返回 `ImageResult`，即原始图像 `data` 字节、其可解码的 `mediaType`，以及可选的提供方报告 `revisedPrompt`。seam 不设超时或大小上限，因此没有 `resolve()` 步骤；这些预算由 consumer 持有，字节经 attachment 服务持久提交。
+`generate(request, signal?)` 接收 `ImageGenerateRequest`——必填的文本 `prompt` 加可选的 `size`、`n` 与 `referenceImages`（引导生成的公网可达参考图 URL）——返回 `ImageResult`，即原始图像 `data` 字节、其可解码的 `mediaType`，以及可选的提供方报告 `revisedPrompt`。seam 不设超时或大小上限，因此没有 `resolve()` 步骤；这些预算由 consumer 持有，字节经 attachment 服务持久提交。
 
 ### 失败与恢复
 
@@ -97,8 +97,9 @@ seam 需要提供方和 consumer 才能工作。最小组合挂载服务、HTTP 
 当包级契约不够时阅读这些页面。它们从共享的生成模型走向提供方与工具。
 
 - [dsh-image-http](../image-http/README.zh.md) — 向本 seam 注册的 OpenAI 兼容 HTTP 提供方。
+- [dsh-image-wuyinkeji](../image-wuyinkeji/README.zh.md) — 向本 seam 注册的异步任务提供方。
 - [dsh-tool-image](../tool-image/README.zh.md) — 本 seam 上面向模型的工具。
-- [image 组地图](../README.zh.md) — 三包家族及其相关文档。
+- [image 组地图](../README.zh.md) — 四包家族及其相关文档。
 
 -----
 

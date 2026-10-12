@@ -64,6 +64,7 @@
     "@deepseek-ai/dsh-http-proxy": "workspace:*",
     "@deepseek-ai/dsh-image": "workspace:*",
     "@deepseek-ai/dsh-image-http": "workspace:*",
+    "@deepseek-ai/dsh-image-wuyinkeji": "workspace:*",
     "@deepseek-ai/dsh-invariants": "workspace:*",
     "@deepseek-ai/dsh-jobs": "workspace:*",
     "@deepseek-ai/dsh-jobs-local": "workspace:*",
