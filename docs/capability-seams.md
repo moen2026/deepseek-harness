@@ -314,6 +314,10 @@ flowchart LR
   pkg_image_http["image-http"]
   pkg_image_wuyinkeji["image-wuyinkeji"]
   pkg_tool_image["tool-image"]
+  pkg_video["video"]
+  svc_video["ctx.video<br/>Video-generation seam"]
+  pkg_video_wuyinkeji["video-wuyinkeji"]
+  pkg_tool_video["tool-video"]
   pkg_documents["documents"]
   svc_documents["ctx.documents<br/>Document-creation seam"]
   pkg_office_create["office-create"]
@@ -500,6 +504,8 @@ flowchart LR
   pkg_typert_registry --> svc_typert
   pkg_user_approval --> svc_approval
   pkg_user_questions --> svc_userQuestions
+  pkg_video --> svc_video
+  pkg_video_wuyinkeji --> svc_video
   pkg_web --> svc_web
   pkg_web_fetch_http --> svc_web
   pkg_web_search_deepseek --> svc_web
@@ -667,6 +673,7 @@ flowchart LR
   svc_typert --> pkg_api_gateway
   svc_typert --> pkg_typert_loader
   svc_userQuestions --> pkg_tool_ask_user
+  svc_video --> pkg_tool_video
   svc_web --> pkg_tool_web
   svc_webServer --> pkg_client_connection
   svc_webServer --> pkg_client_hmr
@@ -784,6 +791,7 @@ flowchart LR
 | `ctx.memoryBrowser` | `core` | [`memory`](../packages/memory/memory) | - | - | - | Read-and-remove face over the `memory` seam for the Web panel; remembering and recall stay model-side operations, so the browser cannot write memory content. |
 | `ctx.audio` | `seam` | [`audio`](../packages/audio/audio) | [`audio-http`](../packages/audio/audio-http) | [`tool-audio`](../packages/audio/tool-audio) | - | Single-provider reservation plus one routed transcribe operation over raw audio bytes; endpoint, model, and credentials stay deployment-owned, and DSH never selects a transcription model. |
 | `ctx.image` | `seam` | [`image`](../packages/image/image) | [`image-http`](../packages/image/image-http), [`image-wuyinkeji`](../packages/image/image-wuyinkeji) | [`tool-image`](../packages/image/tool-image) | - | Single-provider reservation plus one routed generate operation over text prompts and raw image bytes; endpoint, model, and credentials stay deployment-owned, and DSH never selects a generation model. |
+| `ctx.video` | `seam` | [`video`](../packages/video/video) | [`video-wuyinkeji`](../packages/video/video-wuyinkeji) | [`tool-video`](../packages/video/tool-video) | - | Single-provider reservation plus one routed generate operation over text prompts with optional size, duration, aspect-ratio, frame-conditioning, and reference-media refinements, and raw video bytes; endpoint, model, and credentials stay deployment-owned. |
 | `ctx.documents` | `seam` | [`documents`](../packages/document/documents) | [`office-create`](../packages/document/office-create) | [`tool-document`](../packages/document/tool-document) | - | Single-provider reservation plus one routed create operation over neutral content blocks and finished Office bytes; engines, intermediate formats, and layout policy stay the provider’s private concern. |
 | `ctx.repoWiki` | `seam` | [`repo-wiki`](../packages/wiki/repo-wiki) | [`repo-wiki-generator`](../packages/wiki/repo-wiki-generator) | [`tool-repo-wiki`](../packages/wiki/tool-repo-wiki) | - | Single-provider reservation plus read-only routed access to generated Markdown wiki pages; storage layout and the generation pipeline stay the provider’s private concern, and a page whose sources changed reads back as stale metadata instead of triggering an automatic rewrite. |
 | `ctx.notification` | `seam` | [`notification`](../packages/notification/notification) | [`notification-desktop`](../packages/notification/notification-desktop), [`notification-web`](../packages/notification/notification-web) | [`notification-triggers`](../packages/notification/notification-triggers) | - | Single-provider reservation plus one routed notify operation over provider-agnostic alerts; the surface provider is a deployment-wide choice, and the trigger rules own when an alert is raised. |

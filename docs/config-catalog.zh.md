@@ -4225,7 +4225,7 @@ export interface Config {
 
 ## `@deepseek-ai/dsh-system-prompt`
 
-- `source`: [`packages/core/system-prompt/src/index.ts:257`](../packages/core/system-prompt/src/index.ts)
+- `source`: [`packages/core/system-prompt/src/index.ts:258`](../packages/core/system-prompt/src/index.ts)
 
 ```ts config-catalog
 /** Plugin config: the deployment-authored fragment of the system prompt (see {@link Config.personaPrefix} for its contract). */
@@ -4957,6 +4957,25 @@ export interface Config {
 ```
 <!-- END GENERATED config-catalog:@deepseek-ai/dsh-tool-todo -->
 
+<!-- BEGIN GENERATED config-catalog:@deepseek-ai/dsh-tool-video -->
+<a id="deepseek-aidsh-tool-video"></a>
+
+## `@deepseek-ai/dsh-tool-video`
+
+- `inject`: `tools` · `video` · `systemPrompt`
+- `source`: [`packages/video/tool-video/src/index.ts:52`](../packages/video/tool-video/src/index.ts)
+
+```ts config-catalog
+/** Plugin configuration: the result cap and the timeout budget. */
+export interface Config {
+  /** Largest complete rendered result in characters, including truncation metadata (default 8000). */
+  maxResultChars?: number
+  /** Tool-call timeout budget in ms (default 660000). */
+  timeoutMs?: number
+}
+```
+<!-- END GENERATED config-catalog:@deepseek-ai/dsh-tool-video -->
+
 <!-- BEGIN GENERATED config-catalog:@deepseek-ai/dsh-tool-web -->
 <a id="deepseek-aidsh-tool-web"></a>
 
@@ -5122,6 +5141,86 @@ export interface Config {
 export type ApprovalPolicy = 'ask' | 'never'
 ```
 <!-- END GENERATED config-catalog:@deepseek-ai/dsh-user-approval -->
+
+<!-- BEGIN GENERATED config-catalog:@deepseek-ai/dsh-video-volc -->
+<a id="deepseek-aidsh-video-volc"></a>
+
+## `@deepseek-ai/dsh-video-volc`
+
+- `inject`: `video`
+- `source`: [`packages/video/video-volc/src/index.ts:62`](../packages/video/video-volc/src/index.ts)
+
+```ts config-catalog
+/** Provider configuration: the endpoints, the credential variable names, and the timing knobs. */
+export interface Config {
+  /** Ark inference base URL. Defaults to the public plane. */
+  arkBaseURL?: string
+  /** Ark model identifier. Defaults to `seedance-2.0`. */
+  model?: string
+  /** Name of the environment variable holding the ARK API key; never the key itself. */
+  authEnv: string
+  /**
+   * Name of the environment variable holding the Volcengine access key;
+   * configure it together with `assetSecretEnv` to register public reference
+   * images as private Seedance assets.
+   */
+  assetAuthEnv?: string
+  /** Name of the environment variable holding the Volcengine secret key; see {@link Config.assetAuthEnv}. */
+  assetSecretEnv?: string
+  /** Project name the private assets are filed under. Defaults to `default`. */
+  project?: string
+  /** Asset group the private assets are filed into; omitted groups are created on first use. */
+  assetGroupId?: string
+  /** Control-plane base URL. Defaults to the public plane. */
+  assetBaseURL?: string
+  /** Signing region. Defaults to `cn-beijing`. */
+  region?: string
+  /** Delay between task or asset polls in milliseconds. Defaults to 10000. */
+  pollIntervalMs?: number
+  /** Overall timeout covering submission, polling, and download in milliseconds. Defaults to 600000. */
+  timeoutMs?: number
+  /**
+   * Whether the content-generation family (Seedance 2.5 models) generates
+   * native audio; omitted values leave the field out of the submission.
+   */
+  generateAudio?: boolean
+  /**
+   * Value submitted as `extra_body.omni_reference_task_type` for
+   * content-generation submissions, for example `reference`; omitted values
+   * leave the field out.
+   */
+  referenceTaskType?: string
+}
+```
+<!-- END GENERATED config-catalog:@deepseek-ai/dsh-video-volc -->
+
+<!-- BEGIN GENERATED config-catalog:@deepseek-ai/dsh-video-wuyinkeji -->
+<a id="deepseek-aidsh-video-wuyinkeji"></a>
+
+## `@deepseek-ai/dsh-video-wuyinkeji`
+
+- `inject`: `video`
+- `source`: [`packages/video/video-wuyinkeji/src/index.ts:62`](../packages/video/video-wuyinkeji/src/index.ts)
+
+```ts config-catalog
+/** Provider configuration: the endpoint base, the model, the credential variable name, and the timing knobs. */
+export interface Config {
+  /** Endpoint base URL; the submit and detail paths are appended. Defaults to the public API. */
+  baseURL?: string
+  /** Model selecting the submission endpoint and request-field mapping. Defaults to `google-omni`. */
+  model?: WuyinkejiVideoModel
+  /** Name of the environment variable holding the API key; never the key itself. */
+  authEnv: string
+  /** Delay between result-detail polls in milliseconds. Defaults to 10000. */
+  pollIntervalMs?: number
+  /** Overall timeout covering submission, polling, and download in milliseconds. Defaults to 600000. */
+  timeoutMs?: number
+}
+
+/** One supported Wuyinkeji video model. */
+export type WuyinkejiVideoModel = typeof WUYINKEJI_VIDEO_MODELS[number]
+```
+<!-- END GENERATED config-catalog:@deepseek-ai/dsh-video-wuyinkeji -->
 
 <!-- BEGIN GENERATED config-catalog:@deepseek-ai/dsh-web -->
 <a id="deepseek-aidsh-web"></a>
@@ -5494,6 +5593,7 @@ export interface Config {
 | `@deepseek-ai/dsh-tool-git-track` | `tools` · `storageDomain` | [`packages/git/tool-git-track/src/index.ts`](../packages/git/tool-git-track/src/index.ts) |
 | `@deepseek-ai/dsh-tool-subagent-control` | `tools` · `subagents` | [`packages/subagent/tool-subagent-control/src/index.ts`](../packages/subagent/tool-subagent-control/src/index.ts) |
 | `@deepseek-ai/dsh-user-questions` | — | [`packages/interaction/user-questions/src/index.ts`](../packages/interaction/user-questions/src/index.ts) |
+| `@deepseek-ai/dsh-video` | — | [`packages/video/video/src/index.ts`](../packages/video/video/src/index.ts) |
 | `@deepseek-ai/dsh-webhook` | `agents` · `agentDefaultModel` · `agentPresets` · `permissionPresets` · `sessionTitle` · `workspaceRegistry` | [`packages/webhook/webhook/src/index.ts`](../packages/webhook/webhook/src/index.ts) |
 | `@deepseek-ai/dsh-workspace` | `storageDomain` · `sessionPersistence` | [`packages/workspace/workspace/src/index.ts`](../packages/workspace/workspace/src/index.ts) |
 <!-- END GENERATED config-catalog:no-config -->

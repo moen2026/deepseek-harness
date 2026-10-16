@@ -1,0 +1,52 @@
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write packages/video/video-volc/README.md
+/:
+  en: 666e8b020fbb21b4
+  zh: f8e2f6812f9759fc
+/deepseek-ai-dsh-video-volc:
+  en: 6643ba2f422b2f40
+  zh: d66559ce8de849f7
+/deepseek-ai-dsh-video-volc/summary:
+  en: 4392736e8221a65b
+  zh: 67a308c207417236
+/deepseek-ai-dsh-video-volc/table-of-contents:
+  en: d152484eb41ac6b4
+  zh: d152484eb41ac6b4
+/deepseek-ai-dsh-video-volc/use-this-package:
+  en: bbff250eba0f1b89
+  zh: bbff250eba0f1b89
+/deepseek-ai-dsh-video-volc/use-this-package/when-to-choose-it:
+  en: 8ca335232e92c922
+  zh: 9ffb5812eee9169d
+/deepseek-ai-dsh-video-volc/use-this-package/configuration:
+  en: bc8f57d468d80822
+  zh: a7a52e1fb0f52b69
+/deepseek-ai-dsh-video-volc/use-this-package/failures-and-recovery:
+  en: 27e67bcffdb9c0ff
+  zh: c5a963876ef11e4e
+/deepseek-ai-dsh-video-volc/understand-the-implementation:
+  en: 42b15ac6321706aa
+  zh: 42b15ac6321706aa
+/deepseek-ai-dsh-video-volc/understand-the-implementation/design-philosophy:
+  en: caea88f6120b36a6
+  zh: ca5ca3d6645a075d
+/deepseek-ai-dsh-video-volc/understand-the-implementation/source-map:
+  en: 6cae89be9e7ac890
+  zh: 323ad809fff61861
+/deepseek-ai-dsh-video-volc/further-exploration:
+  en: a64791874e5083ef
+  zh: f242ece89e8150eb
+/deepseek-ai-dsh-video-volc/model-experience:
+  en: 748dc82564af1e06
+  zh: 51d94d64a261ed18
+/deepseek-ai-dsh-video-volc/model-experience/kv-cache-effect:
+  en: 6947158f3e271b4a
+  zh: 8db831f0c1e46ea5
+/deepseek-ai-dsh-video-volc/known-limitations-and-deferred-work:
+  en: 71179dcd016e25ea
+  zh: f0893ed884d216b6
+/deepseek-ai-dsh-video-volc/known-limitations-and-deferred-work/dev-note:
+  en: e67f633dc6fe7773
+  zh: e67f633dc6fe7773

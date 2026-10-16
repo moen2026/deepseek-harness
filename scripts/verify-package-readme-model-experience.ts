@@ -51,6 +51,8 @@ const SENTENCE_MODEL_EXPERIENCE: Readonly<Record<string, SentenceContract>> = {
   'packages/image/image': { kind: 'indirect', reason: 'The provider registry contributes no prompt or schema; dsh-tool-image owns the model-facing generate_image surface.' },
   'packages/image/image-http': { kind: 'none', reason: 'The provider answers generation requests without contributing anything to model requests; dsh-tool-image owns the model-facing schema and rendering.' },
   'packages/image/image-wuyinkeji': { kind: 'none', reason: 'The provider answers generation requests without contributing anything to model requests; dsh-tool-image owns the model-facing schema and rendering.' },
+  'packages/video/video': { kind: 'indirect', reason: 'The provider registry contributes no prompt or schema; dsh-tool-video owns the model-facing generate_video surface.' },
+  'packages/video/video-wuyinkeji': { kind: 'none', reason: 'The provider answers generation requests without contributing anything to model requests; dsh-tool-video owns the model-facing schema and rendering.' },
   'packages/experimental/api-speech-to-text': { kind: 'none', reason: 'Transports audio and preparation state; ordinary user submission owns model-visible text.' },
   'packages/experimental/speech-to-text-sensevoice': { kind: 'none', reason: 'Local recognition returns transient text without modifying model context.' },
   'packages/experimental/client-ui-voice-input': { kind: 'none', reason: 'Inserts reviewable text into the unsent draft without submitting to the Agent.' },

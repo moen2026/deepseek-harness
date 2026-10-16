@@ -1,0 +1,25 @@
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write packages/video/README.md
+/:
+  en: 9cd43a04f3638877
+  zh: 5bad7db6da90ef67
+/video-video-generation-for-agents:
+  en: aa35a6af37c9a3f1
+  zh: 339ad03f2c1aa295
+/video-video-generation-for-agents/summary:
+  en: 7e37a5feb96d096b
+  zh: cf7474f4a72840d5
+/video-video-generation-for-agents/table-of-contents:
+  en: 1eb35b015a6c423f
+  zh: 5b78a1325d3533ef
+/video-video-generation-for-agents/packages:
+  en: be1a4729e8005da6
+  zh: c7c2a91370f467fc
+/video-video-generation-for-agents/related-documentation:
+  en: 535d3bf94ab646eb
+  zh: fe3deef25b3a6e24
+/video-video-generation-for-agents/dev-note:
+  en: 5de1d6304e00c58f
+  zh: 47ebf9b358918a83

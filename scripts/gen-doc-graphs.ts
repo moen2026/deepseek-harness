@@ -926,6 +926,15 @@ const SERVICE_ROLES: ServiceRole[] = [
     note: 'Single-provider reservation plus one routed generate operation over text prompts and raw image bytes; endpoint, model, and credentials stay deployment-owned, and DSH never selects a generation model.',
   },
   {
+    key: 'video',
+    pkg: 'video',
+    title: 'Video-generation seam',
+    mode: 'seam',
+    implementations: ['video-wuyinkeji'],
+    consumers: ['tool-video'],
+    note: 'Single-provider reservation plus one routed generate operation over text prompts with optional size, duration, aspect-ratio, frame-conditioning, and reference-media refinements, and raw video bytes; endpoint, model, and credentials stay deployment-owned.',
+  },
+  {
     key: 'documents',
     pkg: 'documents',
     title: 'Document-creation seam',

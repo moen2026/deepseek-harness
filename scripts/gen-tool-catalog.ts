@@ -70,6 +70,8 @@ import { Audio } from '@deepseek-ai/dsh-audio'
 import * as ToolAudio from '@deepseek-ai/dsh-tool-audio'
 import { Image } from '@deepseek-ai/dsh-image'
 import * as ToolImage from '@deepseek-ai/dsh-tool-image'
+import { Video } from '@deepseek-ai/dsh-video'
+import * as ToolVideo from '@deepseek-ai/dsh-tool-video'
 import Documents from '@deepseek-ai/dsh-documents'
 import * as ToolDocument from '@deepseek-ai/dsh-tool-document'
 import RepoWiki from '@deepseek-ai/dsh-repo-wiki'
@@ -617,6 +619,20 @@ const TOOL_PACKAGES: ToolPackage[] = [
     },
     note:
       'The generate_image tool keeps the generation endpoint and its credentials behind ctx.image, so its model-visible schema stays stable across providers. Requires a registered provider (e.g. `@deepseek-ai/dsh-image-http`) and a mounted attachment store at runtime; without one, a call returns an actionable unavailable answer rather than failing the session.',
+  },
+  {
+    pkg: '@deepseek-ai/dsh-tool-video',
+    dir: 'tool-video',
+    source: 'packages/video/tool-video/src/index.ts',
+    requires: ['ctx.tools', 'ctx.video', 'ctx.attachments', 'ctx.systemPrompt'],
+    writes: ['tool/call', 'tool/result'],
+    async mount(ctx) {
+      // The tool registers from the seam alone; the schema does not depend on any provider.
+      await ctx.plugin(Video)
+      await ctx.plugin(ToolVideo)
+    },
+    note:
+      'The generate_video tool keeps the generation endpoint and its credentials behind ctx.video, so its model-visible schema stays stable across providers. Requires a registered provider (e.g. `@deepseek-ai/dsh-video-wuyinkeji`) and a mounted attachment store at runtime; without one, a call returns an actionable unavailable answer rather than failing the session.',
   },
   {
     pkg: '@deepseek-ai/dsh-tool-document',

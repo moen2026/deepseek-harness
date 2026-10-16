@@ -46,6 +46,7 @@
 | `@deepseek-ai/dsh-tool-knowledge` | `knowledge_ingest`, `knowledge_list`, `knowledge_remove`, `knowledge_search` | `ctx.tools`、`ctx.knowledge`、`ctx.systemPrompt` | `tool/call`、`tool/result` | - | knowledge_ingest/knowledge_search/knowledge_remove/knowledge_list 工具将存储、分块与排名置于 ctx.knowledge 之后，因此其模型可见 schema 在更换提供方时保持稳定。运行时要求已注册提供方，例如 `@deepseek-ai/dsh-knowledge-sqlite`；如果没有提供方，操作会返回可操作的不可用应答，而不是让会话失败。 |
 | `@deepseek-ai/dsh-tool-audio` | `transcribe_audio` | `ctx.tools`、`ctx.audio`、`ctx.fs`、`ctx.systemPrompt` | `tool/call`、`tool/result` | - | transcribe_audio 工具将转写端点及其凭据置于 ctx.audio 之后，因此其模型可见 schema 在更换提供方时保持稳定。运行时要求已注册提供方，例如 `@deepseek-ai/dsh-audio-http`；如果没有提供方，调用会返回可操作的不可用应答，而不是让会话失败。 |
 | `@deepseek-ai/dsh-tool-image` | `generate_image` | `ctx.tools`、`ctx.image`、`ctx.attachments`、`ctx.systemPrompt` | `tool/call`、`tool/result` | - | generate_image 工具将生成端点及其凭据置于 ctx.image 之后，因此其模型可见 schema 在更换提供方时保持稳定。运行时要求已注册提供方（例如 `@deepseek-ai/dsh-image-http`）且已挂载 attachment 存储；如果没有，调用会返回可操作的不可用应答，而不是让会话失败。 |
+| `@deepseek-ai/dsh-tool-video` | `generate_video` | `ctx.tools`、`ctx.video`、`ctx.attachments`、`ctx.systemPrompt` | `tool/call`、`tool/result` | - | generate_video 工具将生成端点及其凭据置于 ctx.video 之后，因此其模型可见 schema 在更换提供方时保持稳定。运行时要求已注册提供方（例如 `@deepseek-ai/dsh-video-wuyinkeji`）且已挂载 attachment 存储；如果没有，调用会返回可操作的不可用应答，而不是让会话失败。 |
 | `@deepseek-ai/dsh-tool-document` | `create_document` | `ctx.tools`、`ctx.documents`、`ctx.fs`、`ctx.systemPrompt`、`ctx.sessionProjections` | `tool/call`、`tool/result`、`fs/observed`、`deliverables/presented`（成功最终结果后） | - | create_document 工具将文档引擎置于 ctx.documents 之后，因此其模型可见 schema 在更换提供方时保持稳定。运行时要求已注册提供方（例如 `@deepseek-ai/dsh-office-create`）；如果没有，调用会返回可操作的不可用应答，而不是让会话失败。 |
 | `@deepseek-ai/dsh-tool-repo-wiki` | `read_wiki` | `ctx.tools`、`ctx.repoWiki`、`ctx.systemPrompt` | `tool/call`、`tool/result` | - | read_wiki 工具将 wiki 存储与生成置于 ctx.repoWiki 之后，因此其模型可见 schema 在更换提供方时保持稳定。运行时要求已注册提供方（例如 `@deepseek-ai/dsh-repo-wiki-generator`）；如果没有，调用会返回可操作的不可用应答，而不是让会话失败。 |
 | `@deepseek-ai/dsh-tool-ralph` | `ralph` | `ctx.tools`、`ctx.workflowEngine`、`ctx.subagents`、`ctx.systemPrompt`、`a calling Agent (exec.agent parents every fresh round)` | `tool/call`、`tool/result`、`workflow and child session events during execution` | - | 固定的前台工作流会在每个 Round 启动一个全新的结构化子级；模型只能选择不可变目标和可选的 Round 上限。 |
@@ -2194,6 +2195,65 @@ transcribe_audio 工具将转写端点及其凭据置于 ctx.audio 之后，因�
 来源：[`packages/image/tool-image/src/index.ts`](../packages/image/tool-image/src/index.ts)
 
 generate_image 工具将生成端点及其凭据置于 ctx.image 之后，因此其模型可见 schema 在更换提供方时保持稳定。运行时要求已注册提供方（例如 `@deepseek-ai/dsh-image-http`）且已挂载 attachment 存储；如果没有，调用会返回可操作的不可用应答，而不是让会话失败。
+
+<a id="deepseek-aidsh-tool-video"></a>
+
+## `@deepseek-ai/dsh-tool-video`
+
+### `generate_video`
+
+根据文本提示生成视频并返回视频文件。prompt 为必填；size 是可选的细化参数，例如 "1280x720"；duration 是可选的时长（秒）；aspectRatio 是可选提示，例如 "16:9" 或 "adaptive"；firstFrame、lastFrame、referenceImage、referenceVideo 与 referenceAudio 是可选公网可达的首尾帧条件图与参考媒体 URL，提供方可据此引导生成。未配置视频提供方时返回可操作的不可用消息。
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "prompt": {
+      "type": "string",
+      "description": "The text prompt describing the video to generate."
+    },
+    "size": {
+      "type": "string",
+      "description": "Optional requested video size (for example \"1280x720\" or \"720x1280\"); the provider interprets the hint."
+    },
+    "duration": {
+      "type": "integer",
+      "description": "Optional requested duration in seconds; the provider interprets the hint."
+    },
+    "referenceImage": {
+      "type": "string",
+      "description": "Optional publicly reachable URL of one reference image guiding the generation (image-to-video); a provider that does not accept reference media ignores it."
+    },
+    "referenceVideo": {
+      "type": "string",
+      "description": "Optional publicly reachable URL of one reference video guiding the generation (video-to-video); a provider that does not accept reference media ignores it."
+    },
+    "firstFrame": {
+      "type": "string",
+      "description": "Optional publicly reachable URL of one image conditioning the video's first frame; a provider that does not accept frame conditioning ignores it."
+    },
+    "lastFrame": {
+      "type": "string",
+      "description": "Optional publicly reachable URL of one image conditioning the video's last frame; a provider that does not accept frame conditioning ignores it."
+    },
+    "referenceAudio": {
+      "type": "string",
+      "description": "Optional publicly reachable URL of one reference audio guiding the generation (audio-to-video); a provider that does not accept reference media ignores it."
+    },
+    "aspectRatio": {
+      "type": "string",
+      "description": "Optional requested aspect ratio (for example \"16:9\", \"9:16\", or \"adaptive\"); the provider interprets the hint."
+    }
+  },
+  "required": [
+    "prompt"
+  ]
+}
+```
+
+来源：[`packages/video/tool-video/src/index.ts`](../packages/video/tool-video/src/index.ts)
+
+generate_video 工具将生成端点及其凭据置于 ctx.video 之后，因此其模型可见 schema 在更换提供方时保持稳定。运行时要求已注册提供方（例如 `@deepseek-ai/dsh-video-wuyinkeji`）且已挂载 attachment 存储；如果没有，调用会返回可操作的不可用应答，而不是让会话失败。
 
 ## `@deepseek-ai/dsh-tool-document`
 

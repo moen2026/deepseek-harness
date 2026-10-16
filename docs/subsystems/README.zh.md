@@ -48,6 +48,7 @@
 | [memory.md](memory.zh.md) | memory（长期记忆）seam：`MemoryDraft`/`MemoryRecord`、召回与列举类型、`MemoryProvider`/`Service`、四种操作、`MemoryError` |
 | [audio.md](audio.zh.md) | audio（音频）seam：`AudioTranscribeRequest`/`AudioTranscript`、`AudioProvider`/`Service`、单一 `transcribe` 操作、`AudioError` |
 | [image.md](image.zh.md) | image（图像）seam：`ImageGenerateRequest`/`ImageResult`、`ImageProvider`/`Service`、单一 `generate` 操作、`ImageError` |
+| [video.md](video.zh.md) | video（视频）seam：`VideoGenerateRequest`/`VideoResult`、`VideoProvider`/`Service`、单一 `generate` 操作、`VideoError` |
 | [documents.md](documents.zh.md) | documents（文档生成）seam：`DocumentCreateRequest`/`DocumentResult`、`DocumentsProvider`/`Service`、单一 `create` 操作、`DocumentsError` |
 | [repo-wiki.md](repo-wiki.zh.md) | repo-wiki（仓库 Wiki）seam：`WikiPageSummary`/`WikiPage`/`WikiOutlineEntry`/`WikiListing`、`RepoWikiProvider`/`Service`、三个只读路由、`RepoWikiError` |
 | [notification.md](notification.zh.md) | notification（通知）seam：`NotificationRequest`/`NotificationUrgency`、`NotificationProvider`/`Service`、单一 `notify` 操作、`NotificationError` |

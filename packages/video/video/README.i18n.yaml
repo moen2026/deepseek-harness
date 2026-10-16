@@ -1,0 +1,58 @@
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write packages/video/video/README.md
+/:
+  en: 16700875da2e34aa
+  zh: 22e79b2bfba68461
+/deepseek-ai-dsh-video:
+  en: a78c2a5ecf345db4
+  zh: 3816af56b9802eb0
+/deepseek-ai-dsh-video/summary:
+  en: 51a9384cf3895292
+  zh: bcf6210c4362be23
+/deepseek-ai-dsh-video/table-of-contents:
+  en: d152484eb41ac6b4
+  zh: ffab54373e9e61f0
+/deepseek-ai-dsh-video/use-this-package:
+  en: 1a2bc1b2cb8b1c97
+  zh: f2d838e4605ffd7b
+/deepseek-ai-dsh-video/use-this-package/when-to-choose-it:
+  en: 5cc33bf860efa00e
+  zh: 82de63cee72a37c2
+/deepseek-ai-dsh-video/use-this-package/composing-a-video-stack:
+  en: 01fe0c04d7435258
+  zh: 46a06661601bc213
+/deepseek-ai-dsh-video/use-this-package/the-operation:
+  en: 1567c26a954e9d98
+  zh: c6b6335b4203e4bd
+/deepseek-ai-dsh-video/use-this-package/failures-and-recovery:
+  en: 9bcdfb3336d574e8
+  zh: 529455349ebcc30b
+/deepseek-ai-dsh-video/understand-the-implementation:
+  en: 1e0acac55fc6c314
+  zh: c22d1a00043e32ae
+/deepseek-ai-dsh-video/understand-the-implementation/design-philosophy:
+  en: e3686eff46b9c347
+  zh: a6908ae20a33fc12
+/deepseek-ai-dsh-video/understand-the-implementation/source-map:
+  en: 56ffe81812391ebf
+  zh: 42b7ac6da5d13c78
+/deepseek-ai-dsh-video/understand-the-implementation/registration-and-disposal-lifecycle:
+  en: 6bc38729faa5fbdc
+  zh: dc856c20024c19bc
+/deepseek-ai-dsh-video/further-exploration:
+  en: e608feca82892646
+  zh: f04f73111ca8d05b
+/deepseek-ai-dsh-video/model-experience:
+  en: 7954362a43c9e49a
+  zh: 9d8991a10e6adbb4
+/deepseek-ai-dsh-video/model-experience/kv-cache-effect:
+  en: b15f2196076b0a02
+  zh: 6e5f4ca6d7774118
+/deepseek-ai-dsh-video/known-limitations-and-deferred-work:
+  en: d044e5457a9fc298
+  zh: 60d2f24933e8978a
+/deepseek-ai-dsh-video/known-limitations-and-deferred-work/dev-note:
+  en: e67f633dc6fe7773
+  zh: cdd2a143b725accd

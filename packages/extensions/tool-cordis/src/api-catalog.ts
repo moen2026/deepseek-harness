@@ -3880,6 +3880,26 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
     ],
   },
   {
+    key: 'video',
+    summary: 'The `ctx.video` surface: a single-provider reservation registry plus the routed `generate` operation.',
+    description: 'The `ctx.video` surface: a single-provider reservation registry plus the routed `generate` operation. The seam exposes no protocol escape hatch — endpoint shape, model, and credentials are the provider\'s private concern.',
+    methods: [
+      {
+        signature: 'registerProvider(provider: VideoProvider): () => void',
+        description: 'Reserve the seam for one provider. Validate and conflict-check everything before mutating: an invalid or conflicting registration publishes nothing, and its disposer releases the reservation.',
+        parameters: [{ name: 'provider', description: 'the backend claiming the seam.' }],
+        returns: 'a synchronous disposer releasing this provider\'s reservation.',
+      },
+      {
+        signature: 'generate(request: VideoGenerateRequest, signal?: AbortSignal): Promise<VideoResult>',
+        description: 'Route one generation to the registered provider.',
+        parameters: [{ name: 'request', description: 'the generation request.' }, { name: 'signal', description: 'cancellation forwarded to the provider.' }],
+        returns: 'the generated video.',
+        throws: ['{@link VideoError} with `VIDEO_UNAVAILABLE` when no provider is registered.'],
+      },
+    ],
+  },
+  {
     key: 'web',
     summary: 'The web access service.',
     description: 'The web access service. Registered as `ctx.web` (one instance per context).\n\nSelection semantics (resolved at execution time, never order-dependent):\n\n- A configured id that is registered and `available()` → that provider.\n- A configured id not registered → `WEB_PROVIDER_CONFIGURED_MISSING`.\n- A configured id registered but unavailable → `WEB_PROVIDER_CONFIGURED_UNAVAILABLE`.\n- No id configured, exactly one registered usable provider → that provider.\n- No id configured, multiple usable providers → `WEB_PROVIDER_AMBIGUOUS`.\n- No id configured, no usable provider → `WEB_PROVIDER_UNAVAILABLE`.',
@@ -8603,6 +8623,18 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   {
     name: 'VerifiedWebhookDelivery',
     declaration: 'export interface VerifiedWebhookDelivery<K extends string = string> {\n    readonly kind: K;\n    readonly source: WebhookSourceId;\n    readonly deliveryId: WebhookDeliveryId;\n    readonly event: WebhookEventOf<K>;\n    readonly receivedAt: number;\n}',
+  },
+  {
+    name: 'VideoGenerateRequest',
+    declaration: 'export interface VideoGenerateRequest {\n    readonly prompt: string;\n    readonly size?: string;\n    readonly duration?: number;\n    readonly referenceImage?: string;\n    readonly referenceVideo?: string;\n    readonly firstFrame?: string;\n    readonly lastFrame?: string;\n    readonly referenceAudio?: string;\n    readonly aspectRatio?: string;\n}',
+  },
+  {
+    name: 'VideoProvider',
+    declaration: 'export interface VideoProvider {\n    readonly id: string;\n    generate(request: VideoGenerateRequest, signal?: AbortSignal): Promise<VideoResult>;\n}',
+  },
+  {
+    name: 'VideoResult',
+    declaration: 'export interface VideoResult {\n    readonly data: Uint8Array;\n    readonly mediaType: string;\n}',
   },
   {
     name: 'VoiceIntakeRequest',

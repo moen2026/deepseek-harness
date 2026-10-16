@@ -485,6 +485,11 @@ flowchart TD
     pkg_typert_protocol["typert-protocol"]
     pkg_typert_registry["typert-registry"]
   end
+  subgraph group_video["packages/video"]
+    pkg_tool_video["tool-video"]
+    pkg_video["video"]
+    pkg_video_wuyinkeji["video-wuyinkeji"]
+  end
   subgraph group_webhook["packages/webhook"]
     pkg_tool_github["tool-github"]
     pkg_webhook["webhook"]
@@ -536,6 +541,7 @@ flowchart TD
   pkg_subprocess --> pkg_http_proxy
   pkg_remote_mock --> pkg_typert_protocol
   pkg_typert_loader --> pkg_typert_registry
+  pkg_video --> pkg_llm
   pkg_repo_wiki --> pkg_llm
   pkg_session --> pkg_scope
   pkg_system_prompt --> pkg_invariants
@@ -574,6 +580,7 @@ flowchart TD
   pkg_image_http --> pkg_llm
   pkg_image_wuyinkeji --> pkg_image
   pkg_image_wuyinkeji --> pkg_llm
+  pkg_image_wuyinkeji --> pkg_timeout
   pkg_knowledge_sqlite --> pkg_knowledge
   pkg_knowledge_sqlite --> pkg_llm
   pkg_memory_sqlite --> pkg_llm
@@ -584,6 +591,9 @@ flowchart TD
   pkg_sandbox_windows_acl --> pkg_subprocess
   pkg_subprocess_local --> pkg_subprocess
   pkg_subprocess_local --> pkg_timeout
+  pkg_video_wuyinkeji --> pkg_llm
+  pkg_video_wuyinkeji --> pkg_timeout
+  pkg_video_wuyinkeji --> pkg_video
   pkg_repo_wiki_generator --> pkg_llm
   pkg_repo_wiki_generator --> pkg_repo_wiki
   pkg_repo_wiki_generator --> pkg_timeout
@@ -1134,6 +1144,12 @@ flowchart TD
   pkg_llm_replay --> pkg_deepseek_llm_api_extensions
   pkg_llm_replay --> pkg_llm
   pkg_llm_replay --> pkg_session
+  pkg_tool_video --> pkg_attachment
+  pkg_tool_video --> pkg_llm
+  pkg_tool_video --> pkg_system_prompt
+  pkg_tool_video --> pkg_timeout
+  pkg_tool_video --> pkg_tools
+  pkg_tool_video --> pkg_video
   pkg_tool_github --> pkg_credentials
   pkg_tool_github --> pkg_tools
   pkg_tool_repo_wiki --> pkg_llm
@@ -1725,6 +1741,7 @@ flowchart TD
 | [`subprocess`](../packages/subprocess/subprocess) | `subprocess` | [`http-proxy`](../packages/util/http-proxy) |
 | [`remote-mock`](../packages/test-support/remote-mock) | `test-support` | [`typert-protocol`](../packages/typert/protocol) |
 | [`typert-loader`](../packages/typert/loader) | `typert` | [`typert-registry`](../packages/typert/registry) |
+| [`video`](../packages/video/video) | `video` | [`llm`](../packages/llm/llm) |
 | [`repo-wiki`](../packages/wiki/repo-wiki) | `wiki` | [`llm`](../packages/llm/llm) |
 | [`session`](../packages/core/session) | `core` | [`scope`](../packages/core/scope) |
 | [`system-prompt`](../packages/core/system-prompt) | `core` | [`invariants`](../packages/runtime-diagnostics/invariants), [`llm`](../packages/llm/llm), [`scope`](../packages/core/scope) |
@@ -1745,7 +1762,7 @@ flowchart TD
 | [`office-create`](../packages/document/office-create) | `document` | [`documents`](../packages/document/documents) |
 | [`experimental-computer-use-cua-driver-mcp`](../packages/experimental/computer-use-cua-driver-mcp) | `experimental` | [`computer-use`](../packages/computer-use/computer-use) |
 | [`image-http`](../packages/image/image-http) | `image` | [`image`](../packages/image/image), [`llm`](../packages/llm/llm) |
-| [`image-wuyinkeji`](../packages/image/image-wuyinkeji) | `image` | [`image`](../packages/image/image), [`llm`](../packages/llm/llm) |
+| [`image-wuyinkeji`](../packages/image/image-wuyinkeji) | `image` | [`image`](../packages/image/image), [`llm`](../packages/llm/llm), [`timeout`](../packages/util/timeout) |
 | [`knowledge-sqlite`](../packages/knowledge/knowledge-sqlite) | `knowledge` | [`knowledge`](../packages/knowledge/knowledge), [`llm`](../packages/llm/llm) |
 | [`memory-sqlite`](../packages/memory/memory-sqlite) | `memory` | [`llm`](../packages/llm/llm), [`memory`](../packages/memory/memory) |
 | [`notification-desktop`](../packages/notification/notification-desktop) | `notification` | [`notification`](../packages/notification/notification) |
@@ -1753,6 +1770,7 @@ flowchart TD
 | [`notification-web`](../packages/notification/notification-web) | `notification` | [`notification`](../packages/notification/notification) |
 | [`sandbox-windows-acl`](../packages/sandbox/sandbox-windows-acl) | `sandbox` | [`subprocess`](../packages/subprocess/subprocess) |
 | [`subprocess-local`](../packages/subprocess/subprocess-local) | `subprocess` | [`subprocess`](../packages/subprocess/subprocess), [`timeout`](../packages/util/timeout) |
+| [`video-wuyinkeji`](../packages/video/video-wuyinkeji) | `video` | [`llm`](../packages/llm/llm), [`timeout`](../packages/util/timeout), [`video`](../packages/video/video) |
 | [`repo-wiki-generator`](../packages/wiki/repo-wiki-generator) | `wiki` | [`llm`](../packages/llm/llm), [`repo-wiki`](../packages/wiki/repo-wiki), [`timeout`](../packages/util/timeout) |
 | [`skill-badge`](../packages/skill/skill-badge) | `skill` | [`skill`](../packages/skill/skill) |
 | [`skill-office`](../packages/skill/skill-office) | `skill` | [`skill`](../packages/skill/skill) |
@@ -1888,6 +1906,7 @@ flowchart TD
 | [`ssh`](../packages/ssh/ssh) | `ssh` | [`brand`](../packages/util/brand), [`fs`](../packages/fs/fs), [`fs-local`](../packages/fs/fs-local), [`fs-sandbox`](../packages/fs/fs-sandbox), [`sandbox`](../packages/sandbox/sandbox), [`sandbox-local`](../packages/sandbox/sandbox-local), [`sandbox-policy`](../packages/sandbox/sandbox-policy), [`session-projection`](../packages/session/session-projection), [`subprocess`](../packages/subprocess/subprocess), [`subprocess-local`](../packages/subprocess/subprocess-local) |
 | [`tool-terminal`](../packages/terminal/tool-terminal) | `terminal` | [`agent`](../packages/core/agent), [`jobs`](../packages/jobs/jobs), [`llm`](../packages/llm/llm), [`output-retention`](../packages/util/output-retention), [`system-prompt`](../packages/core/system-prompt), [`terminal`](../packages/terminal/terminal), [`tools`](../packages/core/tools) |
 | [`llm-replay`](../packages/test-support/llm-replay) | `test-support` | [`compaction`](../packages/compaction/compaction), [`deepseek-llm-api-extensions`](../packages/llm/deepseek-llm-api-extensions), [`llm`](../packages/llm/llm), [`session`](../packages/core/session) |
+| [`tool-video`](../packages/video/tool-video) | `video` | [`attachment`](../packages/attachment/attachment), [`llm`](../packages/llm/llm), [`system-prompt`](../packages/core/system-prompt), [`timeout`](../packages/util/timeout), [`tools`](../packages/core/tools), [`video`](../packages/video/video) |
 | [`tool-github`](../packages/webhook/tool-github) | `webhook` | [`credentials`](../packages/credentials/credentials), [`tools`](../packages/core/tools) |
 | [`tool-repo-wiki`](../packages/wiki/tool-repo-wiki) | `wiki` | [`llm`](../packages/llm/llm), [`system-prompt`](../packages/core/system-prompt), [`timeout`](../packages/util/timeout), [`tools`](../packages/core/tools) |
 | [`tool-workflow`](../packages/workflow/tool-workflow) | `workflow` | [`agent`](../packages/core/agent), [`invariants`](../packages/runtime-diagnostics/invariants), [`jobs`](../packages/jobs/jobs), [`llm`](../packages/llm/llm), [`session`](../packages/core/session), [`system-prompt`](../packages/core/system-prompt), [`tools`](../packages/core/tools), [`workflow`](../packages/workflow/workflow) |

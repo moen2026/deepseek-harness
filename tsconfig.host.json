@@ -243,6 +243,10 @@
     { "path": "./packages/image/image-http" },
     { "path": "./packages/image/image-wuyinkeji" },
     { "path": "./packages/image/tool-image" },
+    { "path": "./packages/video/video" },
+    { "path": "./packages/video/video-wuyinkeji" },
+    { "path": "./packages/video/video-volc" },
+    { "path": "./packages/video/tool-video" },
 
     { "path": "./packages/api/account-controller" },
     { "path": "./packages/credentials/deepseek-account-platform" },

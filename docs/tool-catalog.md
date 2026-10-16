@@ -42,6 +42,7 @@ This table connects model-visible tool names to the plugin package and service s
 | `@deepseek-ai/dsh-tool-knowledge` | `knowledge_ingest`, `knowledge_list`, `knowledge_remove`, `knowledge_search` | `ctx.tools`, `ctx.knowledge`, `ctx.systemPrompt` | `tool/call`, `tool/result` | - | The knowledge_ingest/knowledge_search/knowledge_remove/knowledge_list tools keep storage, chunking, and ranking behind ctx.knowledge, so their model-visible schemas stay stable across providers. Requires a registered provider (e.g. `@deepseek-ai/dsh-knowledge-sqlite`) at runtime; without one, an operation returns an actionable unavailable answer rather than failing the session. |
 | `@deepseek-ai/dsh-tool-audio` | `transcribe_audio` | `ctx.tools`, `ctx.audio`, `ctx.fs`, `ctx.systemPrompt` | `tool/call`, `tool/result` | - | The transcribe_audio tool keeps the transcription endpoint and its credentials behind ctx.audio, so its model-visible schema stays stable across providers. Requires a registered provider (e.g. `@deepseek-ai/dsh-audio-http`) at runtime; without one, a call returns an actionable unavailable answer rather than failing the session. |
 | `@deepseek-ai/dsh-tool-image` | `generate_image` | `ctx.tools`, `ctx.image`, `ctx.attachments`, `ctx.systemPrompt` | `tool/call`, `tool/result` | - | The generate_image tool keeps the generation endpoint and its credentials behind ctx.image, so its model-visible schema stays stable across providers. Requires a registered provider (e.g. `@deepseek-ai/dsh-image-http`) and a mounted attachment store at runtime; without one, a call returns an actionable unavailable answer rather than failing the session. |
+| `@deepseek-ai/dsh-tool-video` | `generate_video` | `ctx.tools`, `ctx.video`, `ctx.attachments`, `ctx.systemPrompt` | `tool/call`, `tool/result` | - | The generate_video tool keeps the generation endpoint and its credentials behind ctx.video, so its model-visible schema stays stable across providers. Requires a registered provider (e.g. `@deepseek-ai/dsh-video-wuyinkeji`) and a mounted attachment store at runtime; without one, a call returns an actionable unavailable answer rather than failing the session. |
 | `@deepseek-ai/dsh-tool-document` | `create_document` | `ctx.tools`, `ctx.documents`, `ctx.fs`, `ctx.systemPrompt`, `ctx.sessionProjections` | `tool/call`, `tool/result`, `fs/observed`, `deliverables/presented after a successful final result` | - | The create_document tool keeps the document engine behind ctx.documents, so its model-visible schema stays stable across providers. Requires a registered provider (e.g. `@deepseek-ai/dsh-office-create`) at runtime; without one, a call returns an actionable unavailable answer rather than failing the session. |
 | `@deepseek-ai/dsh-tool-repo-wiki` | `read_wiki` | `ctx.tools`, `ctx.repoWiki`, `ctx.systemPrompt` | `tool/call`, `tool/result` | - | The read_wiki tool keeps wiki storage and generation behind ctx.repoWiki, so its model-visible schema stays stable across providers. Requires a registered provider (e.g. `@deepseek-ai/dsh-repo-wiki-generator`) at runtime; without one, a call returns an actionable unavailable answer rather than failing the session. |
 | `@deepseek-ai/dsh-tool-ralph` | `ralph` | `ctx.tools`, `ctx.workflowEngine`, `ctx.subagents`, `ctx.systemPrompt`, `a calling Agent (exec.agent parents every fresh round)` | `tool/call`, `tool/result`, `workflow and child session events during execution` | - | A fixed foreground workflow starts one fresh structured child per round; the model selects only the immutable objective and an optional round cap. |
@@ -2186,6 +2187,65 @@ Generate an image from a text prompt and return the image itself. prompt is requ
 Source: [`packages/image/tool-image/src/index.ts`](../packages/image/tool-image/src/index.ts)
 
 The generate_image tool keeps the generation endpoint and its credentials behind ctx.image, so its model-visible schema stays stable across providers. Requires a registered provider (e.g. `@deepseek-ai/dsh-image-http`) and a mounted attachment store at runtime; without one, a call returns an actionable unavailable answer rather than failing the session.
+
+<a id="deepseek-aidsh-tool-video"></a>
+
+## `@deepseek-ai/dsh-tool-video`
+
+### `generate_video`
+
+Generate a video from a text prompt and return the video file. prompt is required; size is an optional refinement such as "1280x720", duration is an optional length in seconds, aspectRatio is an optional hint such as "16:9" or "adaptive", and firstFrame, lastFrame, referenceImage, referenceVideo, and referenceAudio are optional publicly reachable URLs of frame-conditioning and reference media the provider may use to guide the generation. Returns an actionable unavailable message when no video provider is configured.
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "prompt": {
+      "type": "string",
+      "description": "The text prompt describing the video to generate."
+    },
+    "size": {
+      "type": "string",
+      "description": "Optional requested video size (for example \"1280x720\" or \"720x1280\"); the provider interprets the hint."
+    },
+    "duration": {
+      "type": "integer",
+      "description": "Optional requested duration in seconds; the provider interprets the hint."
+    },
+    "referenceImage": {
+      "type": "string",
+      "description": "Optional publicly reachable URL of one reference image guiding the generation (image-to-video); a provider that does not accept reference media ignores it."
+    },
+    "referenceVideo": {
+      "type": "string",
+      "description": "Optional publicly reachable URL of one reference video guiding the generation (video-to-video); a provider that does not accept reference media ignores it."
+    },
+    "firstFrame": {
+      "type": "string",
+      "description": "Optional publicly reachable URL of one image conditioning the video's first frame; a provider that does not accept frame conditioning ignores it."
+    },
+    "lastFrame": {
+      "type": "string",
+      "description": "Optional publicly reachable URL of one image conditioning the video's last frame; a provider that does not accept frame conditioning ignores it."
+    },
+    "referenceAudio": {
+      "type": "string",
+      "description": "Optional publicly reachable URL of one reference audio guiding the generation (audio-to-video); a provider that does not accept reference media ignores it."
+    },
+    "aspectRatio": {
+      "type": "string",
+      "description": "Optional requested aspect ratio (for example \"16:9\", \"9:16\", or \"adaptive\"); the provider interprets the hint."
+    }
+  },
+  "required": [
+    "prompt"
+  ]
+}
+```
+
+Source: [`packages/video/tool-video/src/index.ts`](../packages/video/tool-video/src/index.ts)
+
+The generate_video tool keeps the generation endpoint and its credentials behind ctx.video, so its model-visible schema stays stable across providers. Requires a registered provider (e.g. `@deepseek-ai/dsh-video-wuyinkeji`) and a mounted attachment store at runtime; without one, a call returns an actionable unavailable answer rather than failing the session.
 
 <a id="deepseek-aidsh-tool-document"></a>
 

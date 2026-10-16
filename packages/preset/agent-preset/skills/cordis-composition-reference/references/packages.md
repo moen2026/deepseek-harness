@@ -561,6 +561,15 @@ Every package below exports a Cordis plugin that a bundle patch can name in a Lo
 |---|---|---|
 | `@deepseek-ai/dsh-typert-loader` | yes | Loader integration for generated Typert package contributions |
 
+## video
+
+| Package | Config | Description |
+|---|---|---|
+| `@deepseek-ai/dsh-tool-video` | yes | Model-facing generate_video tool over the DeepSeek Harness video seam (ctx.video) and attachment store (ctx.attachments) — prompt-normalized generation with the returned video durably committed as a verbatim file attachment and returned beside a bounded text envelope, and a graceful unavailable answer when no provider or store is mounted |
+| `@deepseek-ai/dsh-video` | no | Abstract video-generation capability seam (ctx.video) for the DeepSeek Harness — single-provider registry with a branded reservation, a normalized generate contract over text prompts with optional size, duration, and reference-image/reference-video hints, the VideoGenerateRequest/VideoResult vocabulary, and the VideoError taxonomy |
+| `@deepseek-ai/dsh-video-volc` | yes | Volcengine Ark (Seedance 2.0) video-generation provider for the DeepSeek Harness video seam (ctx.video) — submits chat-completions-style video tasks with reference-image messages over Bearer ARK API-key auth, polls the task endpoint until settlement, downloads the settled video URL into raw bytes, optionally registers public reference images as private-asset entries through the signed Volcengine OpenAPI control plane (HMAC-SHA256 AK/SK), reads every credential from named environment variables at call time, and surfaces endpoint failures as typed VIDEO_PROVIDER_FAILED errors with no local fallback |
+| `@deepseek-ai/dsh-video-wuyinkeji` | yes | Wuyinkeji (api.wuyinkeji.com) async video-generation provider for the DeepSeek Harness video seam (ctx.video) — submits text prompts to the public Google-Omni video task endpoint with optional size, duration, reference-image, and reference-video hints, polls its result-detail endpoint until the task settles, downloads the URL-scoped answer into raw bytes, reads the API key from a named environment variable at call time, and surfaces endpoint failures as typed VIDEO_PROVIDER_FAILED errors with no local fallback |
+
 ## web
 
 | Package | Config | Description |

@@ -48,6 +48,7 @@ One page per subsystem of the DeepSeek Harness: what it is, the data structures 
 | [memory.md](memory.md) | the memory seam: `MemoryDraft`/`MemoryRecord`, recall and listing types, `MemoryProvider`/`Service`, four operations, `MemoryError` |
 | [audio.md](audio.md) | the audio seam: `AudioTranscribeRequest`/`AudioTranscript`, `AudioProvider`/`Service`, one `transcribe` operation, `AudioError` |
 | [image.md](image.md) | the image seam: `ImageGenerateRequest`/`ImageResult`, `ImageProvider`/`Service`, one `generate` operation, `ImageError` |
+| [video.md](video.md) | the video seam: `VideoGenerateRequest`/`VideoResult`, `VideoProvider`/`Service`, one `generate` operation, `VideoError` |
 | [documents.md](documents.md) | the document-creation seam: `DocumentCreateRequest`/`DocumentResult`, `DocumentsProvider`/`Service`, one `create` operation, `DocumentsError` |
 | [repo-wiki.md](repo-wiki.md) | the repository-wiki seam: `WikiPageSummary`/`WikiPage`/`WikiOutlineEntry`/`WikiListing`, `RepoWikiProvider`/`Service`, three read routes, `RepoWikiError` |
 | [notification.md](notification.md) | the notification seam: `NotificationRequest`/`NotificationUrgency`, `NotificationProvider`/`Service`, one routed `notify` operation, `NotificationError` |
