@@ -35,7 +35,7 @@ kind: "package-reference"
 
 ### 模型得到什么
 
-工具返回封闭结果：`status` `ok` 带 `image`（持久附件引用——`attachmentId`、`mediaType`、`bytes`、`width`、`height`、可选 `name`）与可选的提供方报告 `revisedPrompt`，或 `unavailable`。渲染在 `<type>image</type>` 信封旁发出图像块本身，信封指明媒体类型、尺寸与字节数，提供方报告时附上 revised prompt，以 `maxResultChars` 为界。未挂载提供方时，渲染是可操作的不可用消息而不是错误。
+工具返回封闭结果：`status` `ok` 带 `image`（持久附件引用——`attachmentId`、`mediaType`、`bytes`、`width`、`height`、可选 `name`）与可选的提供方报告 `revisedPrompt`，或 `unavailable`。渲染在 `<type>image</type>` 信封旁发出图像块本身，信封指明媒体类型、尺寸与字节数，提供方报告时附上 revised prompt，以 `maxResultChars` 为界。提供方应答拆分图层时，每层作为独立附件提交；信封随后逐层列出媒体类型、裁剪尺寸、边界框与端点命名的名称和描述，合成图像块之后按 z 自底向上跟随各层图像块。未挂载提供方时，渲染是可操作的不可用消息而不是错误。
 
 ### 配置
 
@@ -136,7 +136,7 @@ Use generate_image to create an image from a text prompt. It is unavailable unti
 
 #### What the model sees
 
-ok 结果在 `<type>image</type>` 信封旁渲染图像块本身（生成的图片），信封指明媒体类型、尺寸与字节数，提供方报告时附上 `revisedPrompt`，以 `maxResultChars` 为界。未挂载提供方时，结果是可操作的不可用消息而不是错误。
+ok 结果在 `<type>image</type>` 信封旁渲染图像块本身（生成的图片），信封指明媒体类型、尺寸与字节数，提供方报告时附上 `revisedPrompt`，以 `maxResultChars` 为界；拆分图层在合成图片之后各自作为图像块跟随，各层事实写入信封。未挂载提供方时，结果是可操作的不可用消息而不是错误。
 
 #### Token effect
 

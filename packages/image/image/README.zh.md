@@ -51,7 +51,7 @@ seam 需要提供方和 consumer 才能工作。最小组合挂载服务、HTTP 
 
 ### 操作
 
-`generate(request, signal?)` 接收 `ImageGenerateRequest`——必填的文本 `prompt` 加可选的 `size`、`n` 与 `referenceImages`（引导生成的公网可达参考图 URL）——返回 `ImageResult`，即原始图像 `data` 字节、其可解码的 `mediaType`，以及可选的提供方报告 `revisedPrompt`。seam 不设超时或大小上限，因此没有 `resolve()` 步骤；这些预算由 consumer 持有，字节经 attachment 服务持久提交。
+`generate(request, signal?)` 接收 `ImageGenerateRequest`——必填的文本 `prompt` 加可选的 `size`、`n` 与 `referenceImages`（引导生成的公网可达参考图 URL）——返回 `ImageResult`，即原始图像 `data` 字节、其可解码的 `mediaType`、可选的提供方报告 `revisedPrompt`，以及提供方把生成拆分为图层时的 `layers`（按 `zIndex` 自底向上排序，最低层即 `data` 字节承载的合成背景）。seam 不设超时或大小上限，因此没有 `resolve()` 步骤；这些预算由 consumer 持有，字节经 attachment 服务持久提交。
 
 ### 失败与恢复
 

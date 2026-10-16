@@ -50,6 +50,7 @@ const SENTENCE_MODEL_EXPERIENCE: Readonly<Record<string, SentenceContract>> = {
   'packages/audio/audio-http': { kind: 'none', reason: 'The provider answers transcription requests without contributing anything to model requests; dsh-tool-audio owns the model-facing schema and rendering.' },
   'packages/image/image': { kind: 'indirect', reason: 'The provider registry contributes no prompt or schema; dsh-tool-image owns the model-facing generate_image surface.' },
   'packages/image/image-http': { kind: 'none', reason: 'The provider answers generation requests without contributing anything to model requests; dsh-tool-image owns the model-facing schema and rendering.' },
+  'packages/image/image-ark': { kind: 'none', reason: 'The provider answers generation requests without contributing anything to model requests; dsh-tool-image owns the model-facing schema and rendering.' },
   'packages/image/image-wuyinkeji': { kind: 'none', reason: 'The provider answers generation requests without contributing anything to model requests; dsh-tool-image owns the model-facing schema and rendering.' },
   'packages/video/video': { kind: 'indirect', reason: 'The provider registry contributes no prompt or schema; dsh-tool-video owns the model-facing generate_video surface.' },
   'packages/video/video-wuyinkeji': { kind: 'none', reason: 'The provider answers generation requests without contributing anything to model requests; dsh-tool-video owns the model-facing schema and rendering.' },

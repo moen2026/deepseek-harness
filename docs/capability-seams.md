@@ -312,6 +312,7 @@ flowchart LR
   pkg_image["image"]
   svc_image["ctx.image<br/>Image-generation seam"]
   pkg_image_http["image-http"]
+  pkg_image_ark["image-ark"]
   pkg_image_wuyinkeji["image-wuyinkeji"]
   pkg_tool_image["tool-image"]
   pkg_video["video"]
@@ -414,6 +415,7 @@ flowchart LR
   pkg_host_product_telemetry_otel --> svc_productTelemetry
   pkg_host_webserver --> svc_webServer
   pkg_image --> svc_image
+  pkg_image_ark --> svc_image
   pkg_image_http --> svc_image
   pkg_image_wuyinkeji --> svc_image
   pkg_inspector --> svc_inspector
@@ -790,7 +792,7 @@ flowchart LR
 | `ctx.memory` | `seam` | [`memory`](../packages/memory/memory) | [`memory-sqlite`](../packages/memory/memory-sqlite) | [`memory-profile`](../packages/memory/memory-profile), [`memory-reflection`](../packages/memory/memory-reflection), [`tool-memory`](../packages/memory/tool-memory) | - | Single-provider reservation plus the four routed operations (remember, recall, forget, list); storage layout, ranking, and any vector retrieval stay the provider’s private concern, and DSH never selects an embedding provider. |
 | `ctx.memoryBrowser` | `core` | [`memory`](../packages/memory/memory) | - | - | - | Read-and-remove face over the `memory` seam for the Web panel; remembering and recall stay model-side operations, so the browser cannot write memory content. |
 | `ctx.audio` | `seam` | [`audio`](../packages/audio/audio) | [`audio-http`](../packages/audio/audio-http) | [`tool-audio`](../packages/audio/tool-audio) | - | Single-provider reservation plus one routed transcribe operation over raw audio bytes; endpoint, model, and credentials stay deployment-owned, and DSH never selects a transcription model. |
-| `ctx.image` | `seam` | [`image`](../packages/image/image) | [`image-http`](../packages/image/image-http), [`image-wuyinkeji`](../packages/image/image-wuyinkeji) | [`tool-image`](../packages/image/tool-image) | - | Single-provider reservation plus one routed generate operation over text prompts and raw image bytes; endpoint, model, and credentials stay deployment-owned, and DSH never selects a generation model. |
+| `ctx.image` | `seam` | [`image`](../packages/image/image) | [`image-http`](../packages/image/image-http), [`image-ark`](../packages/image/image-ark), [`image-wuyinkeji`](../packages/image/image-wuyinkeji) | [`tool-image`](../packages/image/tool-image) | - | Single-provider reservation plus one routed generate operation over text prompts and raw image bytes; endpoint, model, and credentials stay deployment-owned, and DSH never selects a generation model. |
 | `ctx.video` | `seam` | [`video`](../packages/video/video) | [`video-wuyinkeji`](../packages/video/video-wuyinkeji) | [`tool-video`](../packages/video/tool-video) | - | Single-provider reservation plus one routed generate operation over text prompts with optional size, duration, aspect-ratio, frame-conditioning, and reference-media refinements, and raw video bytes; endpoint, model, and credentials stay deployment-owned. |
 | `ctx.documents` | `seam` | [`documents`](../packages/document/documents) | [`office-create`](../packages/document/office-create) | [`tool-document`](../packages/document/tool-document) | - | Single-provider reservation plus one routed create operation over neutral content blocks and finished Office bytes; engines, intermediate formats, and layout policy stay the provider’s private concern. |
 | `ctx.repoWiki` | `seam` | [`repo-wiki`](../packages/wiki/repo-wiki) | [`repo-wiki-generator`](../packages/wiki/repo-wiki-generator) | [`tool-repo-wiki`](../packages/wiki/tool-repo-wiki) | - | Single-provider reservation plus read-only routed access to generated Markdown wiki pages; storage layout and the generation pipeline stay the provider’s private concern, and a page whose sources changed reads back as stale metadata instead of triggering an automatic rewrite. |

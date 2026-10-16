@@ -18,6 +18,19 @@ export interface GenerateImageArgs {
   readonly referenceImages?: readonly string[]
 }
 
+/** One serializable decomposed layer projected into the tool's output schema. */
+export interface GeneratedLayerItem {
+  attachmentId: string
+  mediaType: string
+  bytes: number
+  width: number
+  height: number
+  zIndex: number
+  name?: string
+  description?: string
+  boundingBox?: number[]
+}
+
 /** One serializable generated-image item projected into the tool's output schema. */
 export interface GeneratedImageItem {
   status: 'ok' | 'unavailable'
@@ -29,6 +42,8 @@ export interface GeneratedImageItem {
     height: number
     name?: string
   }
+  /** Decomposed layers, bottom-up by `zIndex`; present only when the provider decomposes. */
+  layers?: readonly GeneratedLayerItem[]
   revisedPrompt?: string
 }
 
@@ -91,7 +106,21 @@ export function formatGeneratedImage(item: GeneratedImageItem, maxChars: number)
     return UNAVAILABLE_TEXT
   }
   const revised = item.revisedPrompt === undefined ? '' : `<revisedPrompt>${item.revisedPrompt}</revisedPrompt>\n`
-  const body = `<type>image</type>\n<content>\n${image.mediaType} image generated, ${image.width}x${image.height} px, ${image.bytes} bytes\n</content>\n${revised}The generated image is attached above this envelope.`
+  const layers = item.layers ?? []
+  const layerLines = layers.map((layer) => {
+    const box = layer.boundingBox === undefined ? '' : ` at [${layer.boundingBox.join(', ')}]`
+    const name = layer.name === undefined ? '' : ` "${layer.name}"`
+    const description = layer.description === undefined ? '' : `: ${layer.description}`
+    return `<layer z="${layer.zIndex}">${layer.mediaType} ${layer.width}x${layer.height} px${box}${name}${description}</layer>`
+  })
+  const contentLines = [
+    `${image.mediaType} image generated, ${image.width}x${image.height} px, ${image.bytes} bytes`,
+    ...layerLines,
+  ]
+  const attached = layers.length === 0
+    ? 'The generated image is attached above this envelope.'
+    : `The composed image is attached above this envelope; its ${layers.length} decomposed layers are attached after it, bottom-up by z.`
+  const body = `<type>image</type>\n<content>\n${contentLines.join('\n')}\n</content>\n${revised}${attached}`
   if (body.length <= maxChars) return body
   const keep = Math.max(0, maxChars - 1)
   return `${body.slice(0, keep)}…`

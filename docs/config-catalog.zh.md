@@ -1976,6 +1976,33 @@ export interface Config {
 ```
 <!-- END GENERATED config-catalog:@deepseek-ai/dsh-host-webserver -->
 
+<!-- BEGIN GENERATED config-catalog:@deepseek-ai/dsh-image-ark -->
+<a id="deepseek-aidsh-image-ark"></a>
+
+## `@deepseek-ai/dsh-image-ark`
+
+- `inject`: `image`
+- `source`: [`packages/image/image-ark/src/index.ts:41`](../packages/image/image-ark/src/index.ts)
+
+```ts config-catalog
+/** Provider configuration: the endpoint, its model, the credential variable name, and the decomposition switch. */
+export interface Config {
+  /** Ark inference base URL. Defaults to the public plane. */
+  arkBaseURL?: string
+  /** Ark model identifier. Defaults to `doubao-seedream-5-0-pro-260628`. */
+  model?: string
+  /** Name of the environment variable holding the ARK API key; never the key itself. */
+  authEnv: string
+  /** Ask the endpoint to decompose the generation into layers. Defaults to false. */
+  layerDecomposition?: boolean
+  /** Output format requested from the endpoint (`png` or `jpeg`); omitted values leave the field out. */
+  outputFormat?: 'png' | 'jpeg'
+  /** Per-request timeout covering submission and every download in milliseconds. Defaults to 120000. */
+  timeoutMs?: number
+}
+```
+<!-- END GENERATED config-catalog:@deepseek-ai/dsh-image-ark -->
+
 <!-- BEGIN GENERATED config-catalog:@deepseek-ai/dsh-image-http -->
 <a id="deepseek-aidsh-image-http"></a>
 

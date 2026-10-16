@@ -26,6 +26,7 @@ export {
 export type {
   ImageErrorCode,
   ImageGenerateRequest,
+  ImageLayer,
   ImageProvider,
   ImageResult,
   ImageService,

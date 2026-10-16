@@ -51,6 +51,30 @@ export interface ImageGenerateRequest {
   readonly referenceImages?: readonly string[]
 }
 
+/**
+ * One decomposed layer of a generated image, ordered bottom-up by `zIndex`.
+ * Layers are cropped to their own pixel extents, so each carries its own size
+ * and the position of its extent within the composed image.
+ */
+export interface ImageLayer {
+  /** Stacking order of the layer; `0` is the composed background. */
+  readonly zIndex: number
+  /** Raw layer bytes as the endpoint returned them. */
+  readonly data: Uint8Array
+  /** The media type the layer bytes decode as. */
+  readonly mediaType: string
+  /** Layer extent in pixels. */
+  readonly width: number
+  /** Layer extent in pixels. */
+  readonly height: number
+  /** Absolute pixel box `[x1, y1, x2, y2]` of the layer's extent within the composed image. */
+  readonly boundingBox?: readonly [number, number, number, number]
+  /** Optional endpoint-assigned layer name. */
+  readonly name?: string
+  /** Optional endpoint-assigned description of the layer's content. */
+  readonly description?: string
+}
+
 /** One generated image: the raw bytes plus the media type they decode as. */
 export interface ImageResult {
   /** Raw image bytes as the endpoint returned them. */
@@ -59,6 +83,12 @@ export interface ImageResult {
   readonly mediaType: string
   /** Optional prompt the provider reports it actually applied. */
   readonly revisedPrompt?: string
+  /**
+   * Optional decomposed layers, ordered bottom-up by `zIndex`; present only when the
+   * provider decomposes the generation into layers. `data` then carries the composed
+   * background (the lowest layer), and every layer also appears here.
+   */
+  readonly layers?: readonly ImageLayer[]
 }
 
 /**

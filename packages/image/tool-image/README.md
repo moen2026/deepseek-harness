@@ -33,7 +33,7 @@ A model calls `generate_image` when the user asks for an illustration, a mockup,
 
 ### What the model gets back
 
-The tool returns a closed result: `status` `ok` with `image` (the durable attachment reference — `attachmentId`, `mediaType`, `bytes`, `width`, `height`, optional `name`) and an optional provider-reported `revisedPrompt`, or `unavailable`. Rendering emits the image block itself beside a `<type>image</type>` envelope naming the media type, dimensions, and byte count, plus the revised prompt when the provider reports one, bounded by `maxResultChars`. When no provider is mounted, the render is the actionable unavailable message instead of an error.
+The tool returns a closed result: `status` `ok` with `image` (the durable attachment reference — `attachmentId`, `mediaType`, `bytes`, `width`, `height`, optional `name`) and an optional provider-reported `revisedPrompt`, or `unavailable`. Rendering emits the image block itself beside a `<type>image</type>` envelope naming the media type, dimensions, and byte count, plus the revised prompt when the provider reports one, bounded by `maxResultChars`. A provider that answers decomposed layers commits each layer as its own attachment; the envelope then lists each layer's media type, cropped extent, bounding box, and endpoint-assigned name and description, and the composed image is followed by the layer image blocks, bottom-up by z. When no provider is mounted, the render is the actionable unavailable message instead of an error.
 
 ### Configuration
 
@@ -134,7 +134,7 @@ Prefix-stable while the visible tool definition and order are unchanged; registr
 
 #### What the model sees
 
-An ok result renders the image block itself (the generated picture) beside a `<type>image</type>` envelope naming the media type, dimensions, and byte count, plus the provider's `revisedPrompt` when reported, bounded by `maxResultChars`. When no provider is mounted, the result is the actionable unavailable message instead of an error.
+An ok result renders the image block itself (the generated picture) beside a `<type>image</type>` envelope naming the media type, dimensions, and byte count, plus the provider's `revisedPrompt` when reported, bounded by `maxResultChars`; decomposed layers ride as their own image blocks after the composed picture, with each layer's facts in the envelope. When no provider is mounted, the result is the actionable unavailable message instead of an error.
 
 #### Token effect
 

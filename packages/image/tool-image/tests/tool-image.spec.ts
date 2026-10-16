@@ -55,6 +55,21 @@ describe('formatGeneratedImage', () => {
     expect(long.length).toBeLessThanOrEqual(121)
   })
 
+  it('lists decomposed layers in the envelope and notes their attachments', () => {
+    const text = formatGeneratedImage({
+      status: 'ok',
+      image: { attachmentId: 'sha256:a', mediaType: 'image/png', bytes: 900, width: 2048, height: 2048 },
+      layers: [
+        { attachmentId: 'sha256:b', mediaType: 'image/png', bytes: 100, width: 1273, height: 265, zIndex: 1, name: '标题文字', description: '黄色大号衬线字体', boundingBox: [383, 120, 1655, 384] },
+        { attachmentId: 'sha256:c', mediaType: 'image/jpeg', bytes: 50, width: 2048, height: 2048, zIndex: 0 },
+      ],
+    }, 8_000)
+    expect(text).toContain('<layer z="1">image/png 1273x265 px at [383, 120, 1655, 384] "标题文字": 黄色大号衬线字体</layer>')
+    expect(text).toContain('<layer z="0">image/jpeg 2048x2048 px</layer>')
+    expect(text).toContain('2 decomposed layers')
+    expect(text).toContain('bottom-up by z')
+  })
+
   it('renders the actionable unavailable answer without an envelope', () => {
     const text = formatGeneratedImage({ status: 'unavailable' }, 8_000)
     expect(text).toMatch(/not available/i)
@@ -183,6 +198,26 @@ describe('generate_image tool', () => {
     const imageBlock = result.content.find(block => block.type === 'image')
     expect(imageBlock?.attachment.mediaType).toBe('image/png')
     expect(imageBlock?.attachment.name).toBe('generated.png')
+  })
+
+  it('commits decomposed layers as attachments and returns them beside the composed image', async () => {
+    const provider = stubProvider()
+    provider.result = {
+      data: new Uint8Array([1]),
+      mediaType: 'image/png',
+      layers: [
+        { zIndex: 0, data: new Uint8Array([2]), mediaType: 'image/png', width: 4, height: 4 },
+        { zIndex: 1, data: new Uint8Array([3]), mediaType: 'image/jpeg', width: 2, height: 1, name: '标题', description: '文字', boundingBox: [0, 0, 2, 1] },
+      ],
+    }
+    const { ctx, store } = await mountTool(provider)
+
+    const result = await execute(ctx, 'generate_image', { prompt: 'a cat' })
+    expect(result.isError).toBe(false)
+    expect(store?.saved.map(saved => saved.name)).toEqual(['generated.png', 'generated-layer-0.png', 'generated-layer-1.png'])
+    const imageBlocks = result.content.filter(block => block.type === 'image')
+    expect(imageBlocks).toHaveLength(3)
+    expect(asText(result.content)).toContain('<layer z="1">image/jpeg 2x1 px at [0, 0, 2, 1] "标题": 文字</layer>')
   })
 
   it('returns an actionable unavailable answer with no provider, without failing the session', async () => {

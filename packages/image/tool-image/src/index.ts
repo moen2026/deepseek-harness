@@ -33,7 +33,7 @@ export {
   presentGenerateImageCall,
   UNAVAILABLE_TEXT,
 } from './render.ts'
-export type { GenerateImageArgs, GeneratedImageItem } from './render.ts'
+export type { GenerateImageArgs, GeneratedImageItem, GeneratedLayerItem } from './render.ts'
 
 /** Cordis plugin name for loader diagnostics. */
 export const name = 'tool-image'
@@ -73,10 +73,24 @@ export interface GeneratedImageValue {
   name?: string
 }
 
+/** The structured decomposed-layer outcome declared by the `generate_image` output schema. */
+export interface GeneratedLayerValue {
+  attachmentId: string
+  mediaType: string
+  bytes: number
+  width: number
+  height: number
+  zIndex: number
+  name?: string
+  description?: string
+  boundingBox?: number[]
+}
+
 /** The structured outcome declared by the `generate_image` output schema. */
 export interface GenerateImageValue {
   status: 'ok' | 'unavailable'
   image?: GeneratedImageValue
+  layers?: GeneratedLayerValue[]
   revisedPrompt?: string
 }
 
@@ -100,7 +114,27 @@ export function imageRefFromValue(image: GeneratedImageValue): ImageAttachmentRe
 }
 
 /**
- * Project one structured generation outcome into its model-facing envelope and image.
+ * Re-brand a structured layer outcome into the durable attachment reference an
+ * `ImageBlock` carries. The reference stays minimal: the text envelope carries
+ * the layer's name, description, and box.
+ * @param layer - the layer metadata from the output schema.
+ * @returns the branded attachment reference.
+ */
+export function layerRefFromValue(layer: GeneratedLayerValue): ImageAttachmentRef {
+  return {
+    attachmentId: AttachmentId(layer.attachmentId),
+    // The execute path already narrows the media type to the storable set
+    // before the outcome is projected, so the assertion only re-brands it.
+    mediaType: layer.mediaType as ImageMediaType,
+    bytes: layer.bytes,
+    width: layer.width,
+    height: layer.height,
+  }
+}
+
+/**
+ * Project one structured generation outcome into its model-facing envelope, composed
+ * image, and any decomposed-layer images.
  * @param value - the generation outcome.
  * @returns the content blocks used by native and nested dispatches.
  */
@@ -108,6 +142,9 @@ export function generateImageContent(value: GenerateImageValue): ContentBlock[] 
   const blocks: ContentBlock[] = [{ type: 'text', text: formatGeneratedImage(value, DEFAULT_MAX_RESULT_CHARS) }]
   if (value.status === 'ok' && value.image !== undefined) {
     blocks.push({ type: 'image', attachment: imageRefFromValue(value.image) })
+  }
+  for (const layer of value.layers ?? []) {
+    blocks.push({ type: 'image', attachment: layerRefFromValue(layer) })
   }
   return blocks
 }
@@ -159,6 +196,24 @@ export function apply(ctx: Context, config: Config): void {
               name: { type: 'string' },
             },
           },
+          layers: {
+            type: 'array',
+            items: {
+              type: 'object',
+              additionalProperties: false,
+              properties: {
+                attachmentId: { type: 'string', required: true },
+                mediaType: { type: 'string', required: true },
+                bytes: { type: 'integer', required: true },
+                width: { type: 'integer', required: true },
+                height: { type: 'integer', required: true },
+                zIndex: { type: 'integer', required: true },
+                name: { type: 'string' },
+                description: { type: 'string' },
+                boundingBox: { type: 'array', items: { type: 'integer' } },
+              },
+            },
+          },
           revisedPrompt: { type: 'string' },
         },
       },
@@ -191,6 +246,21 @@ export function apply(ctx: Context, config: Config): void {
         // committed object by the time the tool/result event is appended.
         const attachments = ctx.get('attachments') as AttachmentStore
         const ref = await saveGeneratedImage(attachments, result.data, result.mediaType)
+        const layers: GeneratedLayerValue[] = []
+        for (const layer of result.layers ?? []) {
+          const layerRef = await saveGeneratedImage(attachments, layer.data, layer.mediaType, `generated-layer-${layer.zIndex}.png`)
+          layers.push({
+            attachmentId: layerRef.attachmentId,
+            mediaType: layerRef.mediaType,
+            bytes: layerRef.bytes,
+            width: layer.width,
+            height: layer.height,
+            zIndex: layer.zIndex,
+            ...layer.name === undefined ? {} : { name: layer.name },
+            ...layer.description === undefined ? {} : { description: layer.description },
+            ...layer.boundingBox === undefined ? {} : { boundingBox: [...layer.boundingBox] },
+          })
+        }
         return {
           status: 'ok' as const,
           image: {
@@ -201,6 +271,7 @@ export function apply(ctx: Context, config: Config): void {
             height: ref.height,
             ...ref.name === undefined ? {} : { name: ref.name },
           },
+          ...layers.length === 0 ? {} : { layers },
           ...result.revisedPrompt === undefined ? {} : { revisedPrompt: result.revisedPrompt },
         }
       } catch (error) {
@@ -222,14 +293,15 @@ const IMAGE_MEDIA_TYPES: readonly ImageMediaType[] = ['image/png', 'image/jpeg',
  * @param attachments - the mounted attachment store.
  * @param data - the generated image bytes.
  * @param mediaType - the media type the bytes decode as.
+ * @param name - the attachment name; composed images use `generated.png`, layers their z-indexed name.
  * @returns the durable attachment reference.
  * @throws an actionable error when the endpoint's media type is not storable.
  */
-async function saveGeneratedImage(attachments: AttachmentStore, data: Uint8Array, mediaType: string): Promise<ImageAttachmentRef> {
+async function saveGeneratedImage(attachments: AttachmentStore, data: Uint8Array, mediaType: string, name = 'generated.png'): Promise<ImageAttachmentRef> {
   if (!IMAGE_MEDIA_TYPES.includes(mediaType as ImageMediaType)) {
     throw new Error(`the generation endpoint returned a "${mediaType}" image, which this deployment cannot store; configure an endpoint that returns PNG/JPEG/WebP images`)
   }
-  return attachments.saveImage({ data, mediaType: mediaType as ImageMediaType, name: 'generated.png' })
+  return attachments.saveImage({ data, mediaType: mediaType as ImageMediaType, name })
 }
 
 /** Reject a non-positive-integer config value at load, so misconfiguration fails loud. */

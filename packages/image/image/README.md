@@ -49,7 +49,7 @@ The endpoint, model, and credential variable are configured in the provider pack
 
 ### The operation
 
-`generate(request, signal?)` takes an `ImageGenerateRequest` — a required text `prompt` plus optional `size`, `n`, and `referenceImages` (publicly reachable URLs of reference images that guide the generation) — and returns an `ImageResult` of raw image `data` bytes with the `mediaType` they decode as and an optional provider-reported `revisedPrompt`. The seam applies no timeout or size cap, so there is no `resolve()` step; consumers own those bounds and commit the bytes durably through the attachment service.
+`generate(request, signal?)` takes an `ImageGenerateRequest` — a required text `prompt` plus optional `size`, `n`, and `referenceImages` (publicly reachable URLs of reference images that guide the generation) — and returns an `ImageResult` of raw image `data` bytes with the `mediaType` they decode as, an optional provider-reported `revisedPrompt`, and, when the provider decomposes the generation into layers, `layers` ordered bottom-up by `zIndex` whose lowest layer is the composed background the `data` bytes carry. The seam applies no timeout or size cap, so there is no `resolve()` step; consumers own those bounds and commit the bytes durably through the attachment service.
 
 ### Failures and recovery
 
